@@ -28,6 +28,16 @@ El sistema está diseñado bajo una arquitectura de microservicios robusta y mod
 
 ---
 
+## 📜 Historia y Evolución (Changelog y UX)
+El proyecto nació como un experimento y fue escalando hasta convertirse en una infraestructura comercial completa, destacándose por una transformación radical en su Interfaz Gráfica (UI/UX) y su independencia de código:
+
+*   **v0.0 Alpha (2025) - "El Proyecto Prueba":** Primeros scripts experimentales para levantar servidores de Minecraft. Prueba de concepto básica y local, operaciones puramente por terminal, sin interfaz gráfica.
+*   **v0.1 a v0.4 Beta - "El Core":** Integración oficial con la API de Docker. Nacen los primeros formularios web básicos. En esta etapa de prototipado, el sistema de login y las vistas iniciales fueron adaptadas de plantillas externas (tomando como referencia inicial a *universo.io*) para salir del paso mientras el foco de desarrollo estaba 100% en el backend.
+*   **v0.5 a v0.8 Beta - "La Plataforma":** Creación del primer panel web interactivo. Se sumaron el Gestor de Archivos, la consola RCON y las métricas. La funcionalidad estaba garantizada, pero la UX seguía siendo caótica, dependiente de alertas nativas del navegador y sin adaptación móvil.
+*   **v0.9 Beta (Actual) - "El Imperio y la Independencia":** Reestructuración total y desarrollo 100% *in-house*. Se abandonó cualquier código de terceros o interfaces prestadas. Ahora, desde el login animado con videos de fondo hasta el dashboard modular (*Dark Theme / Glassmorphism* impulsado por Tailwind CSS), absolutamente todo el frontend es de desarrollo y autoría propia. Interfaces responsivas, modales dinámicos integrados y una experiencia fluida a la altura del software corporativo de élite.
+
+---
+
 ## 🗺️ Roadmap de Desarrollo
 
 ### FASE 1: Core de Infraestructura (v0.1 - v0.8) ✅
@@ -55,4 +65,4 @@ El sistema está diseñado bajo una arquitectura de microservicios robusta y mod
 - [ ] Lanzamiento oficial **ProServers v1.0** 🚀.
 
 ---
-<p align="center">Desarrollado con 💻 y café por Maximo Rodas.</p>
+<p align="center">Desarrollado con 💻 y café por Maximo Rodas en Misiones, Argentina.</p>
