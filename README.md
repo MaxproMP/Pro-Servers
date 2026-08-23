@@ -28,13 +28,13 @@ El sistema está diseñado bajo una arquitectura de microservicios robusta y mod
 
 ---
 
-## 📜 Historia y Evolución (Changelog y UX)
-El proyecto nació como un experimento y fue escalando hasta convertirse en una infraestructura comercial completa, destacándose por una transformación radical en su Interfaz Gráfica (UI/UX) y su independencia de código:
+## 📜 Historia y Evolución (El Origen y el Salto Pro)
+El nacimiento de ProServers no fue corporativo, sino académico y lleno de tropiezos que forjaron su arquitectura actual. Una verdadera historia de resiliencia de código:
 
-*   **v0.0 Alpha (2025) - "El Proyecto Prueba":** Primeros scripts experimentales para levantar servidores de Minecraft. Prueba de concepto básica y local, operaciones puramente por terminal, sin interfaz gráfica.
-*   **v0.1 a v0.4 Beta - "El Core":** Integración oficial con la API de Docker. Nacen los primeros formularios web básicos. En esta etapa de prototipado, el sistema de login y las vistas iniciales fueron adaptadas de plantillas externas (tomando como referencia inicial a *universo.io*) para salir del paso mientras el foco de desarrollo estaba 100% en el backend.
-*   **v0.5 a v0.8 Beta - "La Plataforma":** Creación del primer panel web interactivo. Se sumaron el Gestor de Archivos, la consola RCON y las métricas. La funcionalidad estaba garantizada, pero la UX seguía siendo caótica, dependiente de alertas nativas del navegador y sin adaptación móvil.
-*   **v0.9 Beta (Actual) - "El Imperio y la Independencia":** Reestructuración total y desarrollo 100% *in-house*. Se abandonó cualquier código de terceros o interfaces prestadas. Ahora, desde el login animado con videos de fondo hasta el dashboard modular (*Dark Theme / Glassmorphism* impulsado por Tailwind CSS), absolutamente todo el frontend es de desarrollo y autoría propia. Interfaces responsivas, modales dinámicos integrados y una experiencia fluida a la altura del software corporativo de élite.
+*   **v0.0 Pre-Alpha (2024) - "El Proyecto de Facultad":** Todo nació a las apuradas en el primer año del ISAM (Instituto Superior Adventista de Misiones) como un proyecto rápido para presentar ante los profesores. La idea original iba a ser física junto a un compañero, pero ante la falta de conocimientos de hardware, fracasó. Para salvar la nota, hubo una fusión obligada con otro grupo. Las primeras pruebas de despliegue fueron un caos por exigencias técnicas: se intentó orquestar en AWS con Jenkins, falló, y terminó levantándose a los golpes en un entorno PaaS (App Service) de Azure solo para aprobar.
+*   **v0.1 a v0.4 Beta (2025) - "El Camino en Solitario y el Core":** Ya en segundo año de la carrera de Técnico Superior Analista de Sistemas, tomé la decisión de darme de baja de aquel grupo original, descartar Azure y empezar de cero, solo. Nace el verdadero "Core": integración oficial con la API de Docker local y los primeros formularios web básicos (adaptados de plantillas externas como *universo.io* para salir del paso).
+*   **v0.5 a v0.8 Beta - "La Plataforma":** Creación del primer panel web interactivo. Se sumaron el Gestor de Archivos, la consola RCON y las métricas. La funcionalidad estaba garantizada, pero la UX seguía siendo caótica y dependiente de alertas nativas del navegador.
+*   **v0.9 Beta (Actual) - "El Imperio y la Independencia":** Reestructuración total y desarrollo 100% *in-house*. Se abandonó cualquier código de terceros. Desde el login hasta el dashboard modular (*Dark Theme / Glassmorphism* impulsado por Tailwind CSS), todo el frontend es de autoría propia. Además, se introdujo el Modo CEO, la *Zona de Hielo* y la Inteligencia Artificial (Mine AI), convirtiendo un salvavidas universitario en un software corporativo de élite.
 
 ---
 
@@ -54,15 +54,15 @@ El proyecto nació como un experimento y fue escalando hasta convertirse en una 
 - [x] **Mine AI Blindado:** Analista técnico virtual para revisar logs y diagnosticar crasheos.
 - [x] **Ecosistema de Mods Automático:** Búsqueda e instalación in-panel de CurseForge (Mods, Plugins, Datapacks y Server Packs).
 - [x] **Soporte Multimotor:** Compatibilidad nativa con ecosistemas Java y Bedrock.
-- [ ] **Acceso Compartido 2.0:** Mejorar el panel de invitados para dar permisos más granulares (ej: que un amigo pueda prender el server pero no borrar archivos o mandar comandos OP por consola).
+- [ ] **Acceso Compartido 2.0:** Mejorar el panel de invitados para dar permisos más granulares.
 - [ ] **Sistema de Clonación de Nodos:** Terminar la función para duplicar servidores de prueba con un solo clic.
 
 ### FASE 3: Monetización, UX y Legal (v1.0) 🎯
-- [ ] **Perfil de Usuario Avanzado:** Nuevos campos para agregar información extra (Discord, país, etc.).
-- [ ] **Hub de Facturación (Billing):** Integración de un sistema tipo "Checkout" para que el cliente pueda cambiar de plan (Upgrade/Downgrade), agregar o actualizar su tarjeta de crédito y ver sus últimos pagos directamente desde su perfil.
-- [ ] **Estructura Legal y Derechos:** Agregar términos y condiciones, contratos, revisar derechos de autor, patentes y establecer esquemas de licencias (permisiva, copyleft, etc.).
-- [ ] **Frontend Footer:** Desarrollar pie de página con datos corporativos, redes sociales y accesos legales.
+- [ ] **Perfil de Usuario Avanzado:** Nuevos campos para agregar información extra.
+- [ ] **Hub de Facturación (Billing):** Integración de un sistema tipo "Checkout" para gestión de planes y pagos.
+- [ ] **Estructura Legal y Derechos:** Agregar términos y condiciones, contratos y políticas de privacidad.
+- [ ] **Frontend Footer:** Desarrollar pie de página con datos corporativos y accesos legales.
 - [ ] Lanzamiento oficial **ProServers v1.0** 🚀.
 
 ---
-<p align="center">Desarrollado con 💻 y café por Maximo Rodas en Misiones, Argentina.</p>
+<p align="center">Desarrollado con 💻, noches sin dormir y mucho café por Maximo Rodas en Misiones, Argentina.</p>
