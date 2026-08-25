@@ -20,3 +20,8 @@ data/database.json
 # Logs
 storage/*.key
 storage/logs/*.log
+
+# Proyecto de la facultad (Laravel)
+proservers-billing/
+# Proyecto de la facultad (Laravel)
+proservers-billing/
