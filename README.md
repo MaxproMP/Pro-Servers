@@ -19,12 +19,22 @@ El proyecto ha evolucionado a la fase **v0.9 beta (Fase "El Imperio")**. Dejamos
 
 ## 🛠️ Arquitectura Tecnológica
 El sistema está diseñado bajo una arquitectura de microservicios robusta y moderna:
-*   ⚡ **Backend / Cerebro:** Node.js & Express (Daemon, APIs, WebSockets). Próxima capa de facturación en Laravel 11.
+*   ⚡ **Backend / Cerebro:** Node.js & Express (Daemon, APIs, WebSockets). Próxima capa de facturación en Laravel 13.
 *   🔒 **Seguridad y DB:** Firebase Auth (Identidad) + MongoDB (Nodos y Usuarios) + SQL Server (Facturación).
 *   🐳 **Infraestructura:** Dockerode (control absoluto de contenedores y límites de hardware).
 *   🌐 **Redes:** Playit.gg (Túneles TCP/UDP dinámicos) acoplados a cada nodo.
 *   🤖 **Inteligencia Artificial:** Groq API integrada para "Mine AI" (Análisis de logs en tiempo real).
 *   ☁️ **Nube:** Integración nativa con Google Drive y OneDrive para backups.
+
+---
+
+## 📜 Historia y Evolución (El Origen y el 🚫 de Copilot)
+El nacimiento de ProServers no fue corporativo, sino académico y lleno de anécdotas de trinchera que forjaron su arquitectura actual. Una verdadera historia de resiliencia de código:
+
+*   **v0.0 Pre-Alpha (2024) - "El Proyecto de Facultad":** Todo nació a las apuradas en el primer año del terciario. La idea original iba a ser física junto a un compañero, pero fracasó. Para salvar la nota, hubo una fusión obligada con otro grupo. Las primeras pruebas de despliegue fueron un caos de infraestructura: se intentó orquestar en AWS con Jenkins y falló estrepitosamente.
+*   **v0.1 a v0.4 Beta (2025/2026) - "El Camino Solo y la Presentación":** Ya en segundo año de la carrera de Técnico Superior Analista de Sistemas, me di de baja del grupo original y empecé a desarrollarlo por mi cuenta. Llegó el día de presentar el proyecto ante **todos los profesores de la carrera**. Para testear y levantar el primer servidor a las apuradas, se usó **Kubernetes**. El backend fue un éxito total (¡el server de Minecraft prendió!), pero la interfaz... era un desastre hermoso. De tantos cambios locos intentando integrar sugerencias de GitHub Copilot a último minuto, lo único que funcionaba era la consola y el gestor de archivos. No podías ni prender ni apagar el servidor desde el panel, porque el botón había quedado literalmente trabado con este ícono: 🚫. 
+*   **v0.5 a v0.8 Beta - "La Plataforma":** Dejando atrás K8s, se migró a una integración limpia y oficial con la API de Docker local. Creación del primer panel web interactivo real. Se sumaron el Gestor de Archivos estable, la consola RCON y las métricas, aunque la UX seguía dependiendo de alertas nativas del navegador.
+*   **v0.9 Beta (Actual) - "El Imperio y la Independencia":** Reestructuración total y desarrollo 100% *in-house*. Se abandonó cualquier código de terceros. Desde el login hasta el dashboard modular (*Dark Theme / Glassmorphism* impulsado por Tailwind CSS), todo el frontend es de autoría propia. Además, se introdujo el Modo CEO, la *Zona de Hielo* y la Inteligencia Artificial (Mine AI), convirtiendo un salvavidas universitario que tenía botones rotos (🚫) en un software corporativo de élite.
 
 ---
 
@@ -44,15 +54,15 @@ El sistema está diseñado bajo una arquitectura de microservicios robusta y mod
 - [x] **Mine AI Blindado:** Analista técnico virtual para revisar logs y diagnosticar crasheos.
 - [x] **Ecosistema de Mods Automático:** Búsqueda e instalación in-panel de CurseForge (Mods, Plugins, Datapacks y Server Packs).
 - [x] **Soporte Multimotor:** Compatibilidad nativa con ecosistemas Java y Bedrock.
-- [ ] **Acceso Compartido 2.0:** Mejorar el panel de invitados para dar permisos más granulares (ej: que un amigo pueda prender el server pero no borrar archivos o mandar comandos OP por consola).
+- [ ] **Acceso Compartido 2.0:** Mejorar el panel de invitados para dar permisos más granulares.
 - [ ] **Sistema de Clonación de Nodos:** Terminar la función para duplicar servidores de prueba con un solo clic.
 
 ### FASE 3: Monetización, UX y Legal (v1.0) 🎯
-- [ ] **Perfil de Usuario Avanzado:** Nuevos campos para agregar información extra (Discord, país, etc.).
-- [ ] **Hub de Facturación (Billing):** Integración de un sistema tipo "Checkout" para que el cliente pueda cambiar de plan (Upgrade/Downgrade), agregar o actualizar su tarjeta de crédito y ver sus últimos pagos directamente desde su perfil.
-- [ ] **Estructura Legal y Derechos:** Agregar términos y condiciones, contratos, revisar derechos de autor, patentes y establecer esquemas de licencias (permisiva, copyleft, etc.).
-- [ ] **Frontend Footer:** Desarrollar pie de página con datos corporativos, redes sociales y accesos legales.
+- [ ] **Perfil de Usuario Avanzado:** Nuevos campos para agregar información extra.
+- [ ] **Hub de Facturación (Billing):** Integración de un sistema tipo "Checkout" para gestión de planes y pagos.
+- [ ] **Estructura Legal y Derechos:** Agregar términos y condiciones, contratos y políticas de privacidad.
+- [ ] **Frontend Footer:** Desarrollar pie de página con datos corporativos y accesos legales.
 - [ ] Lanzamiento oficial **ProServers v1.0** 🚀.
 
 ---
-<p align="center">Desarrollado con 💻 y café por Maximo Rodas.</p>
+<p align="center">Desarrollado con 💻, noches sin dormir y mucho café por Maximo Rodas en Misiones, Argentina.</p>
