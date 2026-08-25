@@ -19,7 +19,7 @@ El proyecto ha evolucionado a la fase **v0.9 beta (Fase "El Imperio")**. Dejamos
 
 ## 🛠️ Arquitectura Tecnológica
 El sistema está diseñado bajo una arquitectura de microservicios robusta y moderna:
-*   ⚡ **Backend / Cerebro:** Node.js & Express (Daemon, APIs, WebSockets). Próxima capa de facturación en Laravel 11.
+*   ⚡ **Backend / Cerebro:** Node.js & Express (Daemon, APIs, WebSockets). Próxima capa de facturación en Laravel 13.
 *   🔒 **Seguridad y DB:** Firebase Auth (Identidad) + MongoDB (Nodos y Usuarios) + SQL Server (Facturación).
 *   🐳 **Infraestructura:** Dockerode (control absoluto de contenedores y límites de hardware).
 *   🌐 **Redes:** Playit.gg (Túneles TCP/UDP dinámicos) acoplados a cada nodo.
