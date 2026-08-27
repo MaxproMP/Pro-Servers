@@ -1,27 +1,45 @@
+# ==========================================
+# Dependencias y logs de paquetes
+# ==========================================
 node_modules/
 backend/node_modules/
 npm-debug.log
 yarn-error.log
 
+# ==========================================
 # Archivos de entorno y credenciales sensibles
+# ==========================================
 .env
 *.env
 firebase-adminsdk.json
 backend/firebase-adminsdk.json
 backend/services/mine_analizer.py
 
-# Directorios de compilación, temporales y bases de datos locales
+# ==========================================
+# Servidores de Minecraft, Mundos y Almacenamiento
+# ==========================================
+servers/
+backend/servers/
+data/
+backend/data/
+*.zip
+*.jar
+
+# ==========================================
+# Directorios de compilación, temporales y SO
+# ==========================================
 dist/
 build/
 .DS_Store
-data/database.json
 *.sqlite
 
-# Logs
+# ==========================================
+# Logs y Storage
+# ==========================================
 storage/*.key
 storage/logs/*.log
 
-# Proyecto de la facultad (Laravel)
-proservers-billing/
-# Proyecto de la facultad (Laravel)
-proservers-billing/
+# ==========================================
+# Proyecto de la facultad (Laravel / Sub-repositorio)
+# ==========================================
+proservers-billing/ 
