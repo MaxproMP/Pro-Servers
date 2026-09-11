@@ -253,7 +253,7 @@
         const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
         const auth = getAuth(app);
         
-        const API_URL = ''; 
+        const API_URL = window.location.protocol + '//' + window.location.hostname + ':3000'; 
         
         window.userPlan = { name: 'Plan Redstone', maxServers: 1, ram: '8GB', ramNum: 8, fileManager: false };
 

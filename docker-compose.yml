@@ -2,6 +2,7 @@ services:
   frontend:
     build: ./frontend
     container_name: minecraft-panel-frontend
+    restart: unless-stopped
     ports:
       - "8081:80"
     networks:
@@ -12,6 +13,7 @@ services:
   backend:
     build: ./backend
     container_name: minecraft-panel-backend
+    restart: unless-stopped
     ports:
       - "3000:3000"
     env_file:
@@ -21,6 +23,28 @@ services:
       - ./data:/usr/src/app/data
       - ./servers:/usr/src/app/servers
       - ./backend/firebase-adminsdk.json:/usr/src/app/firebase-adminsdk.json
+    networks:
+      - minecraft-net
+
+  laravel-api:
+    build: ./proservers-billing
+    container_name: minecraft-panel-laravel
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./proservers-billing:/app
+    networks:
+      - minecraft-net
+
+  discord-bot:
+    build: ./proservers-bot
+    container_name: minecraft-discord-bot
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./proservers-billing/.env
     networks:
       - minecraft-net
 

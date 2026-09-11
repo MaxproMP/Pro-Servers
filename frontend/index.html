@@ -408,12 +408,13 @@
 
         window.userPlan = { name: 'Plan Redstone', maxServers: 1, ram: '8GB', ramNum: 8, fileManager: false };
         let isSharedServer = false;
+        let guestPermissions = [];
         let clientSocket = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             feather.replace();
 
-            const API_URL = ''; 
+            const API_URL = window.location.protocol + '//' + window.location.hostname + ':3000'; 
             
             const authContainer = document.getElementById('auth-container');
             const dashboard = document.getElementById('main-dashboard');
@@ -451,6 +452,11 @@
                         try {
                             const config = JSON.parse(selectedServer);
                             isSharedServer = config.isShared === true; 
+                            if(isSharedServer) {
+                                guestPermissions = config.guestPermissions || [];
+                            } else {
+                                guestPermissions = ['all'];
+                            }
                             
                             const token = await user.getIdToken();
                             
@@ -561,6 +567,7 @@
             });
 
             window.uploadLocalModpack = async () => {
+                if(!guestPermissions.includes('all') && !guestPermissions.includes('files')) return alert("No tienes permisos para modificar archivos.");
                 const fileInput = document.getElementById('modpackFileInput');
                 if (!fileInput.files[0]) return;
                 const file = fileInput.files[0];
@@ -581,6 +588,7 @@
             };
 
             window.promptCloudUrl = async () => {
+                if(!guestPermissions.includes('all') && !guestPermissions.includes('files')) return alert("No tienes permisos para modificar archivos.");
                 const url = prompt("Pega el enlace directo de descarga de tu Modpack (Google Drive, OneDrive, Mediafire, etc.):");
                 if(!url) return;
                 const config = JSON.parse(sessionStorage.getItem('selectedServer'));
@@ -1118,6 +1126,17 @@
                     }
                     
                     if (id === 'console-panel') {
+                        if(!guestPermissions.includes('all') && !guestPermissions.includes('console')) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16 flex flex-col items-center justify-center border border-red-900/50 bg-[#1a0a0a]">
+                                    <i data-feather="shield-off" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Sin Permisos</h3>
+                                    <p class="text-gray-400 mt-3 max-w-md">El dueño de este servidor no te ha dado permisos para ver o usar la consola.</p>
+                                </div>`;
+                            feather.replace();
+                            return;
+                        }
+
                         panel.innerHTML = `
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
                                 <div class="content-panel flex flex-col h-[600px]">
@@ -1174,14 +1193,19 @@
                                 list.innerHTML = '';
                                 if (data.players && data.players.length > 0) {
                                     data.players.forEach(p => {
+                                        let banBtns = '';
+                                        if(guestPermissions.includes('all') || guestPermissions.includes('console')) {
+                                            banBtns = `
+                                                <div class="mt-4 flex justify-center gap-2">
+                                                    <button onclick="window.managePlayer('kick', '${p.name}')" class="bg-yellow-600 px-3 py-1 rounded text-xs font-bold text-white">Kick</button>
+                                                    <button onclick="window.managePlayer('ban', '${p.name}')" class="bg-red-600 px-3 py-1 rounded text-xs font-bold text-white">Ban</button>
+                                                </div>`;
+                                        }
                                         list.innerHTML += `
                                             <div class="player-card">
                                                 <img src="${p.avatar}" class="player-avatar">
                                                 <p class="font-bold text-white">${p.name}</p>
-                                                <div class="mt-4 flex justify-center gap-2">
-                                                    <button onclick="window.managePlayer('kick', '${p.name}')" class="bg-yellow-600 px-3 py-1 rounded text-xs font-bold text-white">Kick</button>
-                                                    <button onclick="window.managePlayer('ban', '${p.name}')" class="bg-red-600 px-3 py-1 rounded text-xs font-bold text-white">Ban</button>
-                                                </div>
+                                                ${banBtns}
                                             </div>`;
                                     });
                                 } else { list.innerHTML = '<p class="col-span-full text-center text-gray-500">No hay jugadores conectados.</p>'; }
@@ -1211,6 +1235,17 @@
                                     <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Acceso Denegado</h3>
                                     <p class="text-gray-400 mt-3 max-w-md">El Gestor de Archivos y la descarga de Modpacks masivos requieren recursos de almacenamiento avanzados. Actualiza al <b class="text-yellow-500">Plan Oro</b> o superior para desbloquear esta función.</p>
                                     <button onclick="window.location.href='planes.html'" class="mt-8 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-8 rounded-lg transition-colors uppercase text-sm tracking-wider shadow-[0_0_15px_rgba(202,138,4,0.3)] text-black">Mejorar a Plan Oro</button>
+                                </div>`;
+                            feather.replace();
+                            return;
+                        }
+
+                        if(!guestPermissions.includes('all') && !guestPermissions.includes('files')) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16 flex flex-col items-center justify-center border border-red-900/50 bg-[#1a0a0a]">
+                                    <i data-feather="shield-off" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Sin Permisos</h3>
+                                    <p class="text-gray-400 mt-3 max-w-md">El dueño de este servidor no te ha dado permisos para ver o modificar los archivos.</p>
                                 </div>`;
                             feather.replace();
                             return;
@@ -1292,6 +1327,17 @@
                         window.loadFiles('/');
                     }
                     if (id === 'mods-panel') {
+                        if(!guestPermissions.includes('all') && !guestPermissions.includes('files')) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16 flex flex-col items-center justify-center border border-red-900/50 bg-[#1a0a0a]">
+                                    <i data-feather="shield-off" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Sin Permisos</h3>
+                                    <p class="text-gray-400 mt-3 max-w-md">El dueño de este servidor no te ha dado permisos para instalar mods.</p>
+                                </div>`;
+                            feather.replace();
+                            return;
+                        }
+
                         panel.innerHTML = `
                             <div class="content-panel">
                                 <div class="flex justify-between items-center mb-4">
@@ -1500,6 +1546,17 @@
                     }
 
                     if (id === 'nube-panel') {
+                        if(!guestPermissions.includes('all') && !guestPermissions.includes('files')) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16 flex flex-col items-center justify-center border border-red-900/50 bg-[#1a0a0a]">
+                                    <i data-feather="shield-off" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Sin Permisos</h3>
+                                    <p class="text-gray-400 mt-3 max-w-md">No tienes permiso para gestionar las copias de seguridad de este servidor.</p>
+                                </div>`;
+                            feather.replace();
+                            return;
+                        }
+
                         panel.innerHTML = `
                             <div class="content-panel">
                                 <h3 class="text-xl mb-4 font-bold text-green-500 flex items-center gap-2"><i data-feather="cloud"></i> Copias de Seguridad</h3>
@@ -1530,6 +1587,25 @@
                     }
 
                     if (id === 'settings-panel') {
+                        if(!guestPermissions.includes('all') && !guestPermissions.includes('settings')) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16 flex flex-col items-center justify-center border border-red-900/50 bg-[#1a0a0a]">
+                                    <i data-feather="shield-off" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Sin Permisos</h3>
+                                    <p class="text-gray-400 mt-3 max-w-md">No tienes permiso para modificar la configuración técnica de este servidor.</p>
+                                </div>`;
+                            feather.replace();
+                            return;
+                        }
+
+                        // VALIDAR PLAN PARA LA CLONACIÓN
+                        const pNameCheck = window.userPlan.name.toLowerCase();
+                        const canClone = pNameCheck.includes('diamante') || pNameCheck.includes('netherite') || pNameCheck.includes('ghost') || pNameCheck.includes('enterprise') || pNameCheck.includes('ceo') || pNameCheck.includes('god');
+
+                        let btnClonarHtml = canClone 
+                            ? `<button onclick="window.clonarServidor()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-lg transition-colors whitespace-nowrap text-xs shadow-[0_0_15px_rgba(147,51,234,0.4)] uppercase w-full md:w-auto"><i data-feather="copy" class="inline w-3 h-3 mr-1"></i> Clonar Servidor</button>`
+                            : `<button onclick="window.location.href='planes.html'" class="bg-[#222] border border-purple-500/30 text-purple-400 hover:bg-purple-900/30 font-bold py-2.5 px-6 rounded-lg transition-colors whitespace-nowrap text-xs uppercase w-full md:w-auto"><i data-feather="lock" class="inline w-3 h-3 mr-1"></i> Requiere Plan Diamante</button>`;
+
                         panel.innerHTML = `
                             <div class="content-panel">
                                 <h3 class="text-xl mb-6 font-bold text-green-500">Ajustes Avanzados del Servidor</h3>
@@ -1582,22 +1658,22 @@
 
                                 <div class="border border-red-900 bg-[#1a0505] rounded-xl p-6 relative overflow-hidden shadow-2xl">
                                     <div class="absolute top-0 left-0 w-full h-1 bg-red-600"></div>
-                                    <h4 class="text-red-500 font-bold text-lg mb-4 flex items-center gap-2"><i data-feather="alert-triangle"></i> Zona de Peligro</h4>
+                                    <h4 class="text-red-500 font-bold text-lg mb-4 flex items-center gap-2"><i data-feather="alert-triangle"></i> Zona de Peligro & Herramientas Avanzadas</h4>
                                     
                                     <div class="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-red-900/50 pb-6 mb-6">
                                         <div>
                                             <h5 class="text-white font-bold mb-1">Reseteo de Red (Playit.gg)</h5>
                                             <p class="text-xs text-gray-400 max-w-lg">Si perdiste acceso a tu cuenta de Playit o la IP se bugeó, esto destruirá el túnel actual y generará un link de vinculación virgen.</p>
                                         </div>
-                                        <button onclick="window.resetPlayitNetwork()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg transition-colors whitespace-nowrap text-xs shadow-[0_0_15px_rgba(220,38,38,0.4)] uppercase">Resetear Red</button>
+                                        <button onclick="window.resetPlayitNetwork()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg transition-colors whitespace-nowrap text-xs shadow-[0_0_15px_rgba(220,38,38,0.4)] uppercase w-full md:w-auto">Resetear Red</button>
                                     </div>
 
                                     <div class="flex flex-col md:flex-row justify-between items-center gap-6">
                                         <div>
-                                            <h5 class="text-white font-bold mb-1 flex items-center gap-2">Clonar Nodo <span class="bg-purple-600 text-[9px] px-2 py-0.5 rounded font-bold uppercase">PREMIUM</span></h5>
+                                            <h5 class="text-white font-bold mb-1 flex items-center gap-2">Clonar Nodo ${canClone ? '' : '<span class="bg-purple-600 text-[9px] px-2 py-0.5 rounded font-bold uppercase">PREMIUM</span>'}</h5>
                                             <p class="text-xs text-gray-400 max-w-lg">Duplica este servidor completo (archivos y mundo) en un nuevo contenedor. Ideal para entornos de pruebas. Requiere ranuras libres en tu plan.</p>
                                         </div>
-                                        <button onclick="alert('Sistema de clonación en desarrollo para la V0.9 final.')" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-lg transition-colors whitespace-nowrap text-xs shadow-[0_0_15px_rgba(147,51,234,0.4)] uppercase">Clonar Servidor</button>
+                                        ${btnClonarHtml}
                                     </div>
                                 </div>
                             </div>`;
@@ -1649,6 +1725,36 @@
                                 window.showPanel('home-panel');
                             } catch(e) { alert("Error al regenerar el mundo."); }
                         };
+
+                        window.clonarServidor = async () => {
+                            if(!confirm("⚠️ Vamos a crear un clon exacto de este servidor. Se consumirá 1 slot de tu plan actual.\n\n¿Deseas proceder?")) return;
+                            try {
+                                document.body.innerHTML += `<div id="clone-loader" class="fixed top-0 left-0 w-full h-full bg-black/90 z-[9999] flex flex-col justify-center items-center">
+                                    <i data-feather="loader" class="animate-spin text-purple-500 w-16 h-16 mb-4"></i>
+                                    <h2 class="text-2xl text-purple-400 font-bold font-['Cinzel'] tracking-widest">CLONANDO NODO</h2>
+                                    <p class="text-gray-400 text-sm mt-2">Copiando archivos y configurando contenedor...</p>
+                                </div>`;
+                                feather.replace();
+
+                                const t = await auth.currentUser.getIdToken();
+                                const res = await fetch(`${API_URL}/api/project/clone`, { 
+                                    method: 'POST', 
+                                    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t}, 
+                                    body: JSON.stringify({...bodyAuth}) 
+                                });
+                                
+                                const data = await res.json();
+                                if(!res.ok) throw new Error(data.error);
+
+                                alert(`✅ ¡Servidor Clonado Exitosamente!\n\nSe ha creado el proyecto "${data.server.projectName}". Serás redirigido para gestionarlo.`);
+                                sessionStorage.setItem('selectedServer', JSON.stringify(data.server));
+                                window.location.reload();
+
+                            } catch(e) { 
+                                document.getElementById('clone-loader')?.remove();
+                                alert("❌ Error al clonar: " + e.message); 
+                            }
+                        };
                     }
 
                     if (id === 'compartidos-panel') {
@@ -1657,33 +1763,68 @@
                                 <div class="content-panel text-center py-16">
                                     <i data-feather="users" class="w-16 h-16 text-blue-500 mx-auto mb-4 opacity-50"></i>
                                     <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase mb-2">Servidor Compartido</h3>
-                                    <p class="text-gray-400 max-w-md mx-auto">Eres un invitado en este servidor. Tienes acceso a la consola y al encendido del nodo, pero solo el propietario original puede gestionar las invitaciones o eliminarlo.</p>
+                                    <p class="text-gray-400 max-w-md mx-auto mb-4">Eres un invitado en este servidor. Tus permisos están limitados por el propietario.</p>
+                                    <div class="bg-[#111] inline-block p-4 rounded-lg border border-[#333] text-left mx-auto">
+                                        <p class="text-xs text-gray-500 uppercase font-bold mb-2">Tus Permisos Asignados:</p>
+                                        <ul class="text-sm text-green-400 space-y-1">
+                                            ${guestPermissions.includes('all') || guestPermissions.includes('power') ? '<li><i data-feather="check" class="w-3 h-3 inline"></i> Encender / Apagar</li>' : '<li class="text-red-400"><i data-feather="x" class="w-3 h-3 inline"></i> Encender / Apagar</li>'}
+                                            ${guestPermissions.includes('all') || guestPermissions.includes('console') ? '<li><i data-feather="check" class="w-3 h-3 inline"></i> Leer y usar Consola</li>' : '<li class="text-red-400"><i data-feather="x" class="w-3 h-3 inline"></i> Leer y usar Consola</li>'}
+                                            ${guestPermissions.includes('all') || guestPermissions.includes('files') ? '<li><i data-feather="check" class="w-3 h-3 inline"></i> Subir / Borrar Archivos</li>' : '<li class="text-red-400"><i data-feather="x" class="w-3 h-3 inline"></i> Subir / Borrar Archivos</li>'}
+                                            ${guestPermissions.includes('all') || guestPermissions.includes('settings') ? '<li><i data-feather="check" class="w-3 h-3 inline"></i> Cambiar Configuración / Wipe</li>' : '<li class="text-red-400"><i data-feather="x" class="w-3 h-3 inline"></i> Cambiar Configuración / Wipe</li>'}
+                                        </ul>
+                                    </div>
                                 </div>`;
                         } else {
-                            let sharedListHtml = (config.sharedWith || []).map(email => `
-                                <div class="flex justify-between items-center bg-[#111] border border-[#333] p-3 rounded-lg mb-2 shadow">
-                                    <span class="text-sm text-gray-300 font-bold flex items-center gap-2"><i data-feather="user" class="w-4 h-4 text-blue-400"></i> ${email}</span>
-                                    <button onclick="window.unshareServer('${email}')" class="text-red-500 hover:text-red-400 bg-red-900/20 p-2 rounded transition-colors" title="Revocar Acceso">
-                                        <i data-feather="x-circle" class="w-4 h-4"></i>
-                                    </button>
+                            let sharedListHtml = (config.sharedWith || []).map(entry => {
+                                const email = typeof entry === 'string' ? entry : entry.email;
+                                const perms = typeof entry === 'string' ? ['power', 'console'] : entry.permissions;
+                                
+                                const pPower = perms.includes('power') ? 'text-green-400' : 'text-gray-600';
+                                const pConsole = perms.includes('console') ? 'text-green-400' : 'text-gray-600';
+                                const pFiles = perms.includes('files') ? 'text-green-400' : 'text-gray-600';
+                                const pSettings = perms.includes('settings') ? 'text-green-400' : 'text-gray-600';
+
+                                return `
+                                <div class="bg-[#111] border border-[#333] p-4 rounded-lg mb-3 shadow">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm text-white font-bold flex items-center gap-2"><i data-feather="user" class="w-4 h-4 text-blue-400"></i> ${email}</span>
+                                        <button onclick="window.unshareServer('${email}')" class="text-red-500 hover:text-red-400 bg-red-900/20 p-2 rounded transition-colors text-xs font-bold" title="Revocar Todo">
+                                            Eliminar Invitado
+                                        </button>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-[#222]">
+                                        <span class="text-[10px] bg-[#1a1a1a] px-2 py-1 rounded border border-[#333] ${pPower}" title="Energía"><i data-feather="power" class="w-3 h-3 inline"></i> Poder</span>
+                                        <span class="text-[10px] bg-[#1a1a1a] px-2 py-1 rounded border border-[#333] ${pConsole}" title="Consola"><i data-feather="terminal" class="w-3 h-3 inline"></i> Consola</span>
+                                        <span class="text-[10px] bg-[#1a1a1a] px-2 py-1 rounded border border-[#333] ${pFiles}" title="Archivos"><i data-feather="folder" class="w-3 h-3 inline"></i> Archivos</span>
+                                        <span class="text-[10px] bg-[#1a1a1a] px-2 py-1 rounded border border-[#333] ${pSettings}" title="Configuración"><i data-feather="settings" class="w-3 h-3 inline"></i> Config</span>
+                                    </div>
                                 </div>
-                            `).join('') || '<p class="text-xs text-gray-500 text-center py-4 bg-[#111] rounded-lg border border-[#222]">No has invitado a nadie aún.</p>';
+                            `}).join('') || '<p class="text-xs text-gray-500 text-center py-4 bg-[#111] rounded-lg border border-[#222]">No has invitado a nadie aún.</p>';
 
                             panel.innerHTML = `
                                 <div class="content-panel">
-                                    <h3 class="text-xl mb-6 font-bold text-green-500 flex items-center gap-2"><i data-feather="share-2"></i> Acceso Compartido (Sub-usuarios)</h3>
+                                    <h3 class="text-xl mb-6 font-bold text-green-500 flex items-center gap-2"><i data-feather="share-2"></i> Acceso Compartido 2.0 (Permisos Granulares)</h3>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div class="bg-[#161616] p-6 rounded-xl border border-[#333]">
-                                            <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-wider text-blue-400">Invitar Colaborador</h4>
-                                            <p class="text-xs text-gray-400 mb-6">Ingresa el correo electrónico de un usuario registrado en Professional Servers. Podrá encender, apagar y ver la consola de tu servidor sin límites.</p>
-                                            <div class="flex gap-2">
-                                                <input type="email" id="share-email-input" class="bg-[#0a0a0a] border border-[#444] text-white p-3 rounded-lg flex-1 outline-none focus:border-blue-500 text-sm transition-colors" placeholder="correo@amigo.com">
-                                                <button id="btn-share" onclick="window.shareServer()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 rounded-lg transition-colors text-xs uppercase tracking-wider shadow-lg shadow-blue-900/50">Invitar</button>
+                                            <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-wider text-blue-400">Invitar Nuevo Colaborador</h4>
+                                            <p class="text-xs text-gray-400 mb-6">Ingresa el correo y marca los permisos que quieres darle sobre este nodo.</p>
+                                            
+                                            <div class="mb-4">
+                                                <input type="email" id="share-email-input" class="w-full bg-[#0a0a0a] border border-[#444] text-white p-3 rounded-lg outline-none focus:border-blue-500 text-sm transition-colors mb-3" placeholder="correo@amigo.com">
+                                                
+                                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-300 bg-[#0a0a0a] p-3 rounded-lg border border-[#222]">
+                                                    <label class="flex items-center gap-2 cursor-pointer hover:text-white"><input type="checkbox" id="perm-power" checked class="accent-blue-500"> Encender/Apagar</label>
+                                                    <label class="flex items-center gap-2 cursor-pointer hover:text-white"><input type="checkbox" id="perm-console" checked class="accent-blue-500"> Usar Consola</label>
+                                                    <label class="flex items-center gap-2 cursor-pointer hover:text-white"><input type="checkbox" id="perm-files" class="accent-blue-500"> Gestor Archivos</label>
+                                                    <label class="flex items-center gap-2 cursor-pointer hover:text-white"><input type="checkbox" id="perm-settings" class="accent-blue-500"> Config / Reset</label>
+                                                </div>
                                             </div>
+
+                                            <button id="btn-share" onclick="window.shareServer()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg transition-colors text-xs uppercase tracking-wider shadow-lg shadow-blue-900/50">Enviar Invitación</button>
                                         </div>
                                         <div class="bg-[#161616] p-6 rounded-xl border border-[#333]">
-                                            <h4 class="text-sm font-bold text-white mb-4 uppercase tracking-wider text-green-400">Usuarios con Acceso</h4>
-                                            <div id="shared-list-container" class="max-h-[200px] overflow-y-auto pr-2">
+                                            <h4 class="text-sm font-bold text-white mb-4 uppercase tracking-wider text-green-400">Usuarios Activos en este Nodo</h4>
+                                            <div id="shared-list-container" class="max-h-[300px] overflow-y-auto pr-2">
                                                 ${sharedListHtml}
                                             </div>
                                         </div>
@@ -1699,9 +1840,17 @@
                             
                             if(!email) return alert("Por favor ingresa un correo válido.");
                             if(email === auth.currentUser.email) return alert("No puedes invitarte a ti mismo.");
+
+                            const perms = [];
+                            if(document.getElementById('perm-power').checked) perms.push('power');
+                            if(document.getElementById('perm-console').checked) perms.push('console');
+                            if(document.getElementById('perm-files').checked) perms.push('files');
+                            if(document.getElementById('perm-settings').checked) perms.push('settings');
+
+                            if(perms.length === 0) return alert("Debes asignarle al menos 1 permiso.");
                             
                             btn.disabled = true;
-                            btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i>';
+                            btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i> Procesando...';
                             feather.replace();
 
                             try {
@@ -1709,12 +1858,12 @@
                                 const res = await fetch(API_URL + '/api/project/share', {
                                     method: 'POST',
                                     headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
-                                    body: JSON.stringify({serverId: config.id, emailToShare: email})
+                                    body: JSON.stringify({serverId: config.id, emailToShare: email, permissions: perms})
                                 });
                                 
                                 const contentType = res.headers.get("content-type");
                                 if (!contentType || !contentType.includes("application/json")) {
-                                    throw new Error("El servidor está caído o bloqueado por Cloudflare (Error 502/403).");
+                                    throw new Error("El servidor está caído o bloqueado por Cloudflare.");
                                 }
                                 
                                 const data = await res.json();
@@ -1723,17 +1872,17 @@
                                     sessionStorage.setItem('selectedServer', JSON.stringify(config));
                                     emailInput.value = '';
                                     window.showPanel('compartidos-panel');
-                                    alert(`¡Excelente! El usuario ${email} ahora tiene acceso a tu servidor.`);
+                                    alert(`¡Excelente! El usuario ${email} ahora tiene acceso según los permisos asignados.`);
                                 } else { throw new Error(data.error); }
                             } catch(e) { 
                                 alert("Error al invitar: " + e.message); 
                                 btn.disabled = false;
-                                btn.innerText = 'Invitar';
+                                btn.innerText = 'Enviar Invitación';
                             }
                         };
 
                         window.unshareServer = async (email) => {
-                            if(!confirm(`¿Estás seguro de que quieres revocar el acceso a ${email}? Ya no podrá gestionar el servidor.`)) return;
+                            if(!confirm(`¿Estás seguro de que quieres EXPULSAR a ${email} del servidor?`)) return;
                             try {
                                 const token = await auth.currentUser.getIdToken();
                                 const res = await fetch(API_URL + '/api/project/unshare', {
@@ -1741,11 +1890,6 @@
                                     headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
                                     body: JSON.stringify({serverId: config.id, emailToUnshare: email})
                                 });
-                                
-                                const contentType = res.headers.get("content-type");
-                                if (!contentType || !contentType.includes("application/json")) {
-                                    throw new Error("El servidor está caído o bloqueado por Cloudflare (Error 502/403).");
-                                }
                                 
                                 const data = await res.json();
                                 if(data.success) {
