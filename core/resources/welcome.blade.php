@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Servers | Hosting de Alto Rendimiento</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('img/favicon.ico') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #0a0a0a; color: white; min-height: 100vh; overflow-x: hidden; }
+        .bg-glow { position: absolute; top: -20%; left: 50%; transform: translateX(-50%); width: 80vw; height: 50vh; background: radial-gradient(circle, rgba(76,175,80,0.15) 0%, rgba(10,10,10,0) 70%); z-index: -1; }
+        .glass-nav { background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <!-- NAVBAR -->
+    <nav class="glass-nav fixed w-full top-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('img/favicon.ico') }}" alt="Logo" class="w-10 h-10 drop-shadow-[0_0_10px_rgba(76,175,80,0.5)]" onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                <span class="font-['Press_Start_2P'] text-green-500 text-sm md:text-base hidden md:block">ProServers</span>
+            </div>
+            <div class="flex items-center gap-6">
+                <a href="/planes" class="text-sm font-bold text-gray-300 hover:text-white uppercase tracking-wider transition-colors">Planes</a>
+                <a href="/panel" class="bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-6 py-2.5 rounded-lg uppercase tracking-wider transition-colors shadow-[0_0_15px_rgba(76,175,80,0.3)]">
+                    Iniciar Sesión
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <main class="max-w-7xl mx-auto px-6 pt-40 pb-20 text-center flex flex-col items-center justify-center min-h-[85vh]">
+        <span class="bg-green-900/30 text-green-400 border border-green-800/50 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest mb-6">
+            Infraestructura Cloud V0.9
+        </span>
+        <h1 class="text-5xl md:text-7xl font-bold font-['Cinzel'] tracking-wider mb-6 leading-tight">
+            Potencia Bruta para <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">Tu Comunidad</span>
+        </h1>
+        <p class="text-gray-400 text-sm md:text-base max-w-2xl mx-auto mb-10 leading-relaxed">
+            Hosting premium de Minecraft y GTA V Roleplay. Servidores alojados en hardware físico dedicado con protección Anti-DDoS de 2Tbps y almacenamiento NVMe.
+        </p>
+        
+        <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+            <a href="/planes" class="bg-white hover:bg-gray-200 text-black text-sm font-bold px-8 py-4 rounded-xl uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
+                Ver Planes de Alojamiento <i data-feather="arrow-right" class="w-4 h-4"></i>
+            </a>
+            <a href="/panel" class="bg-[#111] hover:bg-[#222] border border-[#333] text-white text-sm font-bold px-8 py-4 rounded-xl uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
+                <i data-feather="terminal" class="w-4 h-4 text-green-400"></i> Panel de Control
+            </a>
+        </div>
+    </main>
+
+    <!-- FEATURES -->
+    <section class="border-t border-[#111] bg-[#050505] py-20">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-[#0a0a0a] border border-[#161616] p-8 rounded-2xl text-center">
+                <i data-feather="shield" class="w-12 h-12 text-blue-500 mx-auto mb-4"></i>
+                <h3 class="text-lg font-bold text-white mb-2 uppercase tracking-wider">Protección Total</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">Mitigación DDoS L7 automática. Tu servidor nunca estará offline por ataques externos.</p>
+            </div>
+            <div class="bg-[#0a0a0a] border border-[#161616] p-8 rounded-2xl text-center">
+                <i data-feather="zap" class="w-12 h-12 text-green-500 mx-auto mb-4"></i>
+                <h3 class="text-lg font-bold text-white mb-2 uppercase tracking-wider">Cero Lag Garantizado</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">Nodos optimizados para single-thread performance, ideales para Minecraft y FiveM.</p>
+            </div>
+            <div class="bg-[#0a0a0a] border border-[#161616] p-8 rounded-2xl text-center">
+                <i data-feather="cpu" class="w-12 h-12 text-purple-500 mx-auto mb-4"></i>
+                <h3 class="text-lg font-bold text-white mb-2 uppercase tracking-wider">Mine AI Integrada</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">El único panel del mercado con un analista de IA que lee tus logs y soluciona errores de mods.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="border-t border-[#111] py-8 text-center bg-[#050505]">
+        <p class="text-xs text-gray-600 font-bold uppercase tracking-widest">© 2026 Professional Servers. By @Maxpro.</p>
+    </footer>
+
+    <script>
+        feather.replace();
+    </script>
+</body>
+</html>

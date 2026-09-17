@@ -2,8 +2,8 @@
 
 # 🚀 ProServers | Cloud & Game Hosting Automation
 
-![Status](https://img.shields.io/badge/Status-Completado%20v0.9-success?style=for-the-badge)
-![Version](https://img.shields.io/badge/Versión-v0.9_beta_Final-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Migración%20Híbrida-warning?style=for-the-badge)
+![Version](https://img.shields.io/badge/Versión-v0.9.5_Beta-blue?style=for-the-badge)
 ![Target](https://img.shields.io/badge/Meta-v1.0_Production-success?style=for-the-badge)
 
 *Plataforma automatizada de despliegue, gestión y auditoría de servidores de alto rendimiento.*
@@ -13,18 +13,20 @@
 ---
 
 ## 📌 Estado Actual del Proyecto
-El proyecto ha completado oficialmente la fase **v0.9 beta (Fase "El Imperio")**. Dejamos de ser solo un script de despliegue para convertirnos en una infraestructura en la nube completa con arquitectura de microservicios híbrida. Hemos implementado el **Panel CEO (God Mode)**, auditoría en tiempo real, control estricto de recursos, pasarelas de pago (AstroPay y LemonCash), **Acceso Compartido 2.0 (Permisos Granulares)** y el **Sistema de Clonación de Nodos**. Listos para el despegue comercial 🎯.
+El proyecto ha superado la fase v0.9 y actualmente se encuentra en la **v0.9.5 (El Punto de Inflexión)**. Debido a la necesidad de escalar comercialmente y mantener una seguridad empresarial, se tomó la decisión crítica de frenar el lanzamiento de la v1.0 para cambiar radicalmente la arquitectura. Dejamos atrás el monolito para convertirnos en un **Monorepo Híbrido**, separando el cerebro financiero (Laravel) del músculo de infraestructura (Node.js). Todo orquestado bajo un proxy Nginx, preparando el terreno definitivo para el despegue comercial 🎯.
 
 ---
 
-## 🛠️ Arquitectura Tecnológica
-El sistema está diseñado bajo una arquitectura de microservicios robusta y moderna:
-*   ⚡ **Backend / Cerebro:** Node.js & Express (Daemon, APIs, WebSockets, pasarelas de pago y webhooks). Capa de autenticación de usuarios en Laravel 13.
-*   🔒 **Seguridad y DB:** Firebase Auth (Identidad) + MongoDB (Nodos, Permisos y Usuarios) + Azure SQL Server (Facturación y Membresías).
-*   🐳 **Infraestructura:** Dockerode (control absoluto de contenedores, límites de hardware y clonación).
-*   🌐 **Redes:** Playit.gg (Túneles TCP/UDP dinámicos) acoplados a cada nodo con reseteo de red.
-*   🤖 **Inteligencia Artificial:** Groq API integrada para "Mine AI" (Análisis de logs y autodiagnóstico en tiempo real).
-*   ☁️ **Nube:** Integración nativa con Google Drive y OneDrive para backups automatizados.
+## 🛠️ Arquitectura Tecnológica (Monorepo v0.9.5)
+El sistema está diseñado bajo una arquitectura de microservicios robusta y separada por dominios de responsabilidad:
+*   🧠 **El Cerebro (API & Frontend):** Laravel (PHP 8.2) + Nginx + Blade. Se encarga del enrutamiento, la autenticación, vistas web, integraciones de APIs externas (Groq, CurseForge) y pasarelas de pago.
+*   ⚙️ **El Demonio (Infraestructura):** Node.js & Express + Socket.io. Un microservicio aislado y protegido que solo obedece a Laravel. Tiene el control absoluto de Dockerode, gestión de archivos masivos (I/O) y WebSockets para las consolas en vivo.
+*   🔒 **Seguridad y Bases de Datos:** 
+    *   **Microsoft SQL Server (Azure):** Base de datos relacional estricta para Facturación, Membresías y Perfiles de Usuario.
+    *   **MongoDB Atlas:** Almacenamiento rápido para logs, auditorías y estados de los nodos.
+    *   **Firebase Auth:** Emisión de tokens JWT de identidad verificados en ambas capas.
+*   🌐 **Redes:** Playit.gg (Túneles TCP/UDP dinámicos) acoplados a cada nodo de Docker con reseteo de red.
+*   🤖 **Inteligencia Artificial:** API de Groq integrada nativamente para "Mine AI" (Análisis de logs y autodiagnóstico técnico en tiempo real).
 
 ---
 
@@ -33,8 +35,9 @@ El nacimiento de ProServers no fue corporativo, sino académico y lleno de anéc
 
 *   **v0.0 Pre-Alpha (2024) - "El Proyecto de Facultad":** Todo nació a las apuradas en el primer año del terciario. La idea original iba a ser física junto a un compañero, pero fracasó. Para salvar la nota, hubo una fusión obligada con otro grupo. Las primeras pruebas de despliegue fueron un caos de infraestructura: se intentó orquestar en AWS con Jenkins y falló estrepitosamente.
 *   **v0.1 a v0.4 Beta (2025/2026) - "El Camino Solo y la Presentación":** Ya en segundo año de la carrera de Técnico Superior Analista de Sistemas, me di de baja del grupo original y empecé a desarrollarlo por mi cuenta. Llegó el día de presentar el proyecto ante **todos los profesores de la carrera**. Para testear y levantar el primer servidor a las apuradas, se usó **Kubernetes**. El backend fue un éxito total (¡el server de Minecraft prendió!), pero la interfaz... era un desastre hermoso. De tantos cambios locos intentando integrar sugerencias de GitHub Copilot a último minuto, lo único que funcionaba era la consola y el gestor de archivos. No podías ni prender ni apagar el servidor desde el panel, porque el botón había quedado literalmente trabado con este ícono: 🚫. 
-*   **v0.5 a v0.8 Beta - "La Plataforma":** Dejando atrás K8s, se migró a una integración limpia y oficial con la API de Docker local. Creación del primer panel web interactivo real. Se sumaron el Gestor de Archivos estable, la consola RCON y las métricas, aunque la UX seguía dependiendo de alertas nativas del navegador.
-*   **v0.9 Beta (Actual) - "El Imperio y la Independencia":** Reestructuración total y desarrollo 100% *in-house*. Se abandonó cualquier código de terceros. Desde el login hasta el dashboard modular (*Dark Theme / Glassmorphism* impulsado por Tailwind CSS), todo el frontend es de autoría propia. Además, se introdujo el Modo CEO, la *Zona de Hielo*, Mine AI, el sistema de facturación por AstroPay/Lemon, los permisos granulares de invitados y la clonación de nodos.
+*   **v0.5 a v0.8 Beta - "La Plataforma":** Dejando atrás K8s, se migró a una integración limpia y oficial con la API de Docker local. Creación del primer panel web interactivo real. Se sumaron el Gestor de Archivos estable, la consola RCON y las métricas.
+*   **v0.9 Beta - "El Imperio y la Independencia":** Reestructuración total y desarrollo 100% *in-house*. Se abandonó cualquier código de terceros. Se introdujo el Modo CEO, la *Zona de Hielo*, Mine AI, los permisos granulares de invitados y la clonación de nodos.
+*   **v0.9.5 Beta (Actual) - "El Punto de Inflexión Híbrido":** A un paso de la v1.0, el sistema exigía una profesionalización mayor. Se decidió que Node.js no podía manejar de forma segura la facturación de los clientes y el control de Docker al mismo tiempo. Se migró la plataforma a un Monorepo, introduciendo Laravel y Microsoft SQL Server como el "Cerebro" corporativo, delegando a Node.js la tarea exclusiva de "Demonio" de infraestructura.
 
 ---
 
@@ -44,25 +47,28 @@ El nacimiento de ProServers no fue corporativo, sino académico y lleno de anéc
 - [x] Arquitectura base de nodos y contenedores Docker.
 - [x] Daemon de Node.js para despliegue automático e inyección de variables.
 - [x] Gestor de archivos integrado y descarga de Modpacks masivos.
-- [x] Panel de control completo para usuarios finales (Consola RCON, Métricas, Staff).
+- [x] Panel de control completo para usuarios finales (Consola RCON, Métricas).
 
 ### FASE 2: Control Avanzado y Experiencia de Usuario (v0.9) ✅
-- [x] Integración definitiva con base de datos híbrida (MongoDB / SQL).
 - [x] **Panel Superadmin (CEO):** Visión global de hardware, ingresos y acceso espía a contenedores.
 - [x] **Sistema de Soporte en Vivo:** WebSockets para chat en tiempo real cliente-admin y roles de staff dedicados.
 - [x] **Seguridad Extrema (Zona de Hielo):** Suspensión total e instantánea de nodos y paneles de clientes morosos o baneados.
 - [x] **Mine AI Blindado:** Analista técnico virtual para revisar logs y diagnosticar crasheos.
-- [x] **Ecosistema de Mods Automático:** Búsqueda e instalación in-panel de CurseForge (Mods, Plugins, Datapacks y Server Packs).
-- [x] **Soporte Multimotor:** Compatibilidad nativa con ecosistemas Java y Bedrock.
-- [x] **Acceso Compartido 2.0:** Panel de invitados avanzado con permisos granulares personalizables (Poder, Consola, Archivos y Configuración).
-- [x] **Sistema de Clonación de Nodos:** Duplicación automática de servidores de prueba con un solo clic (Exclusivo Plan Diamante en adelante).
+- [x] **Ecosistema de Mods Automático:** Búsqueda e instalación in-panel de CurseForge.
+- [x] **Acceso Compartido 2.0 & Clonación:** Panel de invitados avanzado y duplicación automática de servidores.
 
-### FASE 3: Monetización, UX y Legal (v1.0) 🎯
-- [x] **Perfil de Usuario Avanzado:** Campos de identidad completos, gestión de avatares con límite de 128 MB y métodos de pago vinculados.
-- [x] **Hub de Facturación (Billing):** Integración de pasarelas eficientes (AstroPay y LemonCash) sin comisiones abusivas de MercadoPago.
-- [ ] **Estructura Legal y Derechos:** Agregar términos y condiciones, contratos y políticas de privacidad.
+### FASE 3: El Punto de Inflexión Híbrido (v0.9.5 - En Progreso ⏳)
+*Motivo del cambio: Separación de responsabilidades. Aislamiento de la lógica de negocio y facturación (Laravel/SQL) del acceso de bajo nivel a los contenedores y el disco duro (Node/Docker).*
+- [x] **Arquitectura Monorepo:** Consolidación de Nginx, Dockerfile, Laravel y Node.js en un entorno unificado.
+- [x] **Refactorización de Node.js:** Limpieza total de lógica comercial, transformado en Daemon puro de Docker e I/O.
+- [x] **Modelado SQL (Laravel):** Configuración de modelos Eloquent para `User`, `Suscripcion` y `Pago` apuntando a Microsoft SQL Server (Azure).
+- [ ] **Migración de Controladores:** Trasladar la lógica de registro, creación de nodos y validaciones de Firebase al backend de Laravel.
 - [ ] **Frontend Footer:** Desarrollar pie de página con datos corporativos y accesos legales.
+- [ ] **Hub de Facturación (Billing):** Integración definitiva en producción de pasarelas (AstroPay y LemonCash).
+
+### FASE 4: Monetización y Lanzamiento (v1.0) 🎯
+- [ ] **Estructura Legal y Derechos:** Agregar términos y condiciones, contratos y políticas de privacidad.
 - [ ] Lanzamiento oficial **ProServers v1.0** 🚀.
 
 ---
-<p align="center">Desarrollado con 💻, noches sin dormir y mucho café por Maximo Rodas en Misiones, Argentina.</p>git init
+<p align="center">Desarrollado con 💻, noches sin dormir y mucho café por Maximo Rodas en Misiones, Argentina.</p>

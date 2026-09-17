@@ -1,0 +1,3468 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Servers | Minecraft Panel</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('img/favicon.ico') }}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600&family=Press+Start+2P&family=MedievalSharp&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: white;
+            overflow-x: hidden;
+            overflow-y: scroll;
+            min-height: 100vh;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .contenedor-principal {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .mitad-video {
+            width: 55%;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .video-fondo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .filtro-oscuro {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0) 60%, rgba(10, 10, 10, 1) 100%);
+            z-index: 1;
+        }
+
+        .mitad-login {
+            width: 45%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0a0a0a;
+            padding: 40px;
+            z-index: 2;
+        }
+
+        .caja-login {
+            width: 100%;
+            max-width: 420px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .titulo-container {
+            text-align: center;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .titulo-pro {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 24px;
+            color: #4CAF50;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .titulo-servers {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 24px;
+            color: white;
+            display: block;
+        }
+
+        .contenedor-social {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 25px 0;
+            width: 100%;
+        }
+
+        .btn-circular {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+            background: #161616;
+        }
+
+        .btn-circular:hover {
+            transform: translateY(-3px);
+            border-color: #4CAF50;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+        }
+
+        .btn-circular img {
+            width: 26px;
+            height: 26px;
+            pointer-events: none;
+        }
+
+        .btn-circular img.invertir-blanco {
+            filter: invert(1);
+        }
+
+        .separador {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            width: 100%;
+        }
+
+        .separador span {
+            background: #0a0a0a;
+            padding: 0 15px;
+            color: #555;
+            font-size: 11px;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 2;
+        }
+
+        .separador::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: #222;
+            z-index: 1;
+        }
+
+        .grupo-input {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .grupo-input label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .grupo-input input,
+        .grupo-input select {
+            width: 100%;
+            padding: 12px;
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .grupo-input input:focus,
+        .grupo-input select:focus {
+            border-color: #4CAF50;
+            background: #1a1a1a;
+        }
+
+        .input-pro {
+            background: #161616;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
+            padding: 12px;
+            outline: none;
+            transition: 0.3s;
+            width: 100%;
+            font-size: 13px;
+        }
+
+        .input-pro:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
+            background: #1a1a1a;
+        }
+
+        .fila-doble {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-ingresar {
+            width: 100%;
+            padding: 14px;
+            background: #4CAF50;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+            text-transform: uppercase;
+            color: white;
+        }
+
+        .btn-ingresar:hover {
+            background: #45a049;
+            transform: scale(1.02);
+        }
+
+        .enlace-interactivo {
+            color: #4CAF50;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .enlace-interactivo:hover {
+            text-decoration: underline;
+        }
+
+        .dashboard-body {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            background: url('{{ asset('img/dashboard-bg.jpeg') }}') center/cover no-repeat fixed;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 110px;
+        }
+
+        .db-bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 0;
+        }
+
+        .content-panel {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .amd-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 20px;
+            width: 100%;
+        }
+
+        .amd-panel {
+            background: rgba(15, 15, 15, 0.95);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .amd-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #222;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .amd-panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ddd;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .amd-panel-value {
+            font-size: 28px;
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .chart-container {
+            flex-grow: 1;
+            position: relative;
+            height: 150px;
+            width: 100%;
+        }
+
+        .btn-power {
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            width: 100%;
+            font-size: 13px;
+        }
+
+        .btn-power:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn-start {
+            background-color: #4CAF50;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            background-color: #45a049;
+            transform: scale(1.03);
+        }
+
+        .btn-restart {
+            background-color: #3b82f6;
+        }
+
+        .btn-restart:hover:not(:disabled) {
+            background-color: #2563eb;
+            transform: scale(1.03);
+        }
+
+        .btn-stop {
+            background-color: #ef4444;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            background-color: #dc2626;
+            transform: scale(1.03);
+        }
+
+        .btn-planes {
+            background: transparent;
+            border: 1px solid #4CAF50;
+            color: #4CAF50;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .btn-planes:hover {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .navigation-container {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 1100px;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 5px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .navigation a {
+            padding: 12px 10px;
+            color: #888;
+            transition: 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .navigation a.active {
+            color: #4CAF50;
+            transform: translateY(-3px);
+        }
+
+        .navigation a span.title {
+            font-size: 9px;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .navigation .btn-hub {
+            color: #3b82f6;
+            border-left: 1px solid #333;
+            padding-left: 20px;
+            margin-left: 10px;
+        }
+
+        .navigation .btn-hub:hover {
+            color: #60a5fa;
+            transform: scale(1.05);
+        }
+
+        .console-textarea,
+        .file-editor {
+            width: 100%;
+            height: 400px;
+            background-color: #000;
+            border: 1px solid #333;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 13px;
+            resize: none;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .player-card {
+            background: rgba(31, 41, 55, 0.8);
+            border: 1px solid #374151;
+            border-radius: 1rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .player-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto .5rem;
+            border: 3px solid #4CAF50;
+            object-fit: cover;
+        }
+
+        .file-tree {
+            height: 400px;
+            overflow-y: auto;
+            background-color: #111;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+
+        .file-tree-item {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .file-tree-item:hover {
+            background-color: #222;
+        }
+
+        .mod-pills-tab {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .mod-pill {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: #222;
+            border: 1px solid #444;
+            color: #aaa;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .mod-pill.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .search-mod-input {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-mod-input:focus {
+            border-color: #4CAF50;
+        }
+
+        .mod-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(30, 30, 30, 0.7);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: 0.2s;
+        }
+
+        .mod-item:hover {
+            border-color: #4CAF50;
+            background: rgba(40, 40, 40, 0.9);
+        }
+
+        .cloud-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #222;
+            border: 1px solid #444;
+            padding: 12px;
+            border-radius: 8px;
+            flex: 1;
+        }
+
+        .glowing-text {
+            text-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+        }
+
+        .header-user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid transparent;
+            transition: 0.3s;
+        }
+
+        .plan-badge-base {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .theme-border-redstone {
+            border-color: #ef4444;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .theme-text-redstone {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .theme-badge-redstone {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+        }
+
+        .theme-border-hierro {
+            border-color: #e5e7eb;
+            box-shadow: 0 0 15px rgba(229, 231, 235, 0.4);
+        }
+
+        .theme-text-hierro {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(229, 231, 235, 0.8), 0 0 20px rgba(229, 231, 235, 0.4);
+        }
+
+        .theme-badge-hierro {
+            background: rgba(229, 231, 235, 0.15);
+            color: #e5e7eb;
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            box-shadow: 0 0 10px rgba(229, 231, 235, 0.2);
+        }
+
+        .theme-border-cobre {
+            border-color: #b87333;
+            box-shadow: 0 0 15px rgba(184, 115, 51, 0.4);
+        }
+
+        .theme-text-cobre {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(184, 115, 51, 0.8), 0 0 20px rgba(184, 115, 51, 0.4);
+        }
+
+        .theme-badge-cobre {
+            background: rgba(184, 115, 51, 0.15);
+            color: #d97706;
+            border: 1px solid rgba(184, 115, 51, 0.5);
+            box-shadow: 0 0 10px rgba(184, 115, 51, 0.2);
+        }
+
+        .theme-border-oro {
+            border-color: #f59e0b;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .theme-text-oro {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.8), 0 0 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .theme-badge-oro {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.5);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+        }
+
+        .theme-border-diamante {
+            border-color: #06b6d4;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        .theme-text-diamante {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .theme-badge-diamante {
+            background: rgba(6, 182, 212, 0.15);
+            color: #06b6d4;
+            border: 1px solid rgba(6, 182, 212, 0.5);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+        }
+
+        .theme-border-netherite {
+            border-color: #a855f7;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+        }
+
+        .theme-text-netherite {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 20px rgba(168, 85, 247, 0.4);
+        }
+
+        .theme-badge-netherite {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+        }
+
+        .theme-border-ghost-warrior {
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .theme-text-ghost-warrior {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .theme-badge-ghost-warrior {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+        }
+
+        .theme-border-enterprise {
+            border-color: #fbbf24;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .theme-text-enterprise {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.8), 0 0 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .theme-badge-enterprise {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+        }
+
+        .theme-border-ceo {
+            border-color: #9333ea;
+            box-shadow: 0 0 25px rgba(147, 51, 234, 0.6);
+        }
+
+        .theme-text-ceo {
+            color: #fff;
+            text-shadow: 0 0 15px rgba(147, 51, 234, 0.9), 0 0 30px rgba(147, 51, 234, 0.5);
+        }
+
+        .theme-badge-ceo {
+            background: rgba(147, 51, 234, 0.2);
+            color: #d8b4fe;
+            border: 1px solid rgba(147, 51, 234, 0.8);
+            box-shadow: 0 0 15px rgba(147, 51, 234, 0.4);
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        @media (max-width: 768px) {
+            .contenedor-principal {
+                flex-direction: column;
+                position: relative;
+            }
+
+            .mitad-video {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                z-index: 1;
+            }
+
+            .mitad-login {
+                width: 100%;
+                height: 100%;
+                background: transparent;
+                z-index: 2;
+                padding: 20px;
+            }
+
+            .caja-login {
+                background: rgba(10, 10, 10, 0.95);
+                padding: 30px 20px;
+                border-radius: 15px;
+                border: 1px solid #333;
+            }
+
+            .amd-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .amd-panel {
+                grid-column: span 1 !important;
+            }
+
+            .header-panel {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+
+            .header-panel>div {
+                flex-direction: column;
+                border-right: none !important;
+                padding-right: 0 !important;
+                border-bottom: 1px solid #333;
+                padding-bottom: 15px;
+            }
+
+            .header-right {
+                text-align: center !important;
+            }
+
+            .header-right .flex {
+                justify-content: center !important;
+            }
+
+            .navigation-container {
+                width: 95%;
+                bottom: 10px;
+            }
+
+            .navigation {
+                overflow-x: auto;
+                padding: 10px;
+                justify-content: flex-start;
+                gap: 10px;
+                border-radius: 15px;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .navigation::-webkit-scrollbar {
+                display: none;
+            }
+
+            .navigation a {
+                min-width: 70px;
+                padding: 8px 5px;
+                flex-shrink: 0;
+            }
+
+            .navigation .btn-hub {
+                border-left: none;
+                margin-left: 0;
+                padding-left: 5px;
+                border-top: 1px solid #333;
+            }
+        }
+
+        #mod-versions-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content-modrinth {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header-modrinth {
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body-modrinth {
+            padding: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        /* MINE AI MODAL ORIGINAL */
+        .mine-hidden {
+            display: none !important;
+        }
+
+        #mine-chat-modal {
+            position: fixed;
+            bottom: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 350px;
+            max-width: 95%;
+            background-color: #121212;
+            border: 1px solid #4ade80;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(74, 222, 128, 0.15);
+            z-index: 1000;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            max-height: 500px;
+        }
+
+        .mine-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #18181b;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .mine-title {
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mine-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #4ade80;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #4ade80;
+        }
+
+        .mine-close {
+            background: none;
+            border: none;
+            color: #a1a1aa;
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .mine-close:hover {
+            color: #ef4444;
+        }
+
+        .mine-body {
+            padding: 15px;
+            overflow-y: auto;
+            flex: 1;
+            max-height: 350px;
+        }
+
+        .mine-message {
+            background-color: #27272a;
+            color: #e4e4e7;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            border-left: 3px solid #4ade80;
+        }
+
+        .mine-message-user span {
+            background-color: #4f46e5;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .mine-footer {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #27272a;
+            gap: 8px;
+            background-color: #18181b;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .mine-footer input {
+            flex: 1;
+            padding: 10px 12px;
+            background-color: #1a1a1a;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            color: white;
+            font-size: 12px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .mine-footer input:focus {
+            border-color: #4ade80;
+        }
+
+        .mine-footer button {
+            background-color: #4ade80;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            padding: 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            font-size: 12px;
+        }
+
+        .mine-footer button:hover {
+            background-color: #22c55e;
+        }
+
+        .mine-footer button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* SOPORTE EN VIVO (WIDGET FLOTANTE) */
+        .support-btn-floating {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: 0.3s;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.5);
+        }
+
+        .support-btn-floating:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(147, 51, 234, 0.8);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .support-window {
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            width: 360px;
+            max-width: 90vw;
+            background-color: #121419;
+            border: 1px solid #9333ea;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.25);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            max-height: 550px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0);
+            opacity: 0;
+            transform-origin: bottom right;
+            pointer-events: none;
+        }
+
+        .support-window.active {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .support-header {
+            background: linear-gradient(135deg, #9333ea, #4f46e5);
+            padding: 15px 20px;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .support-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #0b0c10;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-ai {
+            align-self: flex-start;
+            background-color: #1f232b;
+            color: #e4e4e7;
+            border-bottom-left-radius: 4px;
+            border-left: 3px solid #9333ea;
+        }
+
+        .chat-user {
+            align-self: flex-end;
+            background-color: #9333ea;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .support-footer {
+            padding: 15px;
+            background: #121419;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            border-top: 1px solid #1f232b;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .support-input {
+            flex: 1;
+            background: #0b0c10;
+            border: 1px solid #333;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 25px;
+            font-size: 13px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .support-input:focus {
+            border-color: #9333ea;
+            box-shadow: 0 0 10px rgba(147, 51, 234, 0.2);
+        }
+
+        .support-send {
+            background: linear-gradient(135deg, #9333ea, #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(147, 51, 234, 0.3);
+        }
+
+        .support-send:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(147, 51, 234, 0.5);
+        }
+
+        /* ZONA DE HIELO (CONGELAMIENTO DE CLIENTE) */
+        .ice-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 20, 30, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: all;
+        }
+
+        .ice-glass {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(2, 132, 199, 0.2));
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            box-shadow: 0 0 40px rgba(14, 165, 233, 0.3), inset 0 0 20px rgba(56, 189, 248, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .ice-text {
+            color: #e0f2fe;
+            text-shadow: 0 0 15px rgba(56, 189, 248, 0.8), 0 0 30px rgba(14, 165, 233, 0.6);
+        }
+
+        /* BROADCAST GLOBAL VISUAL */
+        .broadcast-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(153, 27, 27, 0.85) 0%, rgba(0, 0, 0, 0.95) 100%);
+            backdrop-filter: blur(15px);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: scale(1.05);
+        }
+
+        .broadcast-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1);
+        }
+
+        .broadcast-text {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            line-height: 1.4;
+            color: #fca5a5;
+            text-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ZONA DE HIELO (SUSPENSIÓN) -->
+    <div id="ice-zone" class="ice-overlay hidden">
+        <div class="ice-glass">
+            <i data-feather="loader" class="w-16 h-16 mx-auto mb-4 text-[#38bdf8] animate-spin"
+                style="animation-duration: 3s;"></i>
+            <h2 class="text-3xl font-bold font-['Cinzel'] uppercase tracking-widest ice-text mb-4">NODO CONGELADO</h2>
+            <p class="text-gray-300 text-sm mb-6">Tu servidor ha sido suspendido temporalmente por la administración de
+                la plataforma. Todas las funciones del panel están bloqueadas.</p>
+            <button onclick="window.location.reload()"
+                class="bg-[#0f172a] border border-[#38bdf8] text-[#38bdf8] hover:bg-[#38bdf8] hover:text-black transition-colors px-6 py-2 rounded-lg font-bold uppercase text-xs tracking-wider">Recargar
+                Panel</button>
+        </div>
+    </div>
+
+    <!-- ALERTA GLOBAL (BROADCAST) -->
+    <div id="global-alert" class="broadcast-overlay">
+        <i data-feather="alert-triangle"
+            class="w-24 h-24 text-red-500 mb-8 animate-pulse drop-shadow-[0_0_20px_rgba(239,68,68,1)]"></i>
+        <h1 class="text-white font-bold text-xl md:text-3xl uppercase tracking-widest mb-4">TRANSMISIÓN GLOBAL DEL
+            SISTEMA</h1>
+        <p id="global-alert-text" class="broadcast-text text-lg md:text-2xl max-w-4xl px-6">MENSAJE AQUÍ</p>
+        <button onclick="document.getElementById('global-alert').classList.remove('active')"
+            class="mt-12 border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-8 py-3 rounded-xl font-bold uppercase tracking-widest transition-colors shadow-[0_0_15px_rgba(239,68,68,0.5)]">Entendido</button>
+    </div>
+
+    <div id="auth-container" class="contenedor-principal">
+        <div class="mitad-video">
+            <div class="filtro-oscuro"></div>
+            <video autoplay loop muted playsinline class="video-fondo">
+                <source src="{{ asset('videos/login-animation.mp4') }}" type="video/mp4">
+            </video>
+        </div>
+
+        <div class="mitad-login">
+            <div class="caja-login">
+                <div class="titulo-container">
+                    <div class="flex items-center justify-center gap-4 mb-5">
+                        <img src="{{ asset('img/favicon.ico') }}" alt="Tu Logo"
+                            class="w-10 h-10 object-contain drop-shadow-[0_0_12px_rgba(76,175,80,0.5)] transition-transform hover:scale-110"
+                            onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                        <i data-feather="x" class="text-gray-600 w-4 h-4"></i>
+                        <img src="{{ asset('img/logo-minecraft.ico') }}" alt="Minecraft"
+                            class="w-10 h-10 object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.2)] transition-transform hover:scale-110">
+                        <i data-feather="x" class="text-gray-600 w-4 h-4"></i>
+                        <img src="{{ asset('img/modrinth.ico') }}" alt="CurseForge"
+                            class="w-10 h-10 rounded-xl object-contain drop-shadow-[0_0_12px_rgba(27,217,106,0.5)] transition-transform hover:scale-110"
+                            onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                    </div>
+                    <span class="titulo-pro">Professional</span>
+                    <span class="titulo-servers">Servers</span>
+                </div>
+
+                <div id="checking-status" class="hidden text-center flex flex-col items-center gap-4 mt-6 mb-6">
+                    <i data-feather="loader" class="animate-spin text-green-500 w-10 h-10"></i>
+                    <p class="text-xs text-gray-500 uppercase tracking-widest font-bold glowing-text">Iniciando sesión y
+                        verificando...</p>
+                </div>
+
+                <div id="login-boxes-wrapper" class="w-full">
+                    <p style="text-align: center; color: #666; font-size: 13px; margin-bottom: 10px;">Gestión de
+                        infraestructura de alto rendimiento</p>
+
+                    <div class="contenedor-social">
+                        <div class="btn-circular" id="btn-google">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/google/google-original.svg"
+                                alt="Google">
+                        </div>
+                        <div class="btn-circular" id="btn-github">
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg"
+                                alt="GitHub" class="invertir-blanco">
+                        </div>
+                        <div class="btn-circular" id="btn-ms">
+                            <img src="{{ asset('img/microsoft.ico') }}" alt="Microsoft" style="width: 24px; height: 24px;">
+                        </div>
+                    </div>
+
+                    <div class="separador"><span>O usar credenciales directas</span></div>
+
+                    <div id="login-box" class="w-full">
+                        <form id="login-form">
+                            <div class="grupo-input">
+                                <!-- Modificado para indicar que acepta Nombre de Usuario -->
+                                <label>Email, Teléfono o @Usuario</label>
+                                <input type="text" name="email" placeholder="correo@ejemplo.com, +549... o @usuario"
+                                    required>
+                            </div>
+                            <div class="grupo-input">
+                                <label>Contraseña</label>
+                                <input type="password" name="password" placeholder="••••••••" required>
+                            </div>
+                            <button type="submit" class="btn-ingresar">INGRESAR AL SISTEMA</button>
+                            <p style="text-align:center; font-size:12px; margin-top:15px; color:#888;">
+                                ¿Nuevo aquí? <a id="show-register" class="enlace-interactivo">Crear cuenta
+                                    profesional</a>
+                            </p>
+                        </form>
+                    </div>
+
+                    <div id="register-box" class="hidden w-full">
+                        <form id="register-form">
+                            <div class="fila-doble">
+                                <div class="grupo-input" style="flex:1">
+                                    <label>Nombre</label>
+                                    <input type="text" name="nombre" placeholder="Nombre" required>
+                                </div>
+                                <div class="grupo-input" style="flex:1">
+                                    <label>Apellido</label>
+                                    <input type="text" name="apellido" placeholder="Apellido" required>
+                                </div>
+                            </div>
+
+                            <!-- NUEVO CAMPO: Nombre de Usuario Unico -->
+                            <div class="grupo-input">
+                                <label>Nombre de Usuario Único</label>
+                                <input type="text" name="username" placeholder="Ej: @maxpro (Sin espacios)"
+                                    pattern="^@[a-zA-Z0-9_]{3,15}$"
+                                    title="Debe empezar con @ y tener entre 3 y 15 letras o números" required>
+                                <p class="text-[10px] text-gray-500 mt-1">Este será tu identificador en la plataforma.
+                                </p>
+                            </div>
+
+                            <div class="fila-doble">
+                                <div class="grupo-input" style="flex:1">
+                                    <label>Nacimiento</label>
+                                    <input type="date" name="dob" required>
+                                </div>
+                                <div class="grupo-input" style="flex:1">
+                                    <label>País</label>
+                                    <select name="pais">
+                                        <option value="AR">Argentina</option>
+                                        <option value="CL">Chile</option>
+                                        <option value="MX">México</option>
+                                        <option value="ES">España</option>
+                                        <option value="US">USA</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grupo-input">
+                                <label>Teléfono (Opcional)</label>
+                                <input type="tel" name="phone" placeholder="+54 9 11 ...">
+                            </div>
+                            <div class="grupo-input">
+                                <label>Email de Recuperación</label>
+                                <input type="email" name="email" placeholder="correo@ejemplo.com" required>
+                            </div>
+                            <div class="grupo-input">
+                                <label>Contraseña Segura</label>
+                                <input type="password" name="password" placeholder="Mínimo 6 caracteres" required
+                                    minlength="6">
+                            </div>
+                            <button type="submit" class="btn-ingresar">CREAR CUENTA PROFESIONAL</button>
+                            <p style="text-align:center; font-size:12px; margin-top:15px; color:#888;">
+                                ¿Ya tienes cuenta? <a id="show-login" class="enlace-interactivo">Iniciar Sesión</a>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <p style="position: absolute; bottom: 20px; right: 20px; font-size: 10px; color: #197e19;">PROFESSIONAL
+                SERVERS V0.9 BETA | BY @MAXPRO</p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD CLIENTE -->
+    <div id="main-dashboard" class="dashboard-body hidden"></div>
+
+    <!-- BOTÓN FLOTANTE SOPORTE (PARA TODOS LOS PLANES) -->
+    <div id="btn-floating-support" class="support-btn-floating bg-gradient-to-r from-purple-600 to-indigo-600 hidden"
+        onclick="window.toggleSupportChat()">
+        <i data-feather="message-circle" class="w-7 h-7"></i>
+    </div>
+
+    <!-- VENTANA DE CHAT DE SOPORTE -->
+    <div id="support-chat-window" class="support-window">
+        <div class="support-header">
+            <div class="flex items-center gap-3 text-white font-bold text-sm">
+                <div class="relative">
+                    <img src="{{ asset('img/favicon.ico') }}"
+                        class="w-9 h-9 rounded-full bg-black/40 p-1 border border-purple-300/30"
+                        onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                    <span
+                        class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-[#4f46e5] rounded-full"></span>
+                </div>
+                <div>
+                    <p class="leading-tight">Soporte en Vivo</p>
+                    <p class="text-[10px] text-purple-200 font-normal">Agentes & Asistencia</p>
+                </div>
+            </div>
+            <button onclick="window.toggleSupportChat()"
+                class="text-white hover:text-red-300 transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg"><i
+                    data-feather="x" class="w-4 h-4"></i></button>
+        </div>
+
+        <div class="support-body" id="support-chat-body">
+            <div class="chat-bubble chat-ai">
+                <b>👋 ¡Hola!</b> Bienvenido al soporte de Professional Servers.
+                <br><br>
+                ¿En qué podemos ayudarte hoy? Escribe tu consulta y un agente te responderá en breve.
+            </div>
+        </div>
+
+        <div class="support-footer">
+            <input type="text" id="support-chat-input" class="support-input" placeholder="Escribe tu consulta..."
+                onkeypress="if(event.key === 'Enter') window.sendSupportMessage()">
+            <button onclick="window.sendSupportMessage()" class="support-send"><i data-feather="send"
+                    class="w-4 h-4 ml-1"></i></button>
+        </div>
+    </div>
+
+    <!-- MODALS EXTRAS -->
+    <div id="mod-versions-modal" class="hidden">
+        <div class="modal-content-modrinth">
+            <div class="modal-header-modrinth">
+                <h3 class="text-white font-bold text-lg flex items-center gap-2" id="mod-modal-title">
+                    <i data-feather="package" class="w-5 h-5 text-indigo-400"></i> Cargando...
+                </h3>
+                <button onclick="document.getElementById('mod-versions-modal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-white transition-colors">
+                    <i data-feather="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="modal-body-modrinth" id="mod-modal-body">
+                <div class="text-center py-8">
+                    <i data-feather="loader" class="animate-spin text-indigo-500 mx-auto mb-4 w-8 h-8"></i>
+                    <p class="text-gray-400">Buscando versiones compatibles...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <script type="module">
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, OAuthProvider, signInWithPopup, updateProfile, onAuthStateChanged, signOut, linkWithPopup, unlink } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAg-wvhB7iaHOF5UOSsOOOz6le1ZutVmMM",
+            authDomain: "proffesional-server.firebaseapp.com",
+            projectId: "proffesional-server",
+            storageBucket: "proffesional-server.firebasestorage.app",
+            messagingSenderId: "833822850667",
+            appId: "1:833822850667:web:3c03219c6822116edbfb2e",
+            measurementId: "G-8SZ528Y5NZ"
+        };
+
+        const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+        const auth = getAuth(app);
+
+        const providerGoogle = new GoogleAuthProvider();
+        const providerGithub = new GithubAuthProvider();
+        const providerMicrosoft = new OAuthProvider('microsoft.com');
+
+        window.userPlan = { name: 'Plan Redstone', maxServers: 1, ram: '8GB', ramNum: 8, fileManager: false };
+        let isSharedServer = false;
+        let guestPermissions = [];
+        let clientSocket = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+
+            const API_URL = window.location.protocol + '//' + window.location.hostname;
+
+            const authContainer = document.getElementById('auth-container');
+            const dashboard = document.getElementById('main-dashboard');
+
+            const loginBoxesWrapper = document.getElementById('login-boxes-wrapper');
+            const checkingStatus = document.getElementById('checking-status');
+
+            document.getElementById('show-register')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('register-box').classList.remove('hidden');
+            });
+
+            document.getElementById('show-login')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('register-box').classList.add('hidden');
+                document.getElementById('login-box').classList.remove('hidden');
+            });
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    loginBoxesWrapper.classList.add('hidden');
+                    checkingStatus.classList.remove('hidden');
+
+                    const selectedServer = sessionStorage.getItem('selectedServer');
+                    const isCEO = user.email === 'rodasmaximo51@gmail.com';
+                    const forceUserMode = sessionStorage.getItem('forceUserMode') === 'true';
+
+                    if (isCEO && !selectedServer && !forceUserMode) {
+                        window.location.href = '/admin';
+                        return;
+                    }
+
+                    if (selectedServer) {
+                        try {
+                            const config = JSON.parse(selectedServer);
+                            isSharedServer = config.isShared === true;
+                            if (isSharedServer) {
+                                guestPermissions = config.guestPermissions || [];
+                            } else {
+                                guestPermissions = ['all'];
+                            }
+
+                            const token = await user.getIdToken();
+
+                            try {
+                                const verifyRes = await fetch(`${API_URL}/api/user/status?uid=${user.uid}`, {
+                                    headers: { 'Authorization': 'Bearer ' + token }
+                                });
+                                const verifyData = await verifyRes.json();
+
+                                if (verifyData.plan) {
+                                    window.userPlan = verifyData.plan;
+                                    window.userPlan.ramNum = parseInt(window.userPlan.ram.replace(/[^0-9]/g, '')) || 8;
+                                }
+                            } catch (e) { console.error("Error leyendo plan:", e); }
+
+                            const res = await fetch(`${API_URL}/api/project/check`, {
+                                headers: { 'Authorization': 'Bearer ' + token }
+                            });
+                            const data = await res.json();
+
+                            const serverExists = isCEO || (data.exists && data.servers.some(s => s.id === config.id));
+
+                            if (serverExists) {
+                                const foundServer = data.servers.find(s => s.id === config.id);
+                                if (foundServer && foundServer.isPaused) {
+                                    config.isPaused = true;
+                                    sessionStorage.setItem('selectedServer', JSON.stringify(config));
+                                }
+                                entrarAlPanel(config);
+                            } else {
+                                sessionStorage.removeItem('selectedServer');
+                                window.location.href = isCEO ? '/crear' : '/planes';
+                            }
+                        } catch (e) {
+                            entrarAlPanel(JSON.parse(selectedServer));
+                        }
+                    } else {
+                        try {
+                            const token = await user.getIdToken();
+                            const res = await fetch(`${API_URL}/api/project/check`, { headers: { 'Authorization': 'Bearer ' + token } });
+                            const data = await res.json();
+
+                            if (data.exists && data.servers.length > 0) {
+                                sessionStorage.setItem('selectedServer', JSON.stringify(data.servers[0]));
+                                window.location.reload();
+                            } else {
+                                if (isCEO) {
+                                    window.location.href = '/crear';
+                                } else {
+                                    window.location.href = '/planes';
+                                }
+                            }
+                        } catch (e) {
+                            window.location.href = isCEO ? '/crear' : '/planes';
+                        }
+                    }
+                } else {
+                    authContainer.classList.remove('hidden');
+                    dashboard.classList.add('hidden');
+                    loginBoxesWrapper.classList.remove('hidden');
+                    checkingStatus.classList.add('hidden');
+                    document.getElementById('btn-floating-support')?.classList.add('hidden');
+                    document.getElementById('support-chat-window')?.classList.remove('active');
+                    if (clientSocket) { clientSocket.disconnect(); clientSocket = null; }
+                }
+            });
+
+            document.getElementById('btn-google').addEventListener('click', async () => {
+                try { await signInWithPopup(auth, providerGoogle); } catch (e) { alert("Error: " + e.message); }
+            });
+            document.getElementById('btn-github').addEventListener('click', async () => {
+                try { await signInWithPopup(auth, providerGithub); } catch (e) { alert("Error: " + e.message); }
+            });
+            document.getElementById('btn-ms').addEventListener('click', async () => {
+                try { await signInWithPopup(auth, providerMicrosoft); } catch (e) { alert("Error: " + e.message); }
+            });
+
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                loginBoxesWrapper.classList.add('hidden');
+                checkingStatus.classList.remove('hidden');
+                const f = e.target;
+
+                // VALIDACIÓN: El correo es el identificador principal en Firebase
+                const emailIngresado = f.email.value.trim();
+                const usernameIngresado = f.username.value.trim();
+
+                try {
+                    // Paso 1: Registrar en Firebase con Email
+                    const cred = await createUserWithEmailAndPassword(auth, emailIngresado, f.password.value);
+
+                    // Paso 2: Guardar el @Username en el perfil de Firebase para evitar nulos
+                    // Guardamos Nombre + Apellido | @Username
+                    await updateProfile(cred.user, {
+                        displayName: `${f.nombre.value.trim()} ${f.apellido.value.trim()} | ${usernameIngresado}`
+                    });
+
+                    // Paso 3: Mandar al backend para registrar el usuario en SQL/Mongo (lo implementaremos luego)
+                    const token = await cred.user.getIdToken();
+                    await fetch(`${API_URL}/api/user/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({
+                            username: usernameIngresado,
+                            nombre: f.nombre.value,
+                            apellido: f.apellido.value,
+                            dob: f.dob.value,
+                            pais: f.pais.value,
+                            phone: f.phone.value
+                        })
+                    }).catch(err => console.warn("Error enviando datos extra al backend", err));
+
+                } catch (err) {
+                    loginBoxesWrapper.classList.remove('hidden');
+                    checkingStatus.classList.add('hidden');
+                    alert("Error al registrar: " + err.message);
+                }
+            });
+
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                loginBoxesWrapper.classList.add('hidden');
+                checkingStatus.classList.remove('hidden');
+                let idIngresado = e.target.email.value.trim();
+                let emailFinal = idIngresado;
+
+                try {
+                    // SI ES UN @USUARIO O NÚMERO DE TELÉFONO, PREGUNTAR AL BACKEND POR EL CORREO REAL
+                    if (idIngresado.startsWith('@') || !idIngresado.includes('@')) {
+                        const res = await fetch(`${API_URL}/api/user/resolve-email`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ identifier: idIngresado })
+                        });
+
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.email) {
+                                emailFinal = data.email;
+                            } else {
+                                throw new Error("Usuario no encontrado.");
+                            }
+                        } else {
+                            // Sistema temporal o de respaldo si el backend no responde
+                            if (!idIngresado.includes('@') && !idIngresado.startsWith('@')) {
+                                emailFinal = idIngresado.replace(/[^0-9+]/g, '') + "@proservers.com";
+                            } else {
+                                throw new Error("Usuario no encontrado.");
+                            }
+                        }
+                    }
+
+                    await signInWithEmailAndPassword(auth, emailFinal, e.target.password.value);
+                } catch (err) {
+                    loginBoxesWrapper.classList.remove('hidden');
+                    checkingStatus.classList.add('hidden');
+                    alert("Credenciales incorrectas o usuario no encontrado.");
+                }
+            });
+
+            window.uploadLocalModpack = async () => {
+                if (!guestPermissions.includes('all') && !guestPermissions.includes('files')) return alert("No tienes permisos para modificar archivos.");
+                const fileInput = document.getElementById('modpackFileInput');
+                if (!fileInput.files[0]) return;
+                const file = fileInput.files[0];
+                const config = JSON.parse(sessionStorage.getItem('selectedServer'));
+                const btn = document.getElementById('btn-upload-local');
+                if (btn) { btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i> Subiendo...'; btn.disabled = true; feather.replace(); }
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('serverId', config.id);
+                try {
+                    const token = await auth.currentUser.getIdToken();
+                    const res = await fetch(`${API_URL}/api/files/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
+                    const data = await res.json();
+                    if (data.success) { alert(data.message || "Subido OK."); window.loadFiles('/'); } else { alert("Error: " + data.error); }
+                } catch (e) { alert("Error: " + e.message); }
+                if (btn) { btn.innerHTML = '<i data-feather="upload-cloud" class="w-4 h-4"></i> Subir desde PC'; btn.disabled = false; feather.replace(); }
+                fileInput.value = '';
+            };
+
+            window.promptCloudUrl = async () => {
+                if (!guestPermissions.includes('all') && !guestPermissions.includes('files')) return alert("No tienes permisos para modificar archivos.");
+                const url = prompt("Pega el enlace directo de descarga de tu Modpack (Google Drive, OneDrive, Mediafire, etc.):");
+                if (!url) return;
+                const config = JSON.parse(sessionStorage.getItem('selectedServer'));
+                alert("Iniciando descarga en el servidor...");
+                try {
+                    const token = await auth.currentUser.getIdToken();
+                    const res = await fetch(`${API_URL}/api/files/upload-url`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ serverId: config.id, downloadUrl: url })
+                    });
+                    const data = await res.json();
+                    if (data.success) { alert(data.message || "Procesado OK."); window.loadFiles('/'); } else { alert("Error: " + data.error); }
+                } catch (e) { alert("Error: " + e.message); }
+            };
+
+            window.guardarIP = async () => {
+                const ip = document.getElementById('manual-ip-input').value.trim();
+                if (!ip) { alert('Pega la IP de Playit.gg primero.'); return; }
+                try {
+                    const token = await auth.currentUser.getIdToken();
+                    await fetch(`${API_URL}/api/project/ip`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({ serverId: JSON.parse(sessionStorage.getItem('selectedServer')).id, ip: ip })
+                    });
+                    alert('¡IP Guardada!');
+                    let config = JSON.parse(sessionStorage.getItem('selectedServer'));
+                    config.publicIp = ip;
+                    sessionStorage.setItem('selectedServer', JSON.stringify(config));
+                    window.showPanel('home-panel');
+                } catch (e) { alert('Error: ' + e.message); }
+            };
+
+            function entrarAlPanel(config) {
+                authContainer.classList.add('hidden');
+                dashboard.classList.remove('hidden');
+                document.getElementById('btn-floating-support')?.classList.remove('hidden');
+
+                if (auth.currentUser) {
+                    auth.currentUser.getIdToken().then(token => {
+                        if (clientSocket) clientSocket.disconnect();
+                        clientSocket = io(API_URL, { query: { token: token, serverId: config.id } });
+
+                        clientSocket.on('support_reply', (data) => {
+                            const chatBody = document.getElementById('support-chat-body');
+                            chatBody.innerHTML += `<div class="chat-bubble chat-ai">${data.reply.replace(/</g, "&lt;")}</div>`;
+                            chatBody.scrollTop = chatBody.scrollHeight;
+                        });
+
+                        clientSocket.on('global_broadcast', (data) => {
+                            document.getElementById('global-alert-text').innerText = data.message;
+                            document.getElementById('global-alert').classList.add('active');
+                        });
+
+                        clientSocket.on('plan_updated', () => {
+                            alert("🔄 Tu plan de suscripción ha sido modificado por un Administrador. El panel se recargará ahora para aplicar los nuevos límites.");
+                            window.location.reload();
+                        });
+                    });
+                }
+
+                if (config.isPaused) {
+                    document.getElementById('ice-zone').classList.remove('hidden');
+                } else {
+                    document.getElementById('ice-zone').classList.add('hidden');
+                }
+
+                populateDashboard(dashboard, config);
+                setTimeout(() => {
+                    const homeBtn = dashboard.querySelector('.navigation a[data-panel="home-panel"]');
+                    if (homeBtn) homeBtn.click(); else window.showPanel('home-panel');
+                }, 150);
+            }
+
+            window.toggleSupportChat = () => {
+                const chatWindow = document.getElementById('support-chat-window');
+                chatWindow.classList.toggle('active');
+                if (chatWindow.classList.contains('active')) {
+                    document.getElementById('support-chat-input').focus();
+                    const body = document.getElementById('support-chat-body');
+                    body.scrollTop = body.scrollHeight;
+                }
+            };
+
+            window.sendSupportMessage = async () => {
+                const input = document.getElementById('support-chat-input');
+                const msg = input.value.trim();
+                if (!msg) return;
+
+                const chatBody = document.getElementById('support-chat-body');
+                chatBody.innerHTML += `<div class="chat-bubble chat-user">${msg.replace(/</g, "&lt;")}</div>`;
+                input.value = '';
+                chatBody.scrollTop = chatBody.scrollHeight;
+
+                const loadingId = 'loading-' + Date.now();
+                chatBody.innerHTML += `<div id="${loadingId}" class="chat-bubble chat-ai"><i data-feather="more-horizontal" class="animate-pulse w-4 h-4"></i></div>`;
+                feather.replace();
+                chatBody.scrollTop = chatBody.scrollHeight;
+
+                try {
+                    const token = await auth.currentUser.getIdToken();
+                    const config = JSON.parse(sessionStorage.getItem('selectedServer'));
+
+                    const res = await fetch(`${API_URL}/api/support/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({ serverId: config ? config.id : null, message: msg })
+                    });
+
+                    if (!res.ok) throw new Error("Error en red");
+                    const data = await res.json();
+                    document.getElementById(loadingId)?.remove();
+
+                    if (data.success) {
+                        chatBody.innerHTML += `<div class="chat-bubble chat-ai">${data.reply.replace(/</g, "&lt;")}</div>`;
+                    } else {
+                        chatBody.innerHTML += `<div class="chat-bubble chat-ai text-red-400">Error: ${data.error}</div>`;
+                    }
+                } catch (e) {
+                    document.getElementById(loadingId)?.remove();
+                    chatBody.innerHTML += `<div class="chat-bubble chat-ai">Mensaje enviado al equipo de soporte. Un administrador te responderá a la brevedad.</div>`;
+                }
+                feather.replace();
+                chatBody.scrollTop = chatBody.scrollHeight;
+            };
+
+            function populateDashboard(element, config) {
+                const nombreDelServer = config.projectName || "Servidor Local";
+                const safeEdition = config.edition ? config.edition.toLowerCase() : 'java';
+                let versionServer = 'Auto';
+                if (safeEdition === 'bedrock') {
+                    versionServer = config.software ? config.software.toUpperCase() : 'UNKNOWN';
+                } else {
+                    versionServer = config.version || 'Auto';
+                }
+                const softwareServer = config.software || "Vanilla";
+                const motdServer = config.motd || "Gestión de infraestructura";
+
+                const queryAuth = `?serverId=${config.id}`;
+                const bodyAuth = { serverId: config.id };
+
+                // PARCHE: Evitar TypeError si displayName es null
+                let rawName = auth.currentUser && auth.currentUser.displayName ? auth.currentUser.displayName : 'Usuario Nuevo';
+                let userName = 'Usuario';
+                let usernameTag = '';
+
+                // Extraemos el primer nombre y el @username si existe
+                if (rawName) {
+                    if (rawName.includes(' | ')) {
+                        const parts = rawName.split(' | ');
+                        userName = parts[0].split(' ')[0] || 'Usuario';
+                        usernameTag = parts[1];
+                    } else {
+                        userName = rawName.split(' ')[0] || 'Usuario';
+                    }
+                }
+
+                const userPhoto = (auth.currentUser && auth.currentUser.photoURL) ? auth.currentUser.photoURL : "{{ asset('img/default-avatar.png') }}";
+
+                const pName = window.userPlan.name.toLowerCase();
+                let theme = 'hierro';
+                if (pName.includes('redstone')) theme = 'redstone';
+                else if (pName.includes('cobre')) theme = 'cobre';
+                else if (pName.includes('oro')) theme = 'oro';
+                else if (pName.includes('diamante')) theme = 'diamante';
+                else if (pName.includes('netherite')) theme = 'netherite';
+                else if (pName.includes('ghost') || pName.includes('warrior')) theme = 'ghost-warrior';
+                else if (pName.includes('enterprise')) theme = 'enterprise';
+                else if (pName.includes('ceo') || pName.includes('god')) theme = 'ceo';
+
+                const hasPremiumAccess = window.userPlan.fileManager === true;
+                const lockHtml = hasPremiumAccess ? '' : `<div class="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 shadow"><i data-feather="lock" class="w-3 h-3 text-white"></i></div>`;
+
+                const isCEO = (auth.currentUser && auth.currentUser.email === 'rodasmaximo51@gmail.com');
+                const adminBtnHtml = isCEO ? `
+                    <button class="bg-[#9333ea] hover:bg-[#a855f7] text-white font-bold py-1.5 px-4 rounded-lg transition-colors flex items-center gap-2 text-xs uppercase shadow-[0_0_15px_rgba(147,51,234,0.5)] border border-[#c084fc]" onclick="sessionStorage.removeItem('forceUserMode'); window.location.href='/admin'">
+                        <i data-feather="shield" class="w-3 h-3"></i> CEO Panel
+                    </button>
+                ` : '';
+
+                element.innerHTML = `
+                    <div class="db-bg-overlay"></div>
+                    <div class="p-8 relative z-10 w-full max-w-[1400px] mx-auto">
+                        
+                        <div class="flex justify-between items-center mb-8 bg-[#0f0f0f] p-6 rounded-xl border border-[#333] shadow-lg header-panel">
+                            <div class="flex items-center gap-6 header-left w-full md:w-auto">
+                                <div class="flex flex-col items-center justify-center text-center border-r border-[#333] pr-6">
+                                    <img src="{{ asset('img/favicon.ico') }}" alt="Logo" class="w-12 h-12 object-contain drop-shadow-[0_0_12px_rgba(76,175,80,0.5)] mb-2" onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                                    <p class="text-[10px] uppercase tracking-widest text-green-500 font-bold glowing-text">Professional Servers</p>
+                                </div>
+                                
+                                <div>
+                                    <div class="flex items-center gap-3 mb-1 justify-center md:justify-start">
+                                        <h2 class="text-xs uppercase tracking-widest text-green-500 font-bold">Servidor Activo ${isSharedServer ? '<span class="text-yellow-500">(Invitado)</span>' : ''}</h2>
+                                        <span class="bg-[#222] border border-[#444] text-[#ccc] text-[10px] px-2 py-1 rounded uppercase font-bold tracking-wider">
+                                            ${softwareServer} ${versionServer}
+                                        </span>
+                                    </div>
+                                    <h1 class="text-3xl font-bold font-['Cinzel'] tracking-wide text-white">${nombreDelServer}</h1>
+                                    <p class="text-xs text-gray-400 mt-1 font-mono">MOTD: ${motdServer}</p>
+                                </div>
+                            </div>
+
+                            <div class="text-right header-right w-full md:w-auto flex flex-col items-end">
+                                <div class="flex items-center gap-4">
+                                    <div class="text-right">
+                                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Sesión Activa</p>
+                                        <div class="flex flex-col items-end">
+                                            <p class="font-bold text-3xl font-['MedievalSharp'] tracking-wider theme-text-${theme}">${userName}</p>
+                                            ${usernameTag ? `<p class="text-[10px] text-blue-400 font-mono mt-1">${usernameTag}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    <img src="${userPhoto}" alt="Avatar" class="header-user-avatar theme-border-${theme}" onerror="this.src='{{ asset('img/default-avatar.png') }}'">
+                                </div>
+                                <div class="flex items-center justify-end gap-3 mt-3">
+                                    ${adminBtnHtml}
+                                    <span class="plan-badge-base theme-badge-${theme}">${window.userPlan.name}</span>
+                                    <button class="btn-planes" onclick="window.location.href='/planes'">Ver Planes</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <main class="w-full">
+                            <div id="home-panel" class="w-full hidden"></div>
+                            <div id="console-panel" class="content-panel hidden"></div>
+                            <div id="players-panel" class="content-panel hidden"></div>
+                            <div id="files-panel" class="content-panel hidden"></div>
+                            <div id="mods-panel" class="content-panel hidden"></div>
+                            <div id="nube-panel" class="content-panel hidden"></div>
+                            <div id="settings-panel" class="content-panel hidden"></div>
+                            <div id="compartidos-panel" class="content-panel hidden"></div>
+                            <div id="profile-panel" class="content-panel hidden"></div>
+                        </main>
+                    </div>
+
+                    <div class="navigation-container">
+                        <nav class="navigation">
+                            <a data-panel="home-panel" class="active">
+                                <i data-feather="activity"></i><span class="title">Rendimiento</span>
+                            </a>
+                            <a data-panel="console-panel">
+                                <i data-feather="terminal"></i><span class="title">Consolas</span>
+                            </a>
+                            
+                            <a id="btn-mine-ai" class="cursor-pointer relative" style="color: #4ade80;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;">
+                                    <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                                    <circle cx="12" cy="5" r="2"></circle>
+                                    <path d="M12 7v4"></path>
+                                    <line x1="8" y1="16" x2="8" y2="16"></line>
+                                    <line x1="16" y1="16" x2="16" y2="16"></line>
+                                </svg>
+                                <span class="title" style="color: #a1a1aa;">MINE AI</span>
+                                ${lockHtml}
+                            </a>
+
+                            <a data-panel="players-panel">
+                                <i data-feather="users"></i><span class="title">Staff</span>
+                            </a>
+                            <a data-panel="files-panel" class="relative">
+                                <i data-feather="folder"></i><span class="title">Archivos</span>
+                                ${lockHtml}
+                            </a>
+                            <a data-panel="mods-panel">
+                                <i data-feather="package"></i><span class="title">Mods & APIS</span>
+                            </a>
+                            <a data-panel="compartidos-panel">
+                                <i data-feather="share-2"></i><span class="title">Accesos</span>
+                            </a>
+                            <a data-panel="settings-panel">
+                                <i data-feather="settings"></i><span class="title">Ajustes</span>
+                            </a>
+                            
+                            <a onclick="sessionStorage.removeItem('selectedServer'); window.location.href='/crear';" class="btn-hub cursor-pointer">
+                                <i data-feather="list"></i><span class="title">Mis Servers</span>
+                            </a>
+                            
+                            <!-- Perfil desacoplado: Redirige a la nueva URL -->
+                            <a href="/perfil" class="cursor-pointer">
+                                <i data-feather="user"></i><span class="title">Perfil</span>
+                            </a>
+                            
+                            <a id="logout-btn" class="cursor-pointer text-red-500 hover:text-red-400">
+                                <i data-feather="log-out"></i><span class="title">Salir</span>
+                            </a>
+                        </nav>
+                    </div>
+
+                    <!-- MODAL MINE AI -->
+                    <div id="mine-chat-modal" class="mine-hidden">
+                        <div class="mine-header">
+                            <div class="mine-title"><span class="mine-dot"></span> Mine AI - Análisis Técnico</div>
+                            <button id="close-mine" class="mine-close">&times;</button>
+                        </div>
+                        <div class="mine-body" id="mine-body">
+                            <div class="mine-message mb-3">
+                                <b>👋 ¡Hola! Soy Mine</b>, tu analista experto. Estoy conectado a la consola de tu servidor. Toca "Analizar Log" para que revise si hay errores o mods incompatibles.
+                            </div>
+                        </div>
+                        <div class="mine-footer">
+                            <input type="text" id="mine-input" placeholder="Haz clic en analizar..." disabled>
+                            <button id="mine-send-btn" onclick="window.analizarConMine()">Analizar Log</button>
+                        </div>
+                    </div>
+                `;
+
+                feather.replace();
+
+                document.getElementById('logout-btn').onclick = () => signOut(auth).then(() => {
+                    sessionStorage.removeItem('selectedServer');
+                    window.location.reload();
+                });
+
+                const btnMine = document.getElementById('btn-mine-ai');
+                const chatModal = document.getElementById('mine-chat-modal');
+                const btnCloseMine = document.getElementById('close-mine');
+
+                if (btnMine && chatModal && btnCloseMine) {
+                    btnMine.addEventListener('click', () => {
+                        if (!hasPremiumAccess) {
+                            chatModal.classList.remove('mine-hidden');
+                            document.getElementById('mine-body').innerHTML = `
+                                <div class="text-center py-6 h-full flex flex-col justify-center items-center">
+                                    <i data-feather="lock" class="w-12 h-12 text-red-500 mx-auto mb-3"></i>
+                                    <h4 class="text-white font-bold text-sm uppercase">Función Premium</h4>
+                                    <p class="text-xs text-gray-400 mt-2 px-4">Mine AI requiere Plan Oro o superior para analizar logs masivos y resolver errores automáticamente.</p>
+                                    <button onclick="window.location.href='/planes'" class="mt-4 bg-yellow-600 hover:bg-yellow-500 transition-colors px-6 py-2 rounded-lg font-bold text-xs text-white uppercase shadow-lg shadow-yellow-900/50">Mejorar a Plan Oro</button>
+                                </div>`;
+                            document.getElementById('mine-send-btn').disabled = true;
+                            feather.replace();
+                            return;
+                        }
+
+                        chatModal.classList.toggle('mine-hidden');
+                        element.querySelectorAll('.navigation a').forEach(i => i.classList.remove('active'));
+                        btnMine.classList.add('active');
+                    });
+
+                    btnCloseMine.addEventListener('click', () => {
+                        chatModal.classList.add('mine-hidden');
+                        btnMine.classList.remove('active');
+                        const activeId = Array.from(element.querySelectorAll('main > div')).find(d => !d.classList.contains('hidden'))?.id;
+                        if (activeId) {
+                            const btn = element.querySelector(`a[data-panel="${activeId}"]`);
+                            if (btn) btn.classList.add('active');
+                        }
+                    });
+                }
+
+                window.analizarConMine = async () => {
+                    const mineBtn = document.getElementById('mine-send-btn');
+                    const mineBody = document.getElementById('mine-body');
+
+                    mineBtn.disabled = true;
+                    mineBtn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i>';
+                    feather.replace();
+
+                    mineBody.innerHTML += `<div class="mine-message-user mb-3 text-right"><span class="bg-indigo-600 text-white px-3 py-2 rounded-lg text-xs inline-block shadow">Revisar servidor</span></div>`;
+                    mineBody.scrollTop = mineBody.scrollHeight;
+
+                    const loadingId = 'loading-' + Date.now();
+                    mineBody.innerHTML += `<div id="${loadingId}" class="mine-message mb-3 text-xs"><i data-feather="cpu" class="inline w-3 h-3"></i> Analizando el corazón del contenedor...</div>`;
+                    feather.replace();
+                    mineBody.scrollTop = mineBody.scrollHeight;
+
+                    try {
+                        const token = await auth.currentUser.getIdToken();
+                        const res = await fetch(`${API_URL}/api/server/mine-ai`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                            body: JSON.stringify({ serverId: config.id })
+                        });
+
+                        if (!res.ok) {
+                            let msg = "Fallo en el servidor";
+                            try {
+                                const errData = await res.json();
+                                msg = errData.error || msg;
+                            } catch (err) { }
+                            throw new Error(msg);
+                        }
+
+                        const data = await res.json();
+                        document.getElementById(loadingId)?.remove();
+
+                        if (!data.success) throw new Error(data.error);
+
+                        const ans = data.analysis;
+                        let htmlRes = `<div class="mine-message mb-3 border-l-4 border-green-500">
+                            <p class="font-bold text-green-400 text-[11px] uppercase tracking-wider mb-1">Diagnóstico:</p>
+                            <p class="text-xs text-gray-300 mb-3">${ans.mensaje}</p>`;
+
+                        if (ans.mod_alternativo && ans.mod_alternativo !== "null") {
+                            htmlRes += `<p class="font-bold text-blue-400 text-[11px] uppercase tracking-wider mb-1">Alternativa:</p>
+                                        <p class="text-xs text-gray-300 mb-3">${ans.mod_alternativo}</p>`;
+                        }
+
+                        if (ans.paso_a_paso && ans.paso_a_paso !== "null") {
+                            htmlRes += `<p class="font-bold text-yellow-400 text-[11px] uppercase tracking-wider mb-1">Solución Manual:</p>
+                                        <p class="text-xs text-gray-300 mb-3">${ans.paso_a_paso}</p>`;
+                        }
+
+                        if (ans.hay_que_borrar && ans.archivo_a_borrar && ans.archivo_a_borrar !== "null") {
+                            htmlRes += `<div class="bg-[#1a1a1a] p-3 rounded-lg border border-red-500 mt-3 shadow-lg">
+                                <p class="text-[10px] text-red-400 uppercase font-bold mb-1 flex items-center gap-1"><i data-feather="alert-triangle" class="w-3 h-3"></i> Acción Sugerida</p>
+                                <p class="text-xs text-gray-300 mb-3">Mine recomienda purgar: <b>${ans.archivo_a_borrar}</b></p>
+                                <button onclick="window.confirmarBorradoMine('${ans.archivo_a_borrar}')" class="bg-red-600 hover:bg-red-700 transition-colors text-white text-xs px-3 py-2 rounded font-bold w-full uppercase tracking-wider">Confirmar Borrado</button>
+                            </div>`;
+                        }
+
+                        htmlRes += `</div>`;
+                        mineBody.innerHTML += htmlRes;
+                        feather.replace();
+
+                    } catch (e) {
+                        document.getElementById(loadingId)?.remove();
+                        mineBody.innerHTML += `<div class="mine-message mb-3 border-l-4 border-red-500"><p class="text-xs text-red-400 font-bold">Error:</p><p class="text-xs text-gray-300">${e.message}</p></div>`;
+                    }
+                    mineBody.scrollTop = mineBody.scrollHeight;
+                    mineBtn.disabled = false;
+                    mineBtn.innerText = 'Analizar Log';
+                };
+
+                window.confirmarBorradoMine = async (archivo) => {
+                    const mineBody = document.getElementById('mine-body');
+                    if (!confirm(`⚠️ ¿Deseas eliminar permanentemente ${archivo}?`)) return;
+                    try {
+                        const token = await auth.currentUser.getIdToken();
+                        const res = await fetch(`${API_URL}/api/files/delete`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                            body: JSON.stringify({ serverId: config.id, path: `mods/${archivo}` })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            mineBody.innerHTML += `<div class="mine-message mb-3 border-l-4 border-green-500 bg-[#1a1a1a]"><p class="text-[11px] text-green-400 uppercase font-bold">Éxito</p><p class="text-xs text-gray-300">Eliminado: <b>${archivo}</b></p></div>`;
+                        } else { throw new Error(data.error); }
+                    } catch (e) {
+                        mineBody.innerHTML += `<div class="mine-message mb-3 border-l-4 border-red-500"><p class="text-xs text-red-400 font-bold">Error:</p><p class="text-xs text-gray-300">${e.message}</p></div>`;
+                    }
+                    feather.replace();
+                    mineBody.scrollTop = mineBody.scrollHeight;
+                };
+
+                element.querySelectorAll('.navigation a[data-panel]').forEach(link => {
+                    link.onclick = (e) => {
+                        element.querySelectorAll('.navigation a').forEach(i => i.classList.remove('active'));
+                        link.classList.add('active');
+                        window.showPanel(link.getAttribute('data-panel'));
+                    };
+                });
+
+                let socket = null, statusInterval = null, playerListInterval = null, currentEditingFile = null;
+                let cpuChart, ramChart;
+                let currentModType = 'mod';
+
+                window.showPanel = async function (id) {
+                    document.querySelectorAll('main > div').forEach(p => p.classList.add('hidden'));
+                    if (statusInterval) clearInterval(statusInterval);
+                    if (playerListInterval) clearInterval(playerListInterval);
+                    if (socket) { socket.disconnect(); socket = null; }
+
+                    const panel = document.getElementById(id);
+                    if (!panel) return;
+                    panel.classList.remove('hidden');
+                    const config = JSON.parse(sessionStorage.getItem('selectedServer'));
+                    const ipActualizada = config.publicIp;
+                    const token = await auth.currentUser.getIdToken();
+
+                    if (id === 'home-panel') {
+                        panel.innerHTML = `
+                            <div class="amd-grid">
+                                <div class="amd-panel" style="grid-column: span 1; background: rgba(30, 20, 60, 0.8); border-color: #6366f1;">
+                                    <div class="amd-panel-header border-b border-[#6366f1] pb-3">
+                                        <div class="amd-panel-title text-indigo-400">
+                                            <i data-feather="globe" class="w-5 h-5"></i> IP de Conexión Externa (Playit.gg)
+                                        </div>
+                                        <div class="text-xs bg-indigo-600 px-3 py-1 rounded-full text-white font-bold animate-pulse">TÚNEL DE RED</div>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-2 w-full">
+                                        <div class="w-full">
+                                            ${ipActualizada ?
+                                `<p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Comparte esta IP con tus amigos para que entren</p>
+                                                <div class="amd-panel-value text-white flex items-center gap-4 text-2xl mt-2 flex-wrap">
+                                                    <span class="text-green-400 font-bold break-all">${ipActualizada}</span>
+                                                    <button onclick="navigator.clipboard.writeText('${ipActualizada}'); alert('¡IP Copiada exitosamente!')" class="bg-[#111] hover:bg-[#222] border border-[#333] p-2 rounded-lg transition-colors cursor-pointer" title="Copiar IP">
+                                                        <i data-feather="copy" class="w-5 h-5 text-indigo-400"></i>
+                                                    </button>
+                                                </div>`
+                                :
+                                `<div class="flex flex-col gap-3 w-full">
+                                                    <p class="text-xs text-yellow-500 uppercase tracking-widest font-bold flex items-center gap-2" id="claim-wait-text">
+                                                        <i data-feather="loader" class="animate-spin w-3 h-3"></i> Esperando Link...
+                                                    </p>
+                                                    <a id="claim-link-btn" href="#" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 transition-colors text-white text-xs px-4 py-3 rounded-lg font-bold text-center hidden tracking-wider shadow-lg">
+                                                        1. VINCULAR PLAYIT.GG
+                                                    </a>
+                                                    <div class="flex flex-col md:flex-row gap-2">
+                                                        <input type="text" id="manual-ip-input" placeholder="2. Pega tu IP aquí..." class="text-xs p-3 rounded-lg bg-[#111] border border-[#333] text-white flex-1 outline-none focus:border-green-500 transition-colors">
+                                                        <button onclick="window.guardarIP()" class="bg-green-600 hover:bg-green-500 px-4 py-3 md:py-0 rounded-lg text-xs font-bold transition-colors">GUARDAR IP</button>
+                                                    </div>
+                                                </div>`
+                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="amd-panel">
+                                    <div class="amd-panel-header">
+                                        <div class="amd-panel-title">
+                                            <i data-feather="power" class="text-gray-400 w-4 h-4"></i>Gestión de Energía
+                                        </div>
+                                        <div id="status-text" class="text-sm font-bold text-gray-500 uppercase tracking-widest">VERIFICANDO...</div>
+                                    </div>
+                                    <div class="flex-grow flex flex-col justify-center gap-3">
+                                        <button id="btn-start" class="btn-power btn-start" disabled onclick="window.actionServer('start')">
+                                            <i data-feather="play" class="w-4 h-4"></i> Iniciar Servidor
+                                        </button>
+                                        <div class="flex gap-3">
+                                            <button id="btn-restart" class="btn-power btn-restart" disabled onclick="window.actionServer('restart')">
+                                                <i data-feather="refresh-cw" class="w-4 h-4"></i> Reiniciar
+                                            </button>
+                                            <button id="btn-stop" class="btn-power btn-stop" disabled onclick="window.actionServer('stop')">
+                                                <i data-feather="square" class="w-4 h-4"></i> Detener
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="amd-panel">
+                                    <div class="amd-panel-header">
+                                        <div class="amd-panel-title">
+                                            <i data-feather="server" class="text-green-500 w-4 h-4"></i>Uso de Memoria (RAM)
+                                        </div>
+                                        <div id="stat-ram-value" class="amd-panel-value text-green-500">0.00 GB / ${window.userPlan.ram}</div>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="ramChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="amd-panel">
+                                    <div class="amd-panel-header">
+                                        <div class="amd-panel-title">
+                                            <i data-feather="cpu" class="text-blue-500 w-4 h-4"></i>Uso de Procesador (CPU)
+                                        </div>
+                                        <div id="stat-cpu-value" class="amd-panel-value text-blue-500">0%</div>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="cpuChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        feather.replace(); initCharts(); checkStatus(); checkPlayitLogs();
+                        statusInterval = setInterval(() => { checkStatus(); checkPlayitLogs(); }, 3000);
+                    }
+
+                    if (id === 'console-panel') {
+                        if (!guestPermissions.includes('all') && !guestPermissions.includes('console')) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16 flex flex-col items-center justify-center border border-red-900/50 bg-[#1a0a0a]">
+                                    <i data-feather="shield-off" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Sin Permisos</h3>
+                                    <p class="text-gray-400 mt-3 max-w-md">El dueño de este servidor no te ha dado permisos para ver o usar la consola.</p>
+                                </div>`;
+                            feather.replace();
+                            return;
+                        }
+
+                        panel.innerHTML = `
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+                                <div class="content-panel flex flex-col h-[600px]">
+                                    <h3 class="text-xs uppercase font-bold mb-4 flex items-center gap-2 text-green-500">
+                                        <i data-feather="terminal" class="w-4 h-4"></i> Consola Servidor (Minecraft)
+                                    </h3>
+                                    <textarea id="console-out" readonly class="console-textarea flex-1 mb-4 border-[#333] focus:border-green-500"></textarea>
+                                    <form id="console-form" class="flex gap-2">
+                                        <input id="cmd-in" type="text" class="flex-1 bg-[#111] border border-[#333] p-3 rounded-lg text-white outline-none focus:border-green-500 transition-colors text-sm" placeholder="Comando (ej: op maxpro)...">
+                                        <button type="submit" class="bg-green-600 hover:bg-green-700 px-6 rounded-lg font-bold text-white text-sm">Enviar</button>
+                                    </form>
+                                </div>
+                                <div class="content-panel flex flex-col h-[600px]">
+                                    <h3 class="text-xs uppercase font-bold mb-4 flex items-center gap-2 text-indigo-400">
+                                        <i data-feather="globe" class="w-4 h-4"></i> Consola de Red (Playit.gg)
+                                    </h3>
+                                    <textarea id="playit-out" readonly class="console-textarea flex-1 text-indigo-300 border-[#333] bg-[#0a0a0f] text-xs font-mono"></textarea>
+                                </div>
+                            </div>`;
+                        feather.replace();
+                        document.getElementById('console-form').onsubmit = async (e) => {
+                            e.preventDefault();
+                            const input = document.getElementById('cmd-in');
+                            if (input && input.value) {
+                                const t = await auth.currentUser.getIdToken();
+                                fetch(`${API_URL}/api/server/command`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+                                    body: JSON.stringify({ ...bodyAuth, command: input.value })
+                                });
+                                input.value = '';
+                            }
+                        };
+                        const out = document.getElementById('console-out');
+                        if (out) {
+                            socket = io(API_URL, { query: { token: token, serverId: config.id } });
+                            socket.on('log', (data) => { out.value += data.replace(/\u001b\[[0-9;]*m/g, ''); out.scrollTop = out.scrollHeight; });
+                        }
+                        checkPlayitLogs(); statusInterval = setInterval(() => { checkPlayitLogs(); }, 3000);
+                    }
+                    if (id === 'players-panel') {
+                        panel.innerHTML = `
+                            <div class="content-panel">
+                                <h3 class="text-xl mb-4 font-bold text-green-500">Jugadores Conectados</h3>
+                                <div id="player-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+                            </div>`;
+                        async function fetchPlayers() {
+                            const list = document.getElementById('player-list');
+                            if (!list) return;
+                            try {
+                                const t = await auth.currentUser.getIdToken();
+                                const res = await fetch(`${API_URL}/api/server/players${queryAuth}`, { headers: { 'Authorization': 'Bearer ' + t } });
+                                const data = await res.json();
+                                list.innerHTML = '';
+                                if (data.players && data.players.length > 0) {
+                                    data.players.forEach(p => {
+                                        let banBtns = '';
+                                        if (guestPermissions.includes('all') || guestPermissions.includes('console')) {
+                                            banBtns = `
+                                                <div class="mt-4 flex justify-center gap-2">
+                                                    <button onclick="window.managePlayer('kick', '${p.name}')" class="bg-yellow-600 px-3 py-1 rounded text-xs font-bold text-white">Kick</button>
+                                                    <button onclick="window.managePlayer('ban', '${p.name}')" class="bg-red-600 px-3 py-1 rounded text-xs font-bold text-white">Ban</button>
+                                                </div>`;
+                                        }
+                                        list.innerHTML += `
+                                            <div class="player-card">
+                                                <img src="${p.avatar}" class="player-avatar">
+                                                <p class="font-bold text-white">${p.name}</p>
+                                                ${banBtns}
+                                            </div>`;
+                                    });
+                                } else { list.innerHTML = '<p class="col-span-full text-center text-gray-500">No hay jugadores conectados.</p>'; }
+                            } catch (e) { list.innerHTML = '<p class="col-span-full text-center text-red-500">Error al cargar jugadores.</p>'; }
+                        }
+                        window.managePlayer = async (action, name) => {
+                            if (!confirm(`¿Seguro que quieres aplicar ${action} a ${name}?`)) return;
+                            try {
+                                const t = await auth.currentUser.getIdToken();
+                                const res = await fetch(`${API_URL}/api/server/${action}`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+                                    body: JSON.stringify({ ...bodyAuth, player: name })
+                                });
+                                await res.json();
+                                fetchPlayers();
+                            } catch (e) { alert("Error al ejecutar la acción."); }
+                        };
+                        fetchPlayers(); playerListInterval = setInterval(fetchPlayers, 10000);
+                    }
+
+                    if (id === 'files-panel') {
+                        if (!hasPremiumAccess) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16 flex flex-col items-center justify-center border border-red-900/50 bg-[#1a0a0a]">
+                                    <i data-feather="lock" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Acceso Denegado</h3>
+                                    <p class="text-gray-400 mt-3 max-w-md">El Gestor de Archivos y la descarga de Modpacks masivos requieren recursos de almacenamiento avanzados. Actualiza al <b class="text-yellow-500">Plan Oro</b> o superior para desbloquear esta función.</p>
+                                    <button onclick="window.location.href='/planes'" class="mt-8 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-8 rounded-lg transition-colors uppercase text-sm tracking-wider shadow-[0_0_15px_rgba(202,138,4,0.3)] text-black">Mejorar a Plan Oro</button>
+                                </div>`;
+                            feather.replace();
+                            return;
+                        }
+
+                        if (!guestPermissions.includes('all') && !guestPermissions.includes('files')) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16 flex flex-col items-center justify-center border border-red-900/50 bg-[#1a0a0a]">
+                                    <i data-feather="shield-off" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Sin Permisos</h3>
+                                    <p class="text-gray-400 mt-3 max-w-md">El dueño de este servidor no te ha dado permisos para ver o modificar los archivos.</p>
+                                </div>`;
+                            feather.replace();
+                            return;
+                        }
+
+                        panel.innerHTML = `
+                            <div class="content-panel">
+                                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 border-b border-[#333] pb-4">
+                                    <h3 class="text-xl font-bold text-green-500">Gestor de Archivos y Modpacks</h3>
+                                    
+                                    <div class="flex gap-2 w-full md:w-auto">
+                                        <input type="file" id="modpackFileInput" accept=".zip,.jar" style="display:none;" onchange="window.uploadLocalModpack()">
+                                        <button id="btn-upload-local" onclick="document.getElementById('modpackFileInput').click()" class="bg-indigo-600 hover:bg-indigo-700 transition-colors px-4 py-2 rounded-lg text-white text-xs font-bold flex items-center gap-2" title="Subir Modpack (.zip) o Mod (.jar)">
+                                            <i data-feather="upload-cloud" class="w-4 h-4"></i> Subir desde PC
+                                        </button>
+                                        <button onclick="window.promptCloudUrl()" class="bg-blue-600 hover:bg-blue-700 transition-colors px-4 py-2 rounded-lg text-white text-xs font-bold flex items-center gap-2" title="Descargar Modpack desde Google Drive o OneDrive">
+                                            <i data-feather="link" class="w-4 h-4"></i> Importar URL
+                                        </button>
+                                        <button onclick="window.loadFiles('/')" class="bg-[#222] border border-[#333] hover:bg-[#333] transition-colors p-2 rounded-lg text-white" title="Recargar Explorador">
+                                            <i data-feather="refresh-cw" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="md:col-span-1 file-tree" id="file-tree"></div>
+                                    <div class="md:col-span-2">
+                                        <textarea id="file-editor" class="file-editor outline-none focus:border-green-500 transition-colors"></textarea>
+                                        <button id="save-file-btn" class="mt-4 w-full md:w-auto bg-green-600 hover:bg-green-700 transition-colors px-6 py-3 rounded-lg font-bold text-white uppercase text-sm">Guardar Cambios</button>
+                                    </div>
+                                </div>
+                            </div>`;
+                        feather.replace();
+                        window.loadFiles = async (dir) => {
+                            const tree = document.getElementById('file-tree');
+                            if (!tree) return;
+                            try {
+                                const t = await auth.currentUser.getIdToken();
+                                const res = await fetch(`${API_URL}/api/files/list${queryAuth}&path=${encodeURIComponent(dir)}`, { headers: { 'Authorization': 'Bearer ' + t } });
+                                const files = await res.json();
+                                if (files.error) {
+                                    tree.innerHTML = `<p class="text-red-500 text-xs">${files.error}</p>`;
+                                    return;
+                                }
+                                tree.innerHTML = '';
+                                if (dir !== '/') {
+                                    const pDir = dir.substring(0, dir.lastIndexOf('/')) || '/';
+                                    tree.innerHTML += `<div class="file-tree-item" onclick="window.loadFiles('${pDir}')"><i data-feather="corner-up-left" class="w-4 h-4 text-gray-400"></i><span class="text-sm text-gray-400">Volver</span></div>`;
+                                }
+                                files.sort((a, b) => a.isDir ? -1 : 1).forEach(f => {
+                                    const icon = f.isDir ? 'folder' : 'file';
+                                    const color = f.isDir ? 'text-green-500' : 'text-gray-300';
+                                    const action = f.isDir ? `window.loadFiles('${f.path}')` : `window.openFile('${f.path}')`;
+                                    tree.innerHTML += `<div class="file-tree-item" onclick="${action}"><i data-feather="${icon}" class="w-4 h-4 ${color}"></i><span class="text-sm text-white">${f.name}</span></div>`;
+                                });
+                                feather.replace();
+                            } catch (e) { tree.innerHTML = '<p class="text-red-500 text-xs">Error al cargar archivos.</p>'; }
+                        };
+                        window.openFile = async (path) => {
+                            currentEditingFile = path;
+                            const editor = document.getElementById('file-editor');
+                            const t = await auth.currentUser.getIdToken();
+                            const res = await fetch(`${API_URL}/api/files/content${queryAuth}&path=${encodeURIComponent(path)}`, { headers: { 'Authorization': 'Bearer ' + t } });
+                            const data = await res.json();
+                            editor.value = data.content;
+                        };
+                        document.getElementById('save-file-btn').onclick = async () => {
+                            if (!currentEditingFile) return;
+                            const editor = document.getElementById('file-editor');
+                            const t = await auth.currentUser.getIdToken();
+                            const res = await fetch(`${API_URL}/api/files/save`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+                                body: JSON.stringify({ ...bodyAuth, path: currentEditingFile, content: editor.value })
+                            });
+                            const data = await res.json();
+                            if (data.success) alert('Archivo guardado.');
+                            else alert('Error: ' + data.error);
+                        };
+                        window.loadFiles('/');
+                    }
+                    if (id === 'mods-panel') {
+                        if (!guestPermissions.includes('all') && !guestPermissions.includes('files')) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16 flex flex-col items-center justify-center border border-red-900/50 bg-[#1a0a0a]">
+                                    <i data-feather="shield-off" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Sin Permisos</h3>
+                                    <p class="text-gray-400 mt-3 max-w-md">El dueño de este servidor no te ha dado permisos para instalar mods.</p>
+                                </div>`;
+                            feather.replace();
+                            return;
+                        }
+
+                        panel.innerHTML = `
+                            <div class="content-panel">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-xl font-bold text-green-500">App de Mods (CurseForge)</h3>
+                                </div>
+                                
+                                <div class="mod-pills-tab">
+                                    <button class="mod-pill active" onclick="window.setModType('mod', this)">Mods</button>
+                                    <button class="mod-pill" onclick="window.setModType('plugin', this)">Plugins</button>
+                                    <button class="mod-pill" onclick="window.setModType('datapack', this)">Datapacks</button>
+                                    <button class="mod-pill border-indigo-500 text-indigo-400" onclick="window.setModType('modpack', this)">Modpacks</button>
+                                </div>
+
+                                <div class="flex gap-4 mb-6">
+                                    <input type="text" id="mod-search" placeholder="Buscar en CurseForge..." class="search-mod-input flex-1">
+                                    <button onclick="window.buscarMods()" class="bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded-lg font-bold text-white uppercase text-sm transition-colors">Buscar</button>
+                                </div>
+
+                                <div id="mods-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
+                                    <div class="col-span-full text-center text-gray-500 py-8">
+                                        <i data-feather="search" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+                                        <p>Busca un mod, plugin, datapack o modpack para ver sus versiones disponibles.</p>
+                                    </div>
+                                </div>
+                            </div>`;
+                        feather.replace();
+
+                        window.setModType = (type, btn) => {
+                            currentModType = type;
+                            document.querySelectorAll('.mod-pill').forEach(b => b.classList.remove('active'));
+                            btn.classList.add('active');
+                            window.buscarMods();
+                        };
+
+                        window.buscarMods = async () => {
+                            const term = document.getElementById('mod-search').value;
+                            const resDiv = document.getElementById('mods-list');
+
+                            const btn = document.querySelector('button[onclick="window.buscarMods()"]');
+                            if (btn) btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i>';
+
+                            feather.replace();
+                            resDiv.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Buscando en CurseForge...</p>';
+
+                            let catId = '6'; // Minecraft Mods
+                            if (currentModType === 'plugin') catId = '5'; // Bukkit Plugins
+                            if (currentModType === 'datapack') catId = '17'; // Worlds (Datapacks)
+                            if (currentModType === 'modpack') catId = '4471'; // Modpacks
+
+                            try {
+                                const token = await auth.currentUser.getIdToken();
+                                let fetchUrl = `${API_URL}/api/curseforge/search?categoryId=${catId}`;
+                                if (term && term.trim() !== '') {
+                                    fetchUrl += `&query=${encodeURIComponent(term.trim())}`;
+                                }
+
+                                const response = await fetch(fetchUrl, { headers: { 'Authorization': 'Bearer ' + token } });
+
+                                if (!response.ok) {
+                                    const errTxt = await response.text();
+                                    throw new Error(`Error ${response.status}: ${errTxt}`);
+                                }
+
+                                const data = await response.json();
+
+                                resDiv.innerHTML = '';
+                                let found = 0;
+
+                                if (data.data && data.data.length > 0) {
+                                    data.data.forEach(mod => {
+                                        found++;
+                                        const icon = (mod.logo && mod.logo.url) ? mod.logo.url : "{{ asset('img/favicon.ico') }}";
+                                        const hasServerPack = mod.latestFiles && mod.latestFiles.some(f => f.serverPackFileId);
+
+                                        let badgeHtml = '';
+                                        let clickAttr = '';
+                                        let opacityClass = '';
+
+                                        if (currentModType === 'modpack') {
+                                            badgeHtml = hasServerPack
+                                                ? `<span class="text-[9px] bg-green-600/20 text-green-400 border border-green-600/50 px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1 shadow-sm"><i data-feather="server" class="w-3 h-3"></i> Server Pack Oficial</span>`
+                                                : `<span class="text-[9px] bg-red-600/20 text-red-400 border border-red-600/50 px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1 shadow-sm"><i data-feather="x-circle" class="w-3 h-3"></i> Incompatible (Solo Cliente)</span>`;
+                                            clickAttr = hasServerPack ? `onclick="alert('Función de instalar modpack desde panel en desarrollo.')"` : `onclick="alert('Este modpack no posee archivos configurados para servidor (Server Pack). Solo puede instalarse en clientes.')"`;
+                                            opacityClass = hasServerPack ? '' : 'opacity-60 grayscale cursor-not-allowed';
+                                        } else {
+                                            badgeHtml = `<span class="text-[9px] bg-blue-600/20 text-blue-400 border border-blue-600/50 px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1 shadow-sm"><i data-feather="download" class="w-3 h-3"></i> Versiones</span>`;
+                                            clickAttr = `onclick="window.abrirInstaladorMod('${mod.id}', '${mod.name.replace(/'/g, "\\'")}')"`;
+                                        }
+
+                                        resDiv.innerHTML += `
+                                            <div ${clickAttr} class="modpack-card flex gap-3 p-3 bg-[#161616] border border-[#333] rounded-lg hover:border-indigo-500 transition-colors ${opacityClass} cursor-pointer">
+                                                <img src="${icon}" class="w-12 h-12 rounded object-cover shadow-md">
+                                                <div class="flex-1 min-w-0">
+                                                    <h4 class="text-sm font-bold text-white truncate" title="${mod.name.replace(/'/g, "\\'")}">${mod.name}</h4>
+                                                    <div class="flex items-center gap-2 mt-1">
+                                                        ${badgeHtml}
+                                                        <span class="text-[10px] text-gray-500 font-mono"><i data-feather="download" class="w-3 h-3 inline text-indigo-400"></i> ${mod.downloadCount.toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    });
+                                }
+
+                                if (found === 0) {
+                                    resDiv.innerHTML = '<div class="text-center py-4"><i data-feather="x-circle" class="w-8 h-8 text-red-400 mx-auto mb-2 opacity-50"></i><p class="text-xs text-red-400">No se encontraron resultados.</p></div>';
+                                }
+                            } catch (e) {
+                                console.error("Error CF:", e);
+                                resDiv.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Error al buscar en CurseForge:<br><span class="text-[10px] text-gray-500">${e.message}</span></p>`;
+                            }
+                            if (btn) btn.innerHTML = 'Buscar';
+                            feather.replace();
+                        };
+
+                        window.abrirInstaladorMod = async (modId, modName) => {
+                            const modal = document.getElementById('mod-versions-modal');
+                            const modalTitle = document.getElementById('mod-modal-title');
+                            const modalBody = document.getElementById('mod-modal-body');
+
+                            modal.classList.remove('hidden');
+                            modalTitle.innerHTML = `<i data-feather="package" class="w-5 h-5 text-indigo-400"></i> Instalar ${modName}`;
+                            modalBody.innerHTML = `
+                                <div class="text-center py-8">
+                                    <i data-feather="loader" class="animate-spin text-indigo-500 mx-auto mb-4 w-8 h-8"></i>
+                                    <p class="text-gray-400">Buscando versiones compatibles...</p>
+                                </div>`;
+                            feather.replace();
+
+                            try {
+                                const token = await auth.currentUser.getIdToken();
+                                const config = JSON.parse(sessionStorage.getItem('selectedServer'));
+                                const gameVersion = config.version === 'LATEST' || config.version === 'Auto' ? '' : config.version;
+
+                                const res = await fetch(`${API_URL}/api/curseforge/files?modId=${modId}&version=${gameVersion}`, {
+                                    headers: { 'Authorization': 'Bearer ' + token }
+                                });
+                                const data = await res.json();
+
+                                modalBody.innerHTML = '';
+                                let count = 0;
+                                if (data.data && data.data.length > 0) {
+                                    let html = '<div class="space-y-2">';
+                                    data.data.forEach(f => {
+                                        if (f.isAvailable && f.downloadUrl) {
+                                            count++;
+                                            const type = f.releaseType === 1 ? 'RELEASE' : (f.releaseType === 2 ? 'BETA' : 'ALPHA');
+                                            const typeColor = f.releaseType === 1 ? 'text-green-400' : 'text-yellow-400';
+                                            const mcVer = f.gameVersions.find(v => v.match(/^1\.\d/)) || "Auto";
+
+                                            html += `
+                                            <div class="flex justify-between items-center bg-[#111] border border-[#333] p-3 rounded-lg hover:border-indigo-500 transition-colors">
+                                                <div>
+                                                    <p class="text-sm font-bold text-white break-all">${f.displayName}</p>
+                                                    <p class="text-xs text-gray-500 mt-1">MC ${mcVer} | <span class="${typeColor} font-bold">${type}</span></p>
+                                                </div>
+                                                <button onclick="window.instalarModDirecto('${f.downloadUrl}', '${f.fileName}', this)" class="bg-indigo-600 hover:bg-indigo-500 transition-colors px-4 py-2 rounded font-bold text-white text-xs flex items-center gap-2 ml-4 flex-shrink-0">
+                                                    <i data-feather="download" class="w-3 h-3"></i> Instalar
+                                                </button>
+                                            </div>`;
+                                        }
+                                    });
+                                    html += '</div>';
+                                    modalBody.innerHTML = html;
+                                    if (count === 0) modalBody.innerHTML = '<p class="text-center text-red-400 py-4">No hay versiones directas disponibles para la versión de tu servidor.</p>';
+                                } else {
+                                    modalBody.innerHTML = '<p class="text-center text-red-400 py-4">No se encontraron archivos.</p>';
+                                }
+                                feather.replace();
+                            } catch (e) {
+                                modalBody.innerHTML = `<p class="text-center text-red-500 py-4">Error al cargar versiones.</p>`;
+                            }
+                        };
+
+                        window.instalarModDirecto = async (url, fileName, btn) => {
+                            const config = JSON.parse(sessionStorage.getItem('selectedServer'));
+                            const originalHtml = btn.innerHTML;
+                            btn.disabled = true;
+                            btn.innerHTML = '<i data-feather="loader" class="animate-spin w-3 h-3"></i> Instalando...';
+                            feather.replace();
+
+                            try {
+                                const token = await auth.currentUser.getIdToken();
+                                const res = await fetch(`${API_URL}/api/files/upload-url`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                    body: JSON.stringify({ serverId: config.id, downloadUrl: url, fileName: fileName })
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                    btn.classList.replace('bg-indigo-600', 'bg-green-600');
+                                    btn.classList.replace('hover:bg-indigo-500', 'hover:bg-green-500');
+                                    btn.innerHTML = '<i data-feather="check" class="w-3 h-3"></i> Listo';
+                                    feather.replace();
+                                } else {
+                                    alert("Error al instalar: " + data.error);
+                                    btn.disabled = false;
+                                    btn.innerHTML = originalHtml;
+                                }
+                            } catch (e) {
+                                alert("Error en red: " + e.message);
+                                btn.disabled = false;
+                                btn.innerHTML = originalHtml;
+                            }
+                        };
+                    }
+
+                    if (id === 'nube-panel') {
+                        if (!guestPermissions.includes('all') && !guestPermissions.includes('files')) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16 flex flex-col items-center justify-center border border-red-900/50 bg-[#1a0a0a]">
+                                    <i data-feather="shield-off" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Sin Permisos</h3>
+                                    <p class="text-gray-400 mt-3 max-w-md">No tienes permiso para gestionar las copias de seguridad de este servidor.</p>
+                                </div>`;
+                            feather.replace();
+                            return;
+                        }
+
+                        panel.innerHTML = `
+                            <div class="content-panel">
+                                <h3 class="text-xl mb-4 font-bold text-green-500 flex items-center gap-2"><i data-feather="cloud"></i> Copias de Seguridad</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div class="cloud-badge flex-col items-start gap-4">
+                                        <div class="flex items-center gap-3 w-full border-b border-[#333] pb-3">
+                                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/google/google-original.svg" class="w-6 h-6">
+                                            <span class="font-bold text-white">Google Drive</span>
+                                        </div>
+                                        <button id="btn-gdrive" class="text-xs text-green-400 hover:underline">Vincular y Dar Permiso</button>
+                                        <button onclick="window.createBackup('gdrive')" class="w-full bg-[#111] hover:bg-[#222] border border-[#333] py-2 rounded text-xs font-bold text-white transition-colors shadow">Crear Backup Aquí</button>
+                                    </div>
+                                    <div class="cloud-badge flex-col items-start gap-4">
+                                        <div class="flex items-center gap-3 w-full border-b border-[#333] pb-3">
+                                            <img src="{{ asset('img/microsoft.ico') }}" class="w-6 h-6" onerror="this.style.display='none'">
+                                            <span class="font-bold text-white">OneDrive</span>
+                                        </div>
+                                        <button id="btn-onedrive" class="text-xs text-green-400 hover:underline">Vincular y Dar Permiso</button>
+                                        <button onclick="window.createBackup('onedrive')" class="w-full bg-[#111] hover:bg-[#222] border border-[#333] py-2 rounded text-xs font-bold text-white transition-colors shadow">Crear Backup Aquí</button>
+                                    </div>
+                                </div>
+                                <h4 class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest border-b border-[#333] pb-2">Historial de Backups</h4>
+                                <div id="backup-list" class="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-2"></div>
+                            </div>`;
+                        feather.replace();
+                        updateProviderUI();
+                        window.loadSavedBackups();
+                    }
+
+                    if (id === 'settings-panel') {
+                        if (!guestPermissions.includes('all') && !guestPermissions.includes('settings')) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16 flex flex-col items-center justify-center border border-red-900/50 bg-[#1a0a0a]">
+                                    <i data-feather="shield-off" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Sin Permisos</h3>
+                                    <p class="text-gray-400 mt-3 max-w-md">No tienes permiso para modificar la configuración técnica de este servidor.</p>
+                                </div>`;
+                            feather.replace();
+                            return;
+                        }
+
+                        // VALIDAR PLAN PARA LA CLONACIÓN
+                        const pNameCheck = window.userPlan.name.toLowerCase();
+                        const canClone = pNameCheck.includes('diamante') || pNameCheck.includes('netherite') || pNameCheck.includes('ghost') || pNameCheck.includes('enterprise') || pNameCheck.includes('ceo') || pNameCheck.includes('god');
+
+                        let btnClonarHtml = canClone
+                            ? `<button onclick="window.clonarServidor()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-lg transition-colors whitespace-nowrap text-xs shadow-[0_0_15px_rgba(147,51,234,0.4)] uppercase w-full md:w-auto"><i data-feather="copy" class="inline w-3 h-3 mr-1"></i> Clonar Servidor</button>`
+                            : `<button onclick="window.location.href='/planes'" class="bg-[#222] border border-purple-500/30 text-purple-400 hover:bg-purple-900/30 font-bold py-2.5 px-6 rounded-lg transition-colors whitespace-nowrap text-xs uppercase w-full md:w-auto"><i data-feather="lock" class="inline w-3 h-3 mr-1"></i> Requiere Plan Diamante</button>`;
+
+                        panel.innerHTML = `
+                            <div class="content-panel">
+                                <h3 class="text-xl mb-6 font-bold text-green-500">Ajustes Avanzados del Servidor</h3>
+                                
+                                <div class="bg-[#161616] p-6 rounded-xl border border-[#333] mb-6 shadow-lg">
+                                    <h4 class="text-sm font-bold text-white mb-4 uppercase tracking-wider text-blue-400"><i data-feather="sliders" class="inline w-4 h-4 mr-1"></i> Reglas de Juego</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div>
+                                            <label class="text-xs text-gray-500 uppercase font-bold block mb-2">Modo de Juego</label>
+                                            <select id="setting-gamemode" class="input-pro bg-[#0a0a0a]">
+                                                <option value="survival">Supervivencia</option>
+                                                <option value="creative">Creativo</option>
+                                                <option value="adventure">Aventura</option>
+                                                <option value="spectator">Espectador</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="text-xs text-gray-500 uppercase font-bold block mb-2">Dificultad</label>
+                                            <select id="setting-difficulty" class="input-pro bg-[#0a0a0a]">
+                                                <option value="peaceful">Pacífico</option>
+                                                <option value="easy">Fácil</option>
+                                                <option value="normal">Normal</option>
+                                                <option value="hard">Difícil</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="text-xs text-gray-500 uppercase font-bold block mb-2">Combate (PVP)</label>
+                                            <select id="setting-pvp" class="input-pro bg-[#0a0a0a]">
+                                                <option value="true">Activado</option>
+                                                <option value="false">Desactivado</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button onclick="window.saveGameSettings()" class="mt-6 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-6 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-[0_0_15px_rgba(37,99,235,0.4)]">Guardar y Reiniciar</button>
+                                </div>
+
+                                <div class="bg-[#161616] p-6 rounded-xl border border-[#333] mb-6 shadow-lg">
+                                    <h4 class="text-sm font-bold text-white mb-4 uppercase tracking-wider text-green-400"><i data-feather="map" class="inline w-4 h-4 mr-1"></i> Generación de Mundo</h4>
+                                    <div class="flex flex-col md:flex-row gap-4">
+                                        <div class="flex-1">
+                                            <label class="text-xs text-gray-500 uppercase font-bold block mb-2">Semilla (Seed) Personalizada</label>
+                                            <input type="text" id="setting-seed" class="input-pro bg-[#0a0a0a]" placeholder="Ej: 8483921 (Deja vacío para aleatorio)">
+                                        </div>
+                                        <div class="flex items-end">
+                                            <button onclick="window.regenerateWorld()" class="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-[0_0_15px_rgba(76,175,80,0.4)] w-full md:w-auto"><i data-feather="refresh-cw" class="inline w-3 h-3 mr-1"></i> Crear Nuevo Mundo</button>
+                                        </div>
+                                    </div>
+                                    <p class="text-[10px] text-yellow-500 mt-3 font-bold"><i data-feather="alert-triangle" class="inline w-3 h-3"></i> ADVERTENCIA: Al generar un nuevo mundo, se borrará el progreso actual de forma irreversible.</p>
+                                </div>
+
+                                <div class="border border-red-900 bg-[#1a0505] rounded-xl p-6 relative overflow-hidden shadow-2xl">
+                                    <div class="absolute top-0 left-0 w-full h-1 bg-red-600"></div>
+                                    <h4 class="text-red-500 font-bold text-lg mb-4 flex items-center gap-2"><i data-feather="alert-triangle"></i> Zona de Peligro & Herramientas Avanzadas</h4>
+                                    
+                                    <div class="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-red-900/50 pb-6 mb-6">
+                                        <div>
+                                            <h5 class="text-white font-bold mb-1">Reseteo de Red (Playit.gg)</h5>
+                                            <p class="text-xs text-gray-400 max-w-lg">Si perdiste acceso a tu cuenta de Playit o la IP se bugeó, esto destruirá el túnel actual y generará un link de vinculación virgen.</p>
+                                        </div>
+                                        <button onclick="window.resetPlayitNetwork()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg transition-colors whitespace-nowrap text-xs shadow-[0_0_15px_rgba(220,38,38,0.4)] uppercase w-full md:w-auto">Resetear Red</button>
+                                    </div>
+
+                                    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                                        <div>
+                                            <h5 class="text-white font-bold mb-1 flex items-center gap-2">Clonar Nodo ${canClone ? '' : '<span class="bg-purple-600 text-[9px] px-2 py-0.5 rounded font-bold uppercase">PREMIUM</span>'}</h5>
+                                            <p class="text-xs text-gray-400 max-w-lg">Duplica este servidor completo (archivos y mundo) en un nuevo contenedor. Ideal para entornos de pruebas. Requiere ranuras libres en tu plan.</p>
+                                        </div>
+                                        ${btnClonarHtml}
+                                    </div>
+                                </div>
+                            </div>`;
+                        feather.replace();
+
+                        const fetchSettings = async () => {
+                            try {
+                                const t = await auth.currentUser.getIdToken();
+                                const res = await fetch(`${API_URL}/api/server/settings${queryAuth}`, { headers: { 'Authorization': 'Bearer ' + t } });
+                                const data = await res.json();
+                                document.getElementById('setting-gamemode').value = data.gamemode || 'survival';
+                                document.getElementById('setting-difficulty').value = data.difficulty || 'easy';
+                                document.getElementById('setting-pvp').value = data.pvp || 'true';
+                            } catch (e) { }
+                        };
+                        fetchSettings();
+
+                        window.saveGameSettings = async () => {
+                            const gm = document.getElementById('setting-gamemode').value;
+                            const diff = document.getElementById('setting-difficulty').value;
+                            const pvp = document.getElementById('setting-pvp').value;
+
+                            if (!confirm("Guardar estos ajustes reiniciará el servidor para aplicarlos. ¿Continuar?")) return;
+
+                            try {
+                                const t = await auth.currentUser.getIdToken();
+                                await fetch(`${API_URL}/api/server/settings`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+                                    body: JSON.stringify({ ...bodyAuth, gamemode: gm, difficulty: diff, pvp: pvp })
+                                });
+                                alert("Ajustes guardados. El servidor se está reiniciando.");
+                                window.showPanel('home-panel');
+                            } catch (e) { alert("Error al guardar."); }
+                        };
+
+                        window.regenerateWorld = async () => {
+                            const seed = document.getElementById('setting-seed').value.trim();
+                            if (!confirm("⚠️ ADVERTENCIA EXTREMA ⚠️\n\nTu mundo actual se ELIMINARÁ POR COMPLETO y se generará uno nuevo desde cero.\n\n¿Estás absolutamente seguro de continuar?")) return;
+
+                            try {
+                                const t = await auth.currentUser.getIdToken();
+                                await fetch(`${API_URL}/api/server/regenerate-world`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+                                    body: JSON.stringify({ ...bodyAuth, seed: seed })
+                                });
+                                alert("¡Mundo destruido y regenerado con éxito! El servidor se está iniciando.");
+                                window.showPanel('home-panel');
+                            } catch (e) { alert("Error al regenerar el mundo."); }
+                        };
+
+                        window.clonarServidor = async () => {
+                            if (!confirm("⚠️ Vamos a crear un clon exacto de este servidor. Se consumirá 1 slot de tu plan actual.\n\n¿Deseas proceder?")) return;
+                            try {
+                                document.body.innerHTML += `<div id="clone-loader" class="fixed top-0 left-0 w-full h-full bg-black/90 z-[9999] flex flex-col justify-center items-center">
+                                    <i data-feather="loader" class="animate-spin text-purple-500 w-16 h-16 mb-4"></i>
+                                    <h2 class="text-2xl text-purple-400 font-bold font-['Cinzel'] tracking-widest">CLONANDO NODO</h2>
+                                    <p class="text-gray-400 text-sm mt-2">Copiando archivos y configurando contenedor...</p>
+                                </div>`;
+                                feather.replace();
+
+                                const t = await auth.currentUser.getIdToken();
+                                const res = await fetch(`${API_URL}/api/project/clone`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+                                    body: JSON.stringify({ ...bodyAuth })
+                                });
+
+                                const data = await res.json();
+                                if (!res.ok) throw new Error(data.error);
+
+                                alert(`✅ ¡Servidor Clonado Exitosamente!\n\nSe ha creado el proyecto "${data.server.projectName}". Serás redirigido para gestionarlo.`);
+                                sessionStorage.setItem('selectedServer', JSON.stringify(data.server));
+                                window.location.reload();
+
+                            } catch (e) {
+                                document.getElementById('clone-loader')?.remove();
+                                alert("❌ Error al clonar: " + e.message);
+                            }
+                        };
+                    }
+
+                    if (id === 'compartidos-panel') {
+                        if (isSharedServer) {
+                            panel.innerHTML = `
+                                <div class="content-panel text-center py-16">
+                                    <i data-feather="users" class="w-16 h-16 text-blue-500 mx-auto mb-4 opacity-50"></i>
+                                    <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase mb-2">Servidor Compartido</h3>
+                                    <p class="text-gray-400 max-w-md mx-auto mb-4">Eres un invitado en este servidor. Tus permisos están limitados por el propietario.</p>
+                                    <div class="bg-[#111] inline-block p-4 rounded-lg border border-[#333] text-left mx-auto">
+                                        <p class="text-xs text-gray-500 uppercase font-bold mb-2">Tus Permisos Asignados:</p>
+                                        <ul class="text-sm text-green-400 space-y-1">
+                                            ${guestPermissions.includes('all') || guestPermissions.includes('power') ? '<li><i data-feather="check" class="w-3 h-3 inline"></i> Encender / Apagar</li>' : '<li class="text-red-400"><i data-feather="x" class="w-3 h-3 inline"></i> Encender / Apagar</li>'}
+                                            ${guestPermissions.includes('all') || guestPermissions.includes('console') ? '<li><i data-feather="check" class="w-3 h-3 inline"></i> Leer y usar Consola</li>' : '<li class="text-red-400"><i data-feather="x" class="w-3 h-3 inline"></i> Leer y usar Consola</li>'}
+                                            ${guestPermissions.includes('all') || guestPermissions.includes('files') ? '<li><i data-feather="check" class="w-3 h-3 inline"></i> Subir / Borrar Archivos</li>' : '<li class="text-red-400"><i data-feather="x" class="w-3 h-3 inline"></i> Subir / Borrar Archivos</li>'}
+                                            ${guestPermissions.includes('all') || guestPermissions.includes('settings') ? '<li><i data-feather="check" class="w-3 h-3 inline"></i> Cambiar Configuración / Wipe</li>' : '<li class="text-red-400"><i data-feather="x" class="w-3 h-3 inline"></i> Cambiar Configuración / Wipe</li>'}
+                                        </ul>
+                                    </div>
+                                </div>`;
+                        } else {
+                            let sharedListHtml = (config.sharedWith || []).map(entry => {
+                                const email = typeof entry === 'string' ? entry : entry.email;
+                                const perms = typeof entry === 'string' ? ['power', 'console'] : entry.permissions;
+
+                                const pPower = perms.includes('power') ? 'text-green-400' : 'text-gray-600';
+                                const pConsole = perms.includes('console') ? 'text-green-400' : 'text-gray-600';
+                                const pFiles = perms.includes('files') ? 'text-green-400' : 'text-gray-600';
+                                const pSettings = perms.includes('settings') ? 'text-green-400' : 'text-gray-600';
+
+                                return `
+                                <div class="bg-[#111] border border-[#333] p-4 rounded-lg mb-3 shadow">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm text-white font-bold flex items-center gap-2"><i data-feather="user" class="w-4 h-4 text-blue-400"></i> ${email}</span>
+                                        <button onclick="window.unshareServer('${email}')" class="text-red-500 hover:text-red-400 bg-red-900/20 p-2 rounded transition-colors text-xs font-bold" title="Revocar Todo">
+                                            Eliminar Invitado
+                                        </button>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-[#222]">
+                                        <span class="text-[10px] bg-[#1a1a1a] px-2 py-1 rounded border border-[#333] ${pPower}" title="Energía"><i data-feather="power" class="w-3 h-3 inline"></i> Poder</span>
+                                        <span class="text-[10px] bg-[#1a1a1a] px-2 py-1 rounded border border-[#333] ${pConsole}" title="Consola"><i data-feather="terminal" class="w-3 h-3 inline"></i> Consola</span>
+                                        <span class="text-[10px] bg-[#1a1a1a] px-2 py-1 rounded border border-[#333] ${pFiles}" title="Archivos"><i data-feather="folder" class="w-3 h-3 inline"></i> Archivos</span>
+                                        <span class="text-[10px] bg-[#1a1a1a] px-2 py-1 rounded border border-[#333] ${pSettings}" title="Configuración"><i data-feather="settings" class="w-3 h-3 inline"></i> Config</span>
+                                    </div>
+                                </div>
+                            `}).join('') || '<p class="text-xs text-gray-500 text-center py-4 bg-[#111] rounded-lg border border-[#222]">No has invitado a nadie aún.</p>';
+
+                            panel.innerHTML = `
+                                <div class="content-panel">
+                                    <h3 class="text-xl mb-6 font-bold text-green-500 flex items-center gap-2"><i data-feather="share-2"></i> Acceso Compartido 2.0 (Permisos Granulares)</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div class="bg-[#161616] p-6 rounded-xl border border-[#333]">
+                                            <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-wider text-blue-400">Invitar Nuevo Colaborador</h4>
+                                            <p class="text-xs text-gray-400 mb-6">Ingresa el correo y marca los permisos que quieres darle sobre este nodo.</p>
+                                            
+                                            <div class="mb-4">
+                                                <input type="email" id="share-email-input" class="w-full bg-[#0a0a0a] border border-[#444] text-white p-3 rounded-lg outline-none focus:border-blue-500 text-sm transition-colors mb-3" placeholder="correo@amigo.com">
+                                                
+                                                <div class="grid grid-cols-2 gap-2 text-xs text-gray-300 bg-[#0a0a0a] p-3 rounded-lg border border-[#222]">
+                                                    <label class="flex items-center gap-2 cursor-pointer hover:text-white"><input type="checkbox" id="perm-power" checked class="accent-blue-500"> Encender/Apagar</label>
+                                                    <label class="flex items-center gap-2 cursor-pointer hover:text-white"><input type="checkbox" id="perm-console" checked class="accent-blue-500"> Usar Consola</label>
+                                                    <label class="flex items-center gap-2 cursor-pointer hover:text-white"><input type="checkbox" id="perm-files" class="accent-blue-500"> Gestor Archivos</label>
+                                                    <label class="flex items-center gap-2 cursor-pointer hover:text-white"><input type="checkbox" id="perm-settings" class="accent-blue-500"> Config / Reset</label>
+                                                </div>
+                                            </div>
+
+                                            <button id="btn-share" onclick="window.shareServer()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg transition-colors text-xs uppercase tracking-wider shadow-lg shadow-blue-900/50">Enviar Invitación</button>
+                                        </div>
+                                        <div class="bg-[#161616] p-6 rounded-xl border border-[#333]">
+                                            <h4 class="text-sm font-bold text-white mb-4 uppercase tracking-wider text-green-400">Usuarios Activos en este Nodo</h4>
+                                            <div id="shared-list-container" class="max-h-[300px] overflow-y-auto pr-2">
+                                                ${sharedListHtml}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        }
+                        feather.replace();
+
+                        window.shareServer = async () => {
+                            const emailInput = document.getElementById('share-email-input');
+                            const email = emailInput.value.trim();
+                            const btn = document.getElementById('btn-share');
+
+                            if (!email) return alert("Por favor ingresa un correo válido.");
+                            if (email === auth.currentUser.email) return alert("No puedes invitarte a ti mismo.");
+
+                            const perms = [];
+                            if (document.getElementById('perm-power').checked) perms.push('power');
+                            if (document.getElementById('perm-console').checked) perms.push('console');
+                            if (document.getElementById('perm-files').checked) perms.push('files');
+                            if (document.getElementById('perm-settings').checked) perms.push('settings');
+
+                            if (perms.length === 0) return alert("Debes asignarle al menos 1 permiso.");
+
+                            btn.disabled = true;
+                            btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i> Procesando...';
+                            feather.replace();
+
+                            try {
+                                const token = await auth.currentUser.getIdToken();
+                                const res = await fetch(API_URL + '/api/project/share', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                                    body: JSON.stringify({ serverId: config.id, emailToShare: email, permissions: perms })
+                                });
+
+                                const contentType = res.headers.get("content-type");
+                                if (!contentType || !contentType.includes("application/json")) {
+                                    throw new Error("El servidor está caído o bloqueado por Cloudflare.");
+                                }
+
+                                const data = await res.json();
+                                if (data.success) {
+                                    config.sharedWith = data.sharedWith;
+                                    sessionStorage.setItem('selectedServer', JSON.stringify(config));
+                                    emailInput.value = '';
+                                    window.showPanel('compartidos-panel');
+                                    alert(`¡Excelente! El usuario ${email} ahora tiene acceso según los permisos asignados.`);
+                                } else { throw new Error(data.error); }
+                            } catch (e) {
+                                alert("Error al invitar: " + e.message);
+                                btn.disabled = false;
+                                btn.innerText = 'Enviar Invitación';
+                            }
+                        };
+
+                        window.unshareServer = async (email) => {
+                            if (!confirm(`¿Estás seguro de que quieres EXPULSAR a ${email} del servidor?`)) return;
+                            try {
+                                const token = await auth.currentUser.getIdToken();
+                                const res = await fetch(API_URL + '/api/project/unshare', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                                    body: JSON.stringify({ serverId: config.id, emailToUnshare: email })
+                                });
+
+                                const data = await res.json();
+                                if (data.success) {
+                                    config.sharedWith = data.sharedWith;
+                                    sessionStorage.setItem('selectedServer', JSON.stringify(config));
+                                    window.showPanel('compartidos-panel');
+                                } else { throw new Error(data.error); }
+                            } catch (e) { alert("Error al revocar: " + e.message); }
+                        };
+                    }
+
+                } // FIN showPanel
+
+                async function checkPlayitLogs() {
+                    try {
+                        const t = await auth.currentUser.getIdToken();
+                        const res = await fetch(`${API_URL}/api/server/playitlogs${queryAuth}`, { headers: { 'Authorization': 'Bearer ' + t } });
+                        const data = await res.json();
+                        const pOut = document.getElementById('playit-out');
+                        if (pOut) { pOut.value = data.logs; pOut.scrollTop = pOut.scrollHeight; }
+                        const claimBtn = document.getElementById('claim-link-btn');
+                        const waitText = document.getElementById('claim-wait-text');
+                        if (claimBtn && data.logs) {
+                            const match = data.logs.match(/(https:\/\/playit\.gg\/claim\/[a-zA-Z0-9]+)/);
+                            if (match) {
+                                claimBtn.href = match[1];
+                                claimBtn.classList.remove('hidden');
+                                if (waitText) waitText.classList.add('hidden');
+                            }
+                        }
+                    } catch (e) { }
+                }
+
+                async function checkStatus() {
+                    try {
+                        const t = await auth.currentUser.getIdToken();
+                        const res = await fetch(`${API_URL}/api/server/status${queryAuth}`, { headers: { 'Authorization': 'Bearer ' + t } });
+                        const data = await res.json();
+
+                        // ===== CONTROL DE ZONA DE HIELO (ISPAUSED) =====
+                        if (data.isPaused) {
+                            document.getElementById('ice-zone').classList.remove('hidden');
+                        } else {
+                            document.getElementById('ice-zone').classList.add('hidden');
+                        }
+
+                        const isOn = data.status === 'on';
+
+                        const sText = document.getElementById('status-text');
+                        if (sText) {
+                            sText.innerText = isOn ? 'ONLINE' : 'OFFLINE';
+                            sText.className = isOn ? 'text-sm font-bold text-green-500 uppercase tracking-widest' : 'text-sm font-bold text-red-500 uppercase tracking-widest';
+                        }
+                        if (document.getElementById('btn-start')) document.getElementById('btn-start').disabled = isOn;
+                        if (document.getElementById('btn-restart')) document.getElementById('btn-restart').disabled = !isOn;
+                        if (document.getElementById('btn-stop')) document.getElementById('btn-stop').disabled = !isOn;
+
+                        if (isOn) {
+                            const statRes = await fetch(`${API_URL}/api/server/stats${queryAuth}`, { headers: { 'Authorization': 'Bearer ' + t } });
+                            const statData = await statRes.json();
+                            if (document.getElementById('stat-cpu-value')) document.getElementById('stat-cpu-value').innerText = statData.cpu;
+                            if (document.getElementById('stat-ram-value')) document.getElementById('stat-ram-value').innerText = `${(parseFloat(statData.ram) / 1024).toFixed(2)} GB / ${window.userPlan.ram}`;
+                            if (ramChart && cpuChart) {
+                                ramChart.data.datasets[0].data.shift();
+                                ramChart.data.datasets[0].data.push(parseFloat(statData.ram));
+                                ramChart.update();
+                                cpuChart.data.datasets[0].data.shift();
+                                cpuChart.data.datasets[0].data.push(parseFloat(statData.cpu));
+                                cpuChart.update();
+                            }
+                        } else {
+                            if (document.getElementById('stat-cpu-value')) document.getElementById('stat-cpu-value').innerText = '0%';
+                            if (document.getElementById('stat-ram-value')) document.getElementById('stat-ram-value').innerText = `0.00 GB / ${window.userPlan.ram}`;
+                            if (ramChart && cpuChart) {
+                                ramChart.data.datasets[0].data.shift();
+                                ramChart.data.datasets[0].data.push(0);
+                                ramChart.update();
+                                cpuChart.data.datasets[0].data.shift();
+                                cpuChart.data.datasets[0].data.push(0);
+                                cpuChart.update();
+                            }
+                        }
+                    } catch (e) { }
+                }
+
+                window.actionServer = async (action) => {
+                    document.getElementById('btn-start').disabled = true;
+                    document.getElementById('btn-restart').disabled = true;
+                    document.getElementById('btn-stop').disabled = true;
+                    document.getElementById('status-text').innerText = 'PROCESANDO...';
+                    document.getElementById('status-text').className = 'text-sm font-bold text-yellow-500 uppercase tracking-widest';
+                    const t = await auth.currentUser.getIdToken();
+                    try {
+                        const res = await fetch(`${API_URL}/api/server/${action}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + t
+                            },
+                            body: JSON.stringify(bodyAuth)
+                        });
+                        if (!res.ok) {
+                            const errTxt = await res.json();
+                            throw new Error(errTxt.error || "Error al ejecutar acción");
+                        }
+                    } catch (e) {
+                        alert("Error: " + e.message);
+                    }
+                    setTimeout(checkStatus, 3000);
+                };
+
+                function initCharts() {
+                    if (ramChart) ramChart.destroy();
+                    if (cpuChart) cpuChart.destroy();
+                    const ramCtx = document.getElementById('ramChart');
+                    const cpuCtx = document.getElementById('cpuChart');
+                    if (!ramCtx || !cpuCtx) return;
+
+                    const ramMax = window.userPlan.ramNum ? window.userPlan.ramNum * 1024 : 8192;
+
+                    const cOpt = {
+                        responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
+                        elements: { point: { radius: 0 } },
+                        scales: { x: { display: false }, y: { display: true, min: 0, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#666', font: { size: 10 } } } },
+                        plugins: { legend: { display: false } }
+                    };
+                    ramChart = new Chart(ramCtx, {
+                        type: 'line',
+                        data: { labels: Array(15).fill(''), datasets: [{ data: Array(15).fill(0), borderColor: '#4CAF50', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderWidth: 2, fill: true, tension: 0.4 }] },
+                        options: { ...cOpt, scales: { y: { ...cOpt.scales.y, max: ramMax } } }
+                    });
+                    cpuChart = new Chart(cpuCtx, {
+                        type: 'line',
+                        data: { labels: Array(15).fill(''), datasets: [{ data: Array(15).fill(0), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.2)', borderWidth: 2, fill: true, tension: 0.4 }] },
+                        options: { ...cOpt, scales: { y: { ...cOpt.scales.y, max: 100 } } }
+                    });
+                }
+
+                function updateProviderUI() {
+                    const user = auth.currentUser;
+                    if (!user) return;
+                    const l = user.providerData.map(p => p.providerId);
+
+                    const bG = document.getElementById('btn-gdrive');
+                    if (bG) {
+                        if (l.includes('google.com')) {
+                            bG.innerText = 'Desvincular';
+                            bG.className = 'text-xs text-red-500 font-bold hover:underline';
+                            bG.onclick = () => unlinkProvider('google.com');
+                        } else {
+                            bG.innerText = 'Vincular y Dar Permiso';
+                            bG.className = 'text-xs text-green-400 hover:underline';
+                            bG.onclick = async () => {
+                                const p = new GoogleAuthProvider();
+                                p.addScope('https://www.googleapis.com/auth/drive.file');
+                                await linkProvider(p, 'Google Drive');
+                            };
+                        }
+                    }
+
+                    const bO = document.getElementById('btn-onedrive');
+                    if (bO) {
+                        if (l.includes('microsoft.com')) {
+                            bO.innerText = 'Desvincular';
+                            bO.className = 'text-xs text-red-500 font-bold hover:underline';
+                            bO.onclick = () => unlinkProvider('microsoft.com');
+                        } else {
+                            bO.innerText = 'Vincular y Dar Permiso';
+                            bO.className = 'text-xs text-green-400 hover:underline';
+                            bO.onclick = async () => {
+                                const p = new OAuthProvider('microsoft.com');
+                                p.addScope('Files.ReadWrite');
+                                await linkProvider(p, 'OneDrive');
+                            };
+                        }
+                    }
+                }
+
+                async function linkProvider(p, n) {
+                    try {
+                        const r = await linkWithPopup(auth.currentUser, p);
+                        const c = p.providerId === 'google.com' ? GoogleAuthProvider.credentialFromResult(r) : OAuthProvider.credentialFromResult(r);
+                        if (c && c.accessToken) localStorage.setItem(p.providerId + '_token', c.accessToken);
+                        alert(`¡${n} vinculado correctamente!`);
+                        updateProviderUI();
+                    } catch (e) {
+                        alert('Error al vincular: ' + e.message);
+                    }
+                }
+
+                async function unlinkProvider(id) {
+                    if (!confirm(`¿Desvincular?`)) return;
+                    try {
+                        await unlink(auth.currentUser, id);
+                        localStorage.removeItem(id + '_token');
+                        updateProviderUI();
+                    } catch (e) {
+                        alert('Error al desvincular.');
+                    }
+                }
+
+                window.loadSavedBackups = () => {
+                    const list = document.getElementById('backup-list');
+                    if (!list) return;
+
+                    const config = JSON.parse(sessionStorage.getItem('selectedServer'));
+                    const storageKey = `backups_${config.id}`;
+                    const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+                    if (saved.length === 0) {
+                        list.innerHTML = '<div class="text-center text-gray-600 text-sm py-4">No hay copias de seguridad creadas aún.</div>';
+                        return;
+                    }
+
+                    list.innerHTML = '';
+                    saved.forEach(b => {
+                        const div = document.createElement('div');
+                        div.className = "backup-item flex flex-col bg-[#1a1a1a] p-4 rounded-lg border border-[#333] shadow-md mb-2";
+                        div.innerHTML = `
+                            <div class="flex justify-between items-start w-full">
+                                <div class="flex items-center gap-3">
+                                    <i data-feather="check-circle" class="text-green-500 w-6 h-6"></i>
+                                    <div>
+                                        <p class="text-sm text-white font-bold">${b.name}</p>
+                                        <p class="text-xs text-green-400 mt-1">Subido a ${b.provider} - ${b.time}</p>
+                                    </div>
+                                </div>
+                                <button onclick="this.closest('.backup-item').remove(); window.removeBackup('${b.id}')" class="text-red-500 hover:text-red-400 p-2">
+                                    <i data-feather="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>`;
+                        list.appendChild(div);
+                    });
+                    feather.replace();
+                };
+
+                window.removeBackup = (id) => {
+                    const config = JSON.parse(sessionStorage.getItem('selectedServer'));
+                    const storageKey = `backups_${config.id}`;
+                    let saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                    saved = saved.filter(b => b.id !== id);
+                    localStorage.setItem(storageKey, JSON.stringify(saved));
+
+                    if (saved.length === 0) {
+                        document.getElementById('backup-list').innerHTML = '<div class="text-center text-gray-600 text-sm py-4">No hay copias de seguridad creadas aún.</div>';
+                    }
+                };
+
+                window.createBackup = async (pName) => {
+                    const isG = pName === 'gdrive';
+                    const tKey = isG ? 'google.com_token' : 'microsoft.com_token';
+                    const token = localStorage.getItem(tKey);
+                    const pText = isG ? 'Google Drive' : 'OneDrive';
+
+                    if (!token) {
+                        alert(`Por favor, vincula tu cuenta de ${pText} primero.`);
+                        return;
+                    }
+
+                    const list = document.getElementById('backup-list');
+                    if (list.innerText.includes('No hay copias')) list.innerHTML = '';
+
+                    const bId = Date.now().toString();
+                    const div = document.createElement('div');
+                    div.id = `backup-card-${bId}`;
+                    div.className = "backup-item flex flex-col bg-[#1a1a1a] p-4 rounded-lg border border-[#333] shadow-md mb-2";
+
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start w-full">
+                            <div class="flex items-center gap-3">
+                                <i data-feather="loader" id="icon-${bId}" class="text-indigo-400 w-6 h-6 animate-spin"></i>
+                                <div>
+                                    <p class="text-sm text-white font-bold" id="title-${bId}">Preparando copia en ${pText}...</p>
+                                    <p class="text-xs text-yellow-400 mt-1" id="status-${bId}">Comprimiendo y conectando...</p>
+                                </div>
+                            </div>
+                            <button onclick="this.closest('.backup-item').remove()" class="text-red-500 hover:text-red-400 p-2 hidden">
+                                <i data-feather="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div id="progress-container-${bId}" class="w-full mt-4">
+                            <div class="flex justify-between text-xs text-gray-400 mb-1">
+                                <span>Progreso de subida</span><span id="pct-${bId}">0%</span>
+                            </div>
+                            <div class="w-full bg-[#222] rounded-full h-2">
+                                <div id="bar-${bId}" class="bg-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>`;
+
+                    list.prepend(div);
+                    feather.replace();
+
+                    let pct = 0;
+                    const interval = setInterval(() => {
+                        if (pct < 90) {
+                            pct += Math.floor(Math.random() * 8) + 1;
+                            if (pct > 90) pct = 90;
+                            document.getElementById(`bar-${bId}`).style.width = pct + '%';
+                            document.getElementById(`pct-${bId}`).innerText = pct + '%';
+                        }
+                    }, 1500);
+
+                    try {
+                        const t = await auth.currentUser.getIdToken();
+                        const endpoint = isG ? '/api/backup/gdrive' : '/api/backup/onedrive';
+                        const res = await fetch(`${API_URL}${endpoint}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + t
+                            },
+                            body: JSON.stringify({ token })
+                        });
+
+                        if (!res.ok) {
+                            const errTxt = await res.json();
+                            throw new Error(errTxt.error || "Error al subir backup");
+                        }
+
+                        const data = await res.json();
+
+                        clearInterval(interval);
+
+                        if (data.success) {
+                            document.getElementById(`bar-${bId}`).style.width = '100%';
+                            document.getElementById(`pct-${bId}`).innerText = '100%';
+                            document.getElementById(`bar-${bId}`).classList.replace('bg-indigo-500', 'bg-green-500');
+
+                            const tStr = new Date().toLocaleTimeString();
+                            document.getElementById(`icon-${bId}`).outerHTML = `<i data-feather="check-circle" class="text-green-500 w-6 h-6"></i>`;
+                            document.getElementById(`title-${bId}`).innerText = data.name;
+                            document.getElementById(`status-${bId}`).innerText = `Subido a ${pText} - ${tStr}`;
+                            document.getElementById(`status-${bId}`).classList.replace('text-yellow-400', 'text-green-400');
+
+                            setTimeout(() => {
+                                document.getElementById(`progress-container-${bId}`).style.display = 'none';
+                                document.querySelector(`#backup-card-${bId} button`).classList.remove('hidden');
+                            }, 2000);
+                            feather.replace();
+
+                            const config = JSON.parse(sessionStorage.getItem('selectedServer'));
+                            const storageKey = `backups_${config.id}`;
+                            const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                            saved.unshift({ id: bId, name: data.name, provider: pText, time: tStr });
+                            localStorage.setItem(storageKey, JSON.stringify(saved));
+                        } else {
+                            throw new Error(data.error);
+                        }
+                    } catch (e) {
+                        clearInterval(interval);
+                        document.getElementById(`progress-container-${bId}`).style.display = 'none';
+                        document.getElementById(`icon-${bId}`).outerHTML = `<i data-feather="alert-triangle" class="text-red-500 w-6 h-6"></i>`;
+                        document.getElementById(`title-${bId}`).innerText = 'Error al crear la copia';
+                        document.getElementById(`status-${bId}`).innerText = e.message;
+                        document.getElementById(`status-${bId}`).classList.replace('text-yellow-400', 'text-red-500');
+                        feather.replace();
+                    }
+                };
+
+                window.resetPlayitNetwork = async () => {
+                    if (!confirm("⚠️ ADVERTENCIA EXTREMA ⚠️\n\nEsto destruirá la conexión actual de tu servidor. La IP que tenías dejará de funcionar para siempre y tendrás que vincular una nueva cuenta de Playit.\n\nTu mundo y archivos están a salvo.\n\n¿Estás ABSOLUTAMENTE seguro?")) return;
+
+                    const btn = document.querySelector('button[onclick="window.resetPlayitNetwork()"]');
+                    const originalText = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i data-feather="loader" class="animate-spin inline w-4 h-4"></i> Purificando Red...';
+                    feather.replace();
+
+                    try {
+                        const t = await auth.currentUser.getIdToken();
+                        const res = await fetch(`${API_URL}/api/server/reset-network`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + t
+                            },
+                            body: JSON.stringify(bodyAuth)
+                        });
+
+                        if (!res.ok) {
+                            const errTxt = await res.json();
+                            throw new Error(errTxt.error || "Error al resetear la red");
+                        }
+
+                        const data = await res.json();
+
+                        if (data.success) {
+                            alert("✅ Red reseteada con éxito. Serás redirigido al inicio para obtener tu nuevo link de vinculación.");
+
+                            let sessionConf = JSON.parse(sessionStorage.getItem('selectedServer'));
+                            sessionConf.publicIp = null;
+                            sessionStorage.setItem('selectedServer', JSON.stringify(sessionConf));
+
+                            document.querySelector('.navigation a[data-panel="home-panel"]').click();
+                        } else {
+                            throw new Error(data.error || "Error desconocido");
+                        }
+                    } catch (e) {
+                        alert("❌ Error: " + e.message);
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                };
+            }
+        });
+    </script>
+</body>
+
+</html>

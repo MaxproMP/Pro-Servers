@@ -27,13 +27,13 @@ services:
       - minecraft-net
 
   laravel-api:
-    build: ./proservers-billing
+    build: ./proservers-api
     container_name: minecraft-panel-laravel
     restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
-      - ./proservers-billing:/app
+      - ./proservers-api:/app
     networks:
       - minecraft-net
 
@@ -44,7 +44,7 @@ services:
     ports:
       - "3001:3001"
     env_file:
-      - ./proservers-billing/.env
+      - ./proservers-api/.env
     networks:
       - minecraft-net
 

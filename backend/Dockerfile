@@ -19,8 +19,7 @@ COPY package*.json ./
 
 # Instalamos todo en una sola capa de forma silenciosa.
 # Agregamos mssql a la lista de instalación forzada.
-RUN npm install --legacy-peer-deps && \
-    npm install firebase-admin@13 archiver adm-zip multer mssql --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 # Copia el resto de los archivos del proyecto
 COPY . .

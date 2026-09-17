@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil | Professional Servers</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('img/favicon.ico') }}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 15%, #1a3a1a 0%, #0a0a0a 85%);
+            z-index: -1;
+        }
+
+        .content-panel {
+            background: rgba(18, 18, 18, 0.9);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .input-pro {
+            background: #111;
+            border: 1px solid #333;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .input-pro:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+
+    <div class="max-w-4xl mx-auto px-4 py-10">
+
+        <!-- HEADER -->
+        <div class="flex items-center justify-between mb-8 pb-6 border-b border-[#333]">
+            <div class="flex items-center gap-4">
+                <img src="{{ asset('img/favicon.ico') }}"
+                    class="w-12 h-12 object-contain drop-shadow-[0_0_12px_rgba(76,175,80,0.5)]"
+                    onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                <div>
+                    <h1 class="text-2xl font-bold font-['Cinzel'] tracking-wider text-white">Configuración de Cuenta
+                    </h1>
+                    <p class="text-xs text-gray-400">Administra tu identidad y preferencias</p>
+                </div>
+            </div>
+            <button onclick="window.location.href='/panel'"
+                class="text-xs text-gray-400 hover:text-white transition-colors uppercase font-bold flex items-center gap-2 bg-[#161616] px-4 py-2 rounded-lg border border-[#333]">
+                <i data-feather="arrow-left" class="w-4 h-4"></i> Volver al Panel
+            </button>
+        </div>
+
+        <div id="loading-profile" class="text-center py-20">
+            <i data-feather="loader" class="animate-spin text-green-500 w-12 h-12 mx-auto mb-4"></i>
+            <p class="text-gray-400 text-sm font-bold uppercase tracking-widest">Cargando perfil...</p>
+        </div>
+
+        <div id="profile-content" class="hidden">
+            <div class="content-panel max-w-4xl mx-auto">
+                <h3 class="text-2xl mb-2 font-bold text-white font-['Cinzel'] flex items-center gap-2"><i
+                        data-feather="user-check" class="text-green-500"></i> Mi Perfil Profesional</h3>
+                <p class="text-xs text-gray-400 mb-6">Actualiza tu información personal, datos de contacto, métodos de
+                    pago y personaliza tu avatar (Máx. 128 MB).</p>
+
+                <div class="bg-[#161616] p-8 rounded-2xl border border-[#333] shadow-2xl">
+                    <form id="advanced-profile-form" class="space-y-6">
+
+                        <!-- AVATAR Y VALIDACIÓN DE TAMAÑO -->
+                        <div class="flex flex-col md:flex-row items-center gap-6 pb-6 border-b border-[#333]">
+                            <div class="relative">
+                                <img src="{{ asset('img/default-avatar.png') }}" id="preview-avatar"
+                                    class="w-28 h-28 rounded-full border-4 border-green-500 object-cover shadow-[0_0_20px_rgba(76,175,80,0.3)]">
+                            </div>
+                            <div class="flex-1 w-full space-y-2">
+                                <label class="text-xs text-gray-400 uppercase font-bold block">Avatar de Perfil (.gif,
+                                    .jpeg, .jpg, .png)</label>
+                                <input type="url" id="profile-avatar-url" class="input-pro text-xs bg-[#0a0a0a]"
+                                    placeholder="https://ejemplo.com/tu-avatar.png"
+                                    oninput="document.getElementById('preview-avatar').src = this.value || '{{ asset('img/default-avatar.png') }}'">
+                                <p class="text-[10px] text-yellow-500"><i data-feather="info"
+                                        class="inline w-3 h-3"></i> Tamaño máximo de archivo: 128 MB. Asegúrate de que
+                                    el enlace sea directo.</p>
+                            </div>
+                        </div>
+
+                        <!-- INFORMACIÓN BÁSICA Y NOMBRES -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Nombre</label>
+                                <input type="text" id="prof-nombre" class="input-pro bg-[#0a0a0a]"
+                                    placeholder="Tu nombre">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Segundo Nombre</label>
+                                <input type="text" id="prof-segundonombre" class="input-pro bg-[#0a0a0a]"
+                                    placeholder="Opcional">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Apellido(s)</label>
+                                <input type="text" id="prof-apellido" class="input-pro bg-[#0a0a0a]"
+                                    placeholder="Tus apellidos">
+                            </div>
+                        </div>
+
+                        <!-- CONTACTO Y UBICACIÓN -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Correo Electrónico</label>
+                                <input type="email" id="prof-email"
+                                    class="input-pro bg-[#0a0a0a] opacity-60 cursor-not-allowed" disabled>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Teléfono</label>
+                                <input type="tel" id="prof-telefono" class="input-pro bg-[#0a0a0a]"
+                                    placeholder="+54 9 11...">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Teléfono Móvil</label>
+                                <input type="tel" id="prof-movil" class="input-pro bg-[#0a0a0a]"
+                                    placeholder="+54 9 11...">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="space-y-1 md:col-span-2">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Dirección</label>
+                                <input type="text" id="prof-direccion" class="input-pro bg-[#0a0a0a]"
+                                    placeholder="Calle, Número, Piso...">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Ciudad</label>
+                                <input type="text" id="prof-ciudad" class="input-pro bg-[#0a0a0a]"
+                                    placeholder="Tu ciudad">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Departamento /
+                                    Provincia</label>
+                                <input type="text" id="prof-depto" class="input-pro bg-[#0a0a0a]"
+                                    placeholder="Provincia o Estado">
+                            </div>
+                        </div>
+
+                        <!-- PAÍS, ZONA HORARIA Y WEB -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Seleccione su país</label>
+                                <select id="prof-pais" class="input-pro bg-[#0a0a0a]">
+                                    <option value="AR">Argentina</option>
+                                    <option value="CL">Chile</option>
+                                    <option value="MX">México</option>
+                                    <option value="ES">España</option>
+                                    <option value="US">Estados Unidos</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Zona Horaria</label>
+                                <select id="prof-zonahoraria" class="input-pro bg-[#0a0a0a]">
+                                    <option value="America/Argentina/Buenos_Aires">(GMT-3) Buenos Aires</option>
+                                    <option value="America/Mexico_City">(GMT-6) Ciudad de México</option>
+                                    <option value="America/Bogota">(GMT-5) Bogotá</option>
+                                    <option value="Europe/Madrid">(GMT+1) Madrid</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[11px] text-gray-400 uppercase font-bold">Página Web</label>
+                                <input type="url" id="prof-web" class="input-pro bg-[#0a0a0a]"
+                                    placeholder="https://tudominio.com">
+                            </div>
+                        </div>
+
+                        <!-- DESCRIPCIÓN -->
+                        <div class="space-y-1">
+                            <label class="text-[11px] text-gray-400 uppercase font-bold">Descripción / Biografía</label>
+                            <textarea id="prof-descripcion" class="input-pro bg-[#0a0a0a] h-24 resize-none"
+                                placeholder="Breve descripción sobre vos o tu comunidad..."></textarea>
+                        </div>
+
+                        <!-- MÉTODOS DE PAGO Y SUSCRIPCIÓN VINCULADA -->
+                        <div class="bg-[#111] p-5 rounded-xl border border-[#222] space-y-3">
+                            <h4 class="text-xs uppercase font-bold text-green-400 flex items-center gap-2"><i
+                                    data-feather="credit-card" class="w-4 h-4"></i> Suscripción y Métodos de Pago</h4>
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center text-xs gap-2">
+                                <span class="text-gray-400">Plan actual contratado: <b class="text-white uppercase"
+                                        id="prof-plan-name">Cargando...</b></span>
+                                <button type="button" onclick="window.location.href='/planes'"
+                                    class="text-indigo-400 hover:underline font-bold">Cambiar / Renovar Plan &rarr;</button>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-[#333]">
+                            <button type="submit"
+                                class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3.5 px-6 rounded-xl transition-colors uppercase tracking-wider text-xs shadow-[0_0_15px_rgba(76,175,80,0.4)]">Guardar
+                                Cambios del Perfil</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAg-wvhB7iaHOF5UOSsOOOz6le1ZutVmMM",
+            authDomain: "proffesional-server.firebaseapp.com",
+            projectId: "proffesional-server",
+            storageBucket: "proffesional-server.firebasestorage.app",
+            messagingSenderId: "833822850667",
+            appId: "1:833822850667:web:3c03219c6822116edbfb2e",
+            measurementId: "G-8SZ528Y5NZ"
+        };
+
+        const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+        const auth = getAuth(app);
+
+        const API_URL = window.location.protocol + '//' + window.location.hostname;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    window.location.href = '/panel';
+                    return;
+                }
+
+                // Cargar datos en los inputs visualmente
+                let rawName = user.displayName || '';
+                let firstName = '';
+                let lastName = '';
+                
+                // Si el nombre viene con el tag " | @username", lo limpiamos para mostrar solo el nombre
+                if (rawName.includes(' | ')) {
+                    const parts = rawName.split(' | ');
+                    const fullNames = parts[0].split(' ');
+                    firstName = fullNames[0] || '';
+                    if (fullNames.length > 1) {
+                        lastName = fullNames.slice(1).join(' ');
+                    }
+                } else {
+                    const fullNames = rawName.split(' ');
+                    firstName = fullNames[0] || '';
+                    if (fullNames.length > 1) {
+                        lastName = fullNames.slice(1).join(' ');
+                    }
+                }
+
+                document.getElementById('prof-nombre').value = firstName;
+                document.getElementById('prof-apellido').value = lastName;
+                document.getElementById('prof-email').value = user.email;
+
+                const userPhoto = user.photoURL || "{{ asset('img/default-avatar.png') }}";
+                document.getElementById('profile-avatar-url').value = user.photoURL || '';
+                document.getElementById('preview-avatar').src = userPhoto;
+
+                // Consultar Plan al Backend
+                try {
+                    const token = await user.getIdToken();
+                    const verifyRes = await fetch(`${API_URL}/api/user/status?uid=${user.uid}`, {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    const verifyData = await verifyRes.json();
+                    
+                    if (verifyData.plan && verifyData.plan.name) {
+                        document.getElementById('prof-plan-name').innerText = verifyData.plan.name;
+                    } else if (user.email === 'rodasmaximo51@gmail.com') {
+                        document.getElementById('prof-plan-name').innerText = 'Plan ProServers CEO (Ilimitado)';
+                    } else {
+                        document.getElementById('prof-plan-name').innerText = 'Sin Suscripción Activa';
+                    }
+                } catch(e) {
+                    document.getElementById('prof-plan-name').innerText = 'Error al cargar plan';
+                }
+
+                document.getElementById('loading-profile').classList.add('hidden');
+                document.getElementById('profile-content').classList.remove('hidden');
+
+            });
+
+            document.getElementById('advanced-profile-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const originalText = btn.innerText;
+                btn.innerHTML = '<i data-feather="loader" class="animate-spin inline w-4 h-4"></i> Guardando...';
+                btn.disabled = true;
+                feather.replace();
+
+                const nombre = document.getElementById('prof-nombre').value.trim();
+                const apellido = document.getElementById('prof-apellido').value.trim();
+                const avatarUrl = document.getElementById('profile-avatar-url').value.trim();
+
+                try {
+                    // Mantenemos el @username intacto si existe
+                    let currentTag = '';
+                    if (auth.currentUser.displayName && auth.currentUser.displayName.includes(' | ')) {
+                        currentTag = ' | ' + auth.currentUser.displayName.split(' | ')[1];
+                    }
+
+                    const newDisplayName = (nombre && apellido) ? `${nombre} ${apellido}${currentTag}` : (nombre ? `${nombre}${currentTag}` : auth.currentUser.displayName);
+
+                    await updateProfile(auth.currentUser, {
+                        displayName: newDisplayName,
+                        photoURL: avatarUrl || null
+                    });
+
+                    alert("✅ ¡Perfil actualizado con éxito!");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                } catch (err) {
+                    alert("❌ Error al actualizar el perfil: " + err.message);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            };
+        });
+    </script>
+</body>
+
+</html>
