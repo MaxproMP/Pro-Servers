@@ -6,7 +6,7 @@
     "dockerode": "^5.0.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "firebase-admin": "^13.10.0",
+    "firebase-admin": "^14.4.0",
     "mongoose": "^9.10.0",
     "mssql": "^12.7.2",
     "multer": "^2.3.0",
