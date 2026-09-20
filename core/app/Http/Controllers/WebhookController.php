@@ -3,60 +3,94 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\DockerService;
-use App\Models\Server;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
-    /**
-     * Esta función recibe el aviso de AstroPay cuando alguien paga.
-     */
-    public function handleAstroPay(Request $request, DockerService $docker)
+    // 1. WEBHOOK DE ASTROPAY
+    public function webhookAstropay(Request $request)
     {
-        // 1. AstroPay nos manda el estado del pago
-        $status = $request->input('status'); // Ej: 'APPROVED', 'REJECTED', 'PENDING'
-        $transactionId = $request->input('merchant_transaction_id');
+        $estado = $request->input('status'); // Ej: 'APPROVED'
+        $transaccionId = $request->input('merchant_deposit_id') ?? $request->input('merchant_order_id');
+        $firebaseUid = $request->input('user_id'); 
+        $planNombre = $request->input('plan_name');
+        $monto = $request->input('amount');
 
-        // 2. Si el pago entró joya
-        if ($status === 'APPROVED') {
-            Log::info("Pago aprobado recibido para transacción: " . $transactionId);
-
-            // Buscamos la compra en la base de datos. Si es el TEST-001 y no existe, lo creamos para que no falle.
-            $server = Server::firstOrCreate(
-                ['transaction_id' => $transactionId],
-                ['user_id' => 1, 'status' => 'pending'] // Asumimos un user_id genérico para el test
-            );
-
-            // Generamos datos para el servidor (nombre único y un puerto al azar)
-            $nombreContenedor = "proservers_mc_" . uniqid();
-            $puertoAleatorio = rand(25000, 29999); 
-            
-            // Acá a futuro leerías tu base de datos para saber qué plan compró.
-            // Para probar ahora, le ponemos 2048 MB (2GB).
-            $memoriaMb = 2048;
-
-            // 3. ¡LA MAGIA! Llamamos a nuestro archivo DockerService
-            $resultado = $docker->crearServidorMinecraft($nombreContenedor, $memoriaMb, $puertoAleatorio);
-
-            if ($resultado['success']) {
-                // 4. Guardamos los datos reales del contenedor en la base de datos
-                $server->update([
-                    'container_id' => $resultado['container_id'],
-                    'port' => $puertoAleatorio,
-                    'status' => 'active'
-                ]);
-
-                Log::info("¡ÉXITO! Servidor de Minecraft creado y guardado en DB. Puerto asignado: " . $puertoAleatorio);
-                // (Acá en el futuro podrías mandarle un email automático al cliente con la IP y el Puerto)
-            } else {
-                // Si Docker falla, marcamos el error en la base de datos
-                $server->update(['status' => 'failed_deployment']);
-                Log::error("Error al intentar levantar Docker: " . json_encode($resultado['error']));
-            }
+        if ($estado === 'APPROVED' || $estado === 'approved') {
+            return $this->procesarPagoExitoso($firebaseUid, $planNombre, $monto, 'AstroPay', $transaccionId);
         }
 
-        // Siempre le respondemos a AstroPay con un OK (HTTP 200) para que no nos vuelva a mandar la alerta
-        return response()->json(['message' => 'Webhook procesado correctamente'], 200);
+        return response()->json(['mensaje' => 'Pago no aprobado aún'], 200);
+    }
+
+    // 2. WEBHOOK DE LEMONCASH
+    public function webhookLemoncash(Request $request)
+    {
+        $estado = $request->input('state'); // Ej: 'SUCCESS'
+        $transaccionId = $request->input('transaction_id');
+        $firebaseUid = $request->input('metadata.firebase_uid');
+        $planNombre = $request->input('metadata.plan_name');
+        $monto = $request->input('amount');
+
+        if ($estado === 'SUCCESS') {
+            return $this->procesarPagoExitoso($firebaseUid, $planNombre, $monto, 'LemonCash', $transaccionId);
+        }
+
+        return response()->json(['mensaje' => 'Pago pendiente en Lemon'], 200);
+    }
+
+    // 3. LA LÓGICA QUE HACE LA MAGIA Y PRENDE EL SERVER
+    private function procesarPagoExitoso($firebaseUid, $planNombre, $monto, $metodo, $transaccionId)
+    {
+        // Evitar procesar el mismo pago dos veces
+        $existe = DB::table('Pagos')->where('transaccion_id', $transaccionId)->first();
+        if ($existe) {
+            return response()->json(['mensaje' => 'Pago ya procesado'], 200);
+        }
+
+        // A. Guardamos en Azure SQL Server
+        DB::table('Pagos')->insert([
+            'firebase_uid'   => $firebaseUid,
+            'monto'          => $monto,
+            'metodo'         => $metodo,
+            'estado'         => 'completado',
+            'transaccion_id' => $transaccionId,
+            'created_at'     => now(),
+            'updated_at'     => now()
+        ]);
+
+        DB::table('Suscripciones')->insert([
+            'firebase_uid'      => $firebaseUid,
+            'plan_nombre'       => $planNombre,
+            'estado'            => 'activo',
+            'fecha_inicio'      => now(),
+            'fecha_vencimiento' => now()->addDays(30),
+            'created_at'        => now(),
+            'updated_at'        => now()
+        ]);
+
+        // Actualizamos el plan activo en el usuario
+        DB::table('users')->where('firebase_uid', $firebaseUid)->update([
+            'plan_activo' => $planNombre,
+            'updated_at'  => now()
+        ]);
+
+        // B. Le pegamos al Demonio de Node.js para que orqueste el contenedor en Docker
+        try {
+            Http::withHeaders([
+                'Authorization' => 'Bearer ' . env('NODE_SECRET_KEY')
+            ])->post('http://minecraft-panel-backend:3000/api/internal/deploy', [
+                'firebase_uid' => $firebaseUid,
+                'plan'         => $planNombre
+            ]);
+            
+            Log::info("🚀 Servidor desplegado exitosamente para $firebaseUid via $metodo");
+        } catch (\Exception $e) {
+            Log::error("❌ Error al contactar a Node.js: " . $e->getMessage());
+        }
+
+        return response()->json(['mensaje' => 'Pago procesado y servidor desplegado'], 200);
     }
 }

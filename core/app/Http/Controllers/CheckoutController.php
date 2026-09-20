@@ -3,91 +3,65 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Suscripcion;
+use App\Models\Pago;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
-    // 1. WEBHOOK DE ASTROPAY (Recibe la confirmación de pago)
-    public function webhookAstropay(Request $request)
+    public function crearPago(Request $request)
     {
-        // AstroPay manda el estado de la transacción acá
-        $estado = $request->input('status'); // Ej: 'APPROVED'
-        $transaccionId = $request->input('merchant_deposit_id');
-        $firebaseUid = $request->input('user_id'); 
-        $planNombre = $request->input('plan_name');
-        $monto = $request->input('amount');
-
-        if ($estado === 'APPROVED') {
-            return $this->procesarPagoExitoso($firebaseUid, $planNombre, $monto, 'AstroPay', $transaccionId);
-        }
-
-        return response()->json(['mensaje' => 'Pago no aprobado aún'], 200);
-    }
-
-    // 2. WEBHOOK DE LEMONCASH (Recibe pago crypto/fiat)
-    public function webhookLemoncash(Request $request)
-    {
-        // Validación de LemonCash
-        $estado = $request->input('state'); // Ej: 'SUCCESS'
-        $transaccionId = $request->input('transaction_id');
-        $firebaseUid = $request->input('metadata.firebase_uid');
-        $planNombre = $request->input('metadata.plan_name');
-        $monto = $request->input('amount');
-
-        if ($estado === 'SUCCESS') {
-            return $this->procesarPagoExitoso($firebaseUid, $planNombre, $monto, 'LemonCash', $transaccionId);
-        }
-
-        return response()->json(['mensaje' => 'Pago pendiente en Lemon'], 200);
-    }
-
-    // 3. LA LÓGICA QUE HACE LA MAGIA Y PRENDE EL SERVER
-    private function procesarPagoExitoso($firebaseUid, $planNombre, $monto, $metodo, $transaccionId)
-    {
-        // Evitar procesar el mismo pago dos veces
-        $existe = DB::table('Pagos')->where('transaccion_id', $transaccionId)->first();
-        if ($existe) {
-            return response()->json(['mensaje' => 'Pago ya procesado'], 200);
-        }
-
-        // A. Guardamos la plata en tu Azure SQL
-        DB::table('Pagos')->insert([
-            'firebase_uid' => $firebaseUid,
-            'monto' => $monto,
-            'metodo' => $metodo,
-            'estado' => 'completado',
-            'transaccion_id' => $transaccionId,
-            'created_at' => now(),
-            'updated_at' => now()
+        $request->validate([
+            'firebase_uid' => 'required|string',
+            'plan_nombre'  => 'required|string',
+            'ciclo_meses'  => 'required|integer',
+            'monto'        => 'required|numeric'
         ]);
 
-        DB::table('Suscripciones')->insert([
-            'firebase_uid' => $firebaseUid,
-            'plan_nombre' => $planNombre,
-            'estado' => 'activa',
-            'fecha_inicio' => now(),
-            'fecha_vencimiento' => now()->addDays(30), // 1 mes de hosting
-            'created_at' => now(),
-            'updated_at' => now()
+        $transaccionId = 'PRO-' . uniqid();
+
+        // 1. Registramos el pago como pendiente en Microsoft SQL Server
+        Pago::create([
+            'firebase_uid'   => $request->firebase_uid,
+            'monto'          => $request->monto,
+            'metodo'         => 'astropay',
+            'estado'         => 'pendiente',
+            'transaccion_id' => $transaccionId
         ]);
 
-        // B. Le pegamos a TU Node.js para que orqueste el contenedor en Docker
-        // Usamos la red interna de AWS (minecraft-net)
-        try {
-            Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('NODE_SECRET_KEY')
-            ])->post('http://minecraft-panel-backend:3000/api/internal/deploy', [
-                'firebase_uid' => $firebaseUid,
-                'plan' => $planNombre
+        // 2. Registramos la suscripción en estado pendiente
+        Suscripcion::create([
+            'firebase_uid' => $request->firebase_uid,
+            'plan_nombre'  => $request->plan_nombre,
+            'ciclo_meses'  => $request->ciclo_meses,
+            'estado'       => 'pendiente'
+        ]);
+
+        // 3. Conexión con la API de AstroPay (Sandbox)
+        $response = Http::withHeaders([
+            'Authorization' => 'Basic ' . base64_encode(env('ASTROPAY_CLIENT_ID') . ':' . env('ASTROPAY_SECRET')),
+            'Content-Type'  => 'application/json'
+        ])->post(env('ASTROPAY_API_URL'), [
+            'amount'            => $request->monto,
+            'currency'          => 'ARS',
+            'merchant_order_id' => $transaccionId,
+            'country'           => 'AR',
+            'user'              => [
+                'email'         => $request->email ?? 'cliente@proservers.com.ar'
+            ]
+        ]);
+
+        if ($response->successful()) {
+            return response()->json([
+                'success'        => true,
+                'redirect_url'   => $response->json()['redirect_url'] ?? '#',
+                'transaccion_id' => $transaccionId
             ]);
-            
-            Log::info("🚀 Servidor desplegado exitosamente para $firebaseUid via $metodo");
-        } catch (\Exception $e) {
-            Log::error("❌ Error al contactar a Node.js: " . $e->getMessage());
         }
 
-        return response()->json(['mensaje' => 'Pago procesado y servidor desplegado'], 200);
+        return response()->json([
+            'success' => false,
+            'error'   => 'No se pudo conectar con la pasarela de pagos de AstroPay'
+        ], 500);
     }
 }
