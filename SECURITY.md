@@ -1,21 +1,30 @@
-# Security Policy
+# 🛡️ Política de Seguridad (Security Policy)
 
-## Supported Versions
+## 📌 Versiones Soportadas
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Las siguientes versiones de **ProServers** reciben soporte activo con parches y actualizaciones de seguridad:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| Versión | Soporte de Seguridad |
+| :--- | :--- |
+| `v0.9.x` (Monorepo Híbrido) | :white_check_mark: |
+| `< v0.9` | :x: |
 
-## Reporting a Vulnerability
+---
 
-Use this section to tell people how to report a vulnerability.
+## 🔒 Reportar una Vulnerabilidad
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Tomamos muy en serio la seguridad de nuestra plataforma de hosting, los nodos de Docker y la protección de los datos de nuestros clientes. Si descubres una vulnerabilidad de seguridad, te pedimos que **no la hagas pública** de inmediato. Danos la oportunidad de solucionarlo de forma responsable.
+
+### 📨 ¿Cómo reportar un fallo?
+* **Correo de Seguridad:** Envía los detalles directamente a nuestro equipo de soporte en `soporte.professional.servers@gmail.com`.
+* **Detalles a incluir en tu reporte:**
+  * Una descripción clara de la vulnerabilidad encontrada.
+  * Pasos detallados o pruebas de concepto (PoC) para reproducir el problema.
+  * El impacto potencial (por ejemplo, si afecta al panel de Laravel, al demonio de Node.js, a los contenedores o a la autenticación de Firebase).
+
+### ⏱️ ¿Qué puedes esperar?
+* **Respuesta inicial:** Recibirás una confirmación de recepción en un plazo máximo de **48 horas**.
+* **Seguimiento:** Te mantendremos al tanto del análisis técnico y del tiempo estimado para el lanzamiento del parche.
+* **Agradecimiento:** Una vez solucionada la brecha, se te dará crédito en las notas de la versión (a menos que prefieras mantener el anonimato).
+
+¡Gracias por ayudarnos a mantener **ProServers** seguro y blindado para todos los usuarios! 🚀
