@@ -10,10 +10,10 @@ class Pago extends Model
     protected $table = 'pagos';
 
     protected $fillable = [
-        'suscripcion_id', 
+        'suscripcion_id', // Relación original
+        'firebase_uid',   // Identificador de Firebase
         'monto', 
-        'pasarela_pago', 
-        'medio_pago', 
+        'metodo',         // Ej: 'astropay', 'lemon', 'tarjeta'
         'transaccion_id', 
         'estado'
     ];

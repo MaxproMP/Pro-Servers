@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Desplegar Servidor | Professional Servers V0.9 BETA</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('img/favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600&family=Press+Start+2P&display=swap"
         rel="stylesheet">
@@ -155,9 +155,8 @@
     <div class="max-w-5xl mx-auto p-6 pt-12">
         <div class="flex flex-col md:flex-row items-center justify-between mb-10 gap-4">
             <div class="flex items-center gap-4">
-                <img src="{{ asset('img/favicon.ico') }}"
-                    class="w-14 h-14 object-contain drop-shadow-[0_0_12px_rgba(76,175,80,0.5)]"
-                    onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                <img src="/img/favicon.ico" class="w-14 h-14 object-contain drop-shadow-[0_0_12px_rgba(76,175,80,0.5)]"
+                    onerror="this.src='/img/logo-minecraft.ico'">
                 <div>
                     <h1
                         class="text-3xl font-bold font-['Cinzel'] tracking-wider text-white uppercase flex items-center gap-3">
@@ -169,9 +168,9 @@
                     <p class="text-xs text-green-500 font-bold uppercase tracking-widest">Infraestructura V0.9 Pro</p>
                 </div>
             </div>
-            <button onclick="window.location.href='/panel'"
-                class="text-xs text-gray-400 hover:text-white transition-colors uppercase font-bold flex items-center gap-2 bg-[#111] px-4 py-2 rounded-lg border border-[#333]">
-                <i data-feather="arrow-left" class="w-4 h-4"></i> Volver al Panel
+            <button onclick="window.cerrarSesion()"
+                class="text-xs text-gray-400 hover:text-red-500 transition-colors uppercase font-bold flex items-center gap-2 bg-[#111] px-4 py-2 rounded-lg border border-[#333] hover:border-red-500/50">
+                <i data-feather="log-out" class="w-4 h-4"></i> Cerrar Sesión
             </button>
         </div>
 
@@ -213,7 +212,7 @@
                         <p class="text-xs text-gray-400">Los Modpacks masivos requieren descompresión profunda y el
                             Gestor de Archivos activado para configurarlos correctamente. Para desbloquear esta función
                             necesitas actualizar al <b class="text-yellow-500">Plan Oro (16GB)</b> o superior.</p>
-                        <button type="button" onclick="window.location.href='/planes'"
+                        <button type="button" onclick="window.location.href='/planes.html'"
                             class="mt-4 w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-lg transition-colors uppercase text-xs tracking-wider shadow-lg shadow-red-950/50">
                             Mejorar a Plan Oro
                         </button>
@@ -385,7 +384,7 @@
 
     <script type="module">
         import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAg-wvhB7iaHOF5UOSsOOOz6le1ZutVmMM",
@@ -562,14 +561,14 @@
                         throw new Error(`Error en el servidor o CurseForge no responde. (HTTP ${res.status}: ${errTxt})`);
                     }
 
-                    const data = await res.json();
+                    const data = await json();
 
                     resDiv.innerHTML = '';
                     let found = 0;
                     if (data.data && data.data.length > 0) {
                         data.data.forEach(mod => {
                             found++;
-                            const icon = (mod.logo && mod.logo.url) ? mod.logo.url : "{{ asset('img/favicon.ico') }}";
+                            const icon = (mod.logo && mod.logo.url) ? mod.logo.url : "/img/favicon.ico";
 
                             const hasServerPack = mod.latestFiles && mod.latestFiles.some(f => f.serverPackFileId);
 
@@ -670,9 +669,17 @@
                 }
             };
 
+            window.cerrarSesion = () => {
+                signOut(auth).then(() => {
+                    window.location.href = '/index.html';
+                }).catch((error) => {
+                    console.error("Error cerrando sesión:", error);
+                });
+            };
+
             onAuthStateChanged(auth, async (user) => {
                 if (!user) {
-                    window.location.href = '/panel';
+                    window.location.href = '/panel.html';
                     return;
                 }
                 try {
@@ -714,7 +721,7 @@
                                 <i data-feather="slash" class="w-20 h-20 text-red-600 mb-6"></i>
                                 <h2 class="text-3xl font-bold font-['Cinzel'] text-red-500 mb-2">${verifyData.status === 'banned' ? 'ERRADICADO DEL SISTEMA' : 'Suscripción Suspendida'}</h2>
                                 <p class="text-gray-300 mb-6 max-w-lg text-sm">${verifyData.status === 'banned' ? 'El sistema de seguridad ha detectado un intento de evasión de límites (Multicuentas / Abuso de IPs). Todos tus servidores han sido destruidos y tu acceso ha sido revocado permanentemente.' : 'Tu plan actual ha caducado. Renueva tu suscripción para seguir desplegando infraestructura.'}</p>
-                                ${verifyData.status !== 'banned' ? `<button onclick="window.location.href='/planes'" class="bg-indigo-600 hover:bg-indigo-500 px-8 py-3 rounded-lg text-white font-bold uppercase tracking-wider transition-colors shadow-[0_0_15px_rgba(79,70,229,0.4)]">Ver Planes de Pago</button>` : `<button onclick="auth.signOut().then(()=>window.location.href='/panel')" class="bg-red-700 hover:bg-red-600 px-8 py-3 rounded-lg text-white font-bold uppercase tracking-wider transition-colors">Salir</button>`}
+                                ${verifyData.status !== 'banned' ? `<button onclick="window.location.href='/planes.html'" class="bg-indigo-600 hover:bg-indigo-500 px-8 py-3 rounded-lg text-white font-bold uppercase tracking-wider transition-colors shadow-[0_0_15px_rgba(79,70,229,0.4)]">Ver Planes de Pago</button>` : `<button onclick="window.cerrarSesion()" class="bg-red-700 hover:bg-red-600 px-8 py-3 rounded-lg text-white font-bold uppercase tracking-wider transition-colors">Salir</button>`}
                             </div>
                         `;
                         feather.replace();
@@ -789,7 +796,7 @@
 
             window.enterServer = (s) => {
                 sessionStorage.setItem('selectedServer', decodeURIComponent(s));
-                window.location.href = '/panel';
+                window.location.href = '/panel.html';
             };
 
             window.deleteServer = async (id) => {
@@ -960,7 +967,7 @@
                                         setTimeout(() => {
                                             responseData.server.version = finalVersion;
                                             sessionStorage.setItem('selectedServer', JSON.stringify(responseData.server));
-                                            window.location.href = '/panel';
+                                            window.location.href = '/panel.html';
                                         }, 1200);
                                     }
                                 }

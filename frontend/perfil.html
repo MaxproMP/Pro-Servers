@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Perfil | Professional Servers</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('img/favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600;700&display=swap"
         rel="stylesheet">
@@ -87,16 +87,16 @@
         <!-- HEADER -->
         <div class="flex items-center justify-between mb-8 pb-6 border-b border-[#333]">
             <div class="flex items-center gap-4">
-                <img src="{{ asset('img/favicon.ico') }}"
+                <img src="/img/favicon.ico"
                     class="w-12 h-12 object-contain drop-shadow-[0_0_12px_rgba(76,175,80,0.5)]"
-                    onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                    onerror="this.src='/img/logo-minecraft.ico'">
                 <div>
                     <h1 class="text-2xl font-bold font-['Cinzel'] tracking-wider text-white">Configuración de Cuenta
                     </h1>
                     <p class="text-xs text-gray-400">Administra tu identidad y preferencias</p>
                 </div>
             </div>
-            <button onclick="window.location.href='/panel'"
+            <button onclick="window.location.href='/panel.html'"
                 class="text-xs text-gray-400 hover:text-white transition-colors uppercase font-bold flex items-center gap-2 bg-[#161616] px-4 py-2 rounded-lg border border-[#333]">
                 <i data-feather="arrow-left" class="w-4 h-4"></i> Volver al Panel
             </button>
@@ -120,7 +120,7 @@
                         <!-- AVATAR Y VALIDACIÓN DE TAMAÑO -->
                         <div class="flex flex-col md:flex-row items-center gap-6 pb-6 border-b border-[#333]">
                             <div class="relative">
-                                <img src="{{ asset('img/default-avatar.png') }}" id="preview-avatar"
+                                <img src="/img/default-avatar.png" id="preview-avatar"
                                     class="w-28 h-28 rounded-full border-4 border-green-500 object-cover shadow-[0_0_20px_rgba(76,175,80,0.3)]">
                             </div>
                             <div class="flex-1 w-full space-y-2">
@@ -128,7 +128,7 @@
                                     .jpeg, .jpg, .png)</label>
                                 <input type="url" id="profile-avatar-url" class="input-pro text-xs bg-[#0a0a0a]"
                                     placeholder="https://ejemplo.com/tu-avatar.png"
-                                    oninput="document.getElementById('preview-avatar').src = this.value || '{{ asset('img/default-avatar.png') }}'">
+                                    oninput="document.getElementById('preview-avatar').src = this.value || '/img/default-avatar.png'">
                                 <p class="text-[10px] text-yellow-500"><i data-feather="info"
                                         class="inline w-3 h-3"></i> Tamaño máximo de archivo: 128 MB. Asegúrate de que
                                     el enlace sea directo.</p>
@@ -234,7 +234,7 @@
                             <div class="flex flex-col md:flex-row justify-between items-start md:items-center text-xs gap-2">
                                 <span class="text-gray-400">Plan actual contratado: <b class="text-white uppercase"
                                         id="prof-plan-name">Cargando...</b></span>
-                                <button type="button" onclick="window.location.href='/planes'"
+                                <button type="button" onclick="window.location.href='/planes.html'"
                                     class="text-indigo-400 hover:underline font-bold">Cambiar / Renovar Plan &rarr;</button>
                             </div>
                         </div>
@@ -275,7 +275,7 @@
 
             onAuthStateChanged(auth, async (user) => {
                 if (!user) {
-                    window.location.href = '/panel';
+                    window.location.href = '/panel.html';
                     return;
                 }
 
@@ -304,7 +304,7 @@
                 document.getElementById('prof-apellido').value = lastName;
                 document.getElementById('prof-email').value = user.email;
 
-                const userPhoto = user.photoURL || "{{ asset('img/default-avatar.png') }}";
+                const userPhoto = user.photoURL || "/img/default-avatar.png";
                 document.getElementById('profile-avatar-url').value = user.photoURL || '';
                 document.getElementById('preview-avatar').src = userPhoto;
 

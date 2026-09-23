@@ -9,16 +9,15 @@ class Server extends Model
 {
     use HasFactory;
 
-    // Le indicamos a Laravel exactamente qué tabla usar
     protected $table = 'servers';
 
-    // Autorizamos los campos que podemos llenar de forma automática desde el Webhook
     protected $fillable = [
         'user_id', 
+        'firebase_uid',     // Vinculación con Firebase Auth
+        'plan_nombre',      // Qué plan está corriendo (Redstone, Diamante, etc.)
         'transaction_id', 
-        'container_id', 
-        'port', 
-        'status',
-        // Si tenés otros campos en esa tabla (ej: 'name', 'plan_id'), agregalos acá
+        'container_id',     // El ID real del contenedor Docker
+        'port',             // El puerto asignado por Playit.gg o Docker
+        'status',           // 'pending', 'active', 'failed_deployment', 'paused'
     ];
 }

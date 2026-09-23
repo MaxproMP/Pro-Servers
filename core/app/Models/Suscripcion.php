@@ -18,7 +18,11 @@ class Suscripcion extends Model
         'plan_id', 
         'estado', 
         'fecha_inicio', 
-        'fecha_vencimiento'
+        'fecha_vencimiento',
+        // --- Campos agregados para el Webhook y Checkout ---
+        'firebase_uid',
+        'plan_nombre',
+        'ciclo_meses'
     ];
 
     protected $casts = [

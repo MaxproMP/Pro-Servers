@@ -5,7 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional Servers | Minecraft Panel</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('img/favicon.ico') }}">
+    
+    <!-- ESTO ES VITAL: El Token CSRF de Laravel para seguridad -->
+    <meta name="csrf-token" content="">
+
+    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600&family=Press+Start+2P&family=MedievalSharp&display=swap"
         rel="stylesheet">
@@ -262,7 +266,7 @@
             position: relative;
             width: 100%;
             min-height: 100vh;
-            background: url('{{ asset('img/dashboard-bg.jpeg') }}') center/cover no-repeat fixed;
+            background: url('/img/dashboard-bg.jpeg') center/cover no-repeat fixed;
             display: flex;
             flex-direction: column;
             padding-bottom: 110px;
@@ -609,640 +613,111 @@
             margin-top: 5px;
         }
 
-        .theme-border-redstone {
-            border-color: #ef4444;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
-        }
-
-        .theme-text-redstone {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.4);
-        }
-
-        .theme-badge-redstone {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.5);
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
-        }
-
-        .theme-border-hierro {
-            border-color: #e5e7eb;
-            box-shadow: 0 0 15px rgba(229, 231, 235, 0.4);
-        }
-
-        .theme-text-hierro {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(229, 231, 235, 0.8), 0 0 20px rgba(229, 231, 235, 0.4);
-        }
-
-        .theme-badge-hierro {
-            background: rgba(229, 231, 235, 0.15);
-            color: #e5e7eb;
-            border: 1px solid rgba(229, 231, 235, 0.5);
-            box-shadow: 0 0 10px rgba(229, 231, 235, 0.2);
-        }
-
-        .theme-border-cobre {
-            border-color: #b87333;
-            box-shadow: 0 0 15px rgba(184, 115, 51, 0.4);
-        }
-
-        .theme-text-cobre {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(184, 115, 51, 0.8), 0 0 20px rgba(184, 115, 51, 0.4);
-        }
-
-        .theme-badge-cobre {
-            background: rgba(184, 115, 51, 0.15);
-            color: #d97706;
-            border: 1px solid rgba(184, 115, 51, 0.5);
-            box-shadow: 0 0 10px rgba(184, 115, 51, 0.2);
-        }
-
-        .theme-border-oro {
-            border-color: #f59e0b;
-            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
-        }
-
-        .theme-text-oro {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(245, 158, 11, 0.8), 0 0 20px rgba(245, 158, 11, 0.4);
-        }
-
-        .theme-badge-oro {
-            background: rgba(245, 158, 11, 0.15);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.5);
-            box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
-        }
-
-        .theme-border-diamante {
-            border-color: #06b6d4;
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
-        }
-
-        .theme-text-diamante {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.4);
-        }
-
-        .theme-badge-diamante {
-            background: rgba(6, 182, 212, 0.15);
-            color: #06b6d4;
-            border: 1px solid rgba(6, 182, 212, 0.5);
-            box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
-        }
-
-        .theme-border-netherite {
-            border-color: #a855f7;
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
-        }
-
-        .theme-text-netherite {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 20px rgba(168, 85, 247, 0.4);
-        }
-
-        .theme-badge-netherite {
-            background: rgba(168, 85, 247, 0.15);
-            color: #a855f7;
-            border: 1px solid rgba(168, 85, 247, 0.5);
-            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
-        }
-
-        .theme-border-ghost-warrior {
-            border-color: #3b82f6;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
-        }
-
-        .theme-text-ghost-warrior {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.4);
-        }
-
-        .theme-badge-ghost-warrior {
-            background: rgba(59, 130, 246, 0.15);
-            color: #3b82f6;
-            border: 1px solid rgba(59, 130, 246, 0.5);
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
-        }
-
-        .theme-border-enterprise {
-            border-color: #fbbf24;
-            box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
-        }
-
-        .theme-text-enterprise {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.8), 0 0 20px rgba(251, 191, 36, 0.4);
-        }
-
-        .theme-badge-enterprise {
-            background: rgba(251, 191, 36, 0.15);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.5);
-            box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
-        }
-
-        .theme-border-ceo {
-            border-color: #9333ea;
-            box-shadow: 0 0 25px rgba(147, 51, 234, 0.6);
-        }
-
-        .theme-text-ceo {
-            color: #fff;
-            text-shadow: 0 0 15px rgba(147, 51, 234, 0.9), 0 0 30px rgba(147, 51, 234, 0.5);
-        }
-
-        .theme-badge-ceo {
-            background: rgba(147, 51, 234, 0.2);
-            color: #d8b4fe;
-            border: 1px solid rgba(147, 51, 234, 0.8);
-            box-shadow: 0 0 15px rgba(147, 51, 234, 0.4);
-            text-transform: uppercase;
-            font-weight: 800;
-        }
+        .theme-border-redstone { border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        .theme-text-redstone { color: #fff; text-shadow: 0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.4); }
+        .theme-badge-redstone { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+        
+        .theme-border-hierro { border-color: #e5e7eb; box-shadow: 0 0 15px rgba(229, 231, 235, 0.4); }
+        .theme-text-hierro { color: #fff; text-shadow: 0 0 10px rgba(229, 231, 235, 0.8), 0 0 20px rgba(229, 231, 235, 0.4); }
+        .theme-badge-hierro { background: rgba(229, 231, 235, 0.15); color: #e5e7eb; border: 1px solid rgba(229, 231, 235, 0.5); box-shadow: 0 0 10px rgba(229, 231, 235, 0.2); }
+        
+        .theme-border-cobre { border-color: #b87333; box-shadow: 0 0 15px rgba(184, 115, 51, 0.4); }
+        .theme-text-cobre { color: #fff; text-shadow: 0 0 10px rgba(184, 115, 51, 0.8), 0 0 20px rgba(184, 115, 51, 0.4); }
+        .theme-badge-cobre { background: rgba(184, 115, 51, 0.15); color: #d97706; border: 1px solid rgba(184, 115, 51, 0.5); box-shadow: 0 0 10px rgba(184, 115, 51, 0.2); }
+        
+        .theme-border-oro { border-color: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
+        .theme-text-oro { color: #fff; text-shadow: 0 0 10px rgba(245, 158, 11, 0.8), 0 0 20px rgba(245, 158, 11, 0.4); }
+        .theme-badge-oro { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.5); box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
+        
+        .theme-border-diamante { border-color: #06b6d4; box-shadow: 0 0 15px rgba(6, 182, 212, 0.4); }
+        .theme-text-diamante { color: #fff; text-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.4); }
+        .theme-badge-diamante { background: rgba(6, 182, 212, 0.15); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.5); box-shadow: 0 0 10px rgba(6, 182, 212, 0.2); }
+        
+        .theme-border-netherite { border-color: #a855f7; box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); }
+        .theme-text-netherite { color: #fff; text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 20px rgba(168, 85, 247, 0.4); }
+        .theme-badge-netherite { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.5); box-shadow: 0 0 10px rgba(168, 85, 247, 0.2); }
+        
+        .theme-border-ghost-warrior { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+        .theme-text-ghost-warrior { color: #fff; text-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.4); }
+        .theme-badge-ghost-warrior { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.5); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+        
+        .theme-border-enterprise { border-color: #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+        .theme-text-enterprise { color: #fff; text-shadow: 0 0 10px rgba(251, 191, 36, 0.8), 0 0 20px rgba(251, 191, 36, 0.4); }
+        .theme-badge-enterprise { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.5); box-shadow: 0 0 10px rgba(251, 191, 36, 0.2); }
+        
+        .theme-border-ceo { border-color: #9333ea; box-shadow: 0 0 25px rgba(147, 51, 234, 0.6); }
+        .theme-text-ceo { color: #fff; text-shadow: 0 0 15px rgba(147, 51, 234, 0.9), 0 0 30px rgba(147, 51, 234, 0.5); }
+        .theme-badge-ceo { background: rgba(147, 51, 234, 0.2); color: #d8b4fe; border: 1px solid rgba(147, 51, 234, 0.8); box-shadow: 0 0 15px rgba(147, 51, 234, 0.4); text-transform: uppercase; font-weight: 800; }
 
         @media (max-width: 768px) {
-            .contenedor-principal {
-                flex-direction: column;
-                position: relative;
-            }
-
-            .mitad-video {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                z-index: 1;
-            }
-
-            .mitad-login {
-                width: 100%;
-                height: 100%;
-                background: transparent;
-                z-index: 2;
-                padding: 20px;
-            }
-
-            .caja-login {
-                background: rgba(10, 10, 10, 0.95);
-                padding: 30px 20px;
-                border-radius: 15px;
-                border: 1px solid #333;
-            }
-
-            .amd-grid {
-                grid-template-columns: 1fr !important;
-            }
-
-            .amd-panel {
-                grid-column: span 1 !important;
-            }
-
-            .header-panel {
-                flex-direction: column;
-                text-align: center;
-                gap: 20px;
-            }
-
-            .header-panel>div {
-                flex-direction: column;
-                border-right: none !important;
-                padding-right: 0 !important;
-                border-bottom: 1px solid #333;
-                padding-bottom: 15px;
-            }
-
-            .header-right {
-                text-align: center !important;
-            }
-
-            .header-right .flex {
-                justify-content: center !important;
-            }
-
-            .navigation-container {
-                width: 95%;
-                bottom: 10px;
-            }
-
-            .navigation {
-                overflow-x: auto;
-                padding: 10px;
-                justify-content: flex-start;
-                gap: 10px;
-                border-radius: 15px;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .navigation::-webkit-scrollbar {
-                display: none;
-            }
-
-            .navigation a {
-                min-width: 70px;
-                padding: 8px 5px;
-                flex-shrink: 0;
-            }
-
-            .navigation .btn-hub {
-                border-left: none;
-                margin-left: 0;
-                padding-left: 5px;
-                border-top: 1px solid #333;
-            }
+            .contenedor-principal { flex-direction: column; position: relative; }
+            .mitad-video { position: absolute; width: 100%; height: 100%; z-index: 1; }
+            .mitad-login { width: 100%; height: 100%; background: transparent; z-index: 2; padding: 20px; }
+            .caja-login { background: rgba(10, 10, 10, 0.95); padding: 30px 20px; border-radius: 15px; border: 1px solid #333; }
+            .amd-grid { grid-template-columns: 1fr !important; }
+            .amd-panel { grid-column: span 1 !important; }
+            .header-panel { flex-direction: column; text-align: center; gap: 20px; }
+            .header-panel>div { flex-direction: column; border-right: none !important; padding-right: 0 !important; border-bottom: 1px solid #333; padding-bottom: 15px; }
+            .header-right { text-align: center !important; }
+            .header-right .flex { justify-content: center !important; }
+            .navigation-container { width: 95%; bottom: 10px; }
+            .navigation { overflow-x: auto; padding: 10px; justify-content: flex-start; gap: 10px; border-radius: 15px; -webkit-overflow-scrolling: touch; }
+            .navigation::-webkit-scrollbar { display: none; }
+            .navigation a { min-width: 70px; padding: 8px 5px; flex-shrink: 0; }
+            .navigation .btn-hub { border-left: none; margin-left: 0; padding-left: 5px; border-top: 1px solid #333; }
         }
 
         #mod-versions-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 2000;
         }
 
-        .modal-content-modrinth {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-header-modrinth {
-            padding: 15px 20px;
-            border-bottom: 1px solid #333;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-body-modrinth {
-            padding: 20px;
-            overflow-y: auto;
-            flex-grow: 1;
-        }
+        .modal-content-modrinth { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; width: 90%; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5); }
+        .modal-header-modrinth { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body-modrinth { padding: 20px; overflow-y: auto; flex-grow: 1; }
 
         /* MINE AI MODAL ORIGINAL */
-        .mine-hidden {
-            display: none !important;
-        }
-
-        #mine-chat-modal {
-            position: fixed;
-            bottom: 85px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 350px;
-            max-width: 95%;
-            background-color: #121212;
-            border: 1px solid #4ade80;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(74, 222, 128, 0.15);
-            z-index: 1000;
-            font-family: 'Poppins', sans-serif;
-            display: flex;
-            flex-direction: column;
-            max-height: 500px;
-        }
-
-        .mine-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background-color: #18181b;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            border-bottom: 1px solid #27272a;
-        }
-
-        .mine-title {
-            color: #ffffff;
-            font-weight: bold;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .mine-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #4ade80;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #4ade80;
-        }
-
-        .mine-close {
-            background: none;
-            border: none;
-            color: #a1a1aa;
-            font-size: 20px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .mine-close:hover {
-            color: #ef4444;
-        }
-
-        .mine-body {
-            padding: 15px;
-            overflow-y: auto;
-            flex: 1;
-            max-height: 350px;
-        }
-
-        .mine-message {
-            background-color: #27272a;
-            color: #e4e4e7;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            line-height: 1.5;
-            border-left: 3px solid #4ade80;
-        }
-
-        .mine-message-user span {
-            background-color: #4f46e5;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            display: inline-block;
-        }
-
-        .mine-footer {
-            display: flex;
-            padding: 12px;
-            border-top: 1px solid #27272a;
-            gap: 8px;
-            background-color: #18181b;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-        }
-
-        .mine-footer input {
-            flex: 1;
-            padding: 10px 12px;
-            background-color: #1a1a1a;
-            border: 1px solid #3f3f46;
-            border-radius: 6px;
-            color: white;
-            font-size: 12px;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        .mine-footer input:focus {
-            border-color: #4ade80;
-        }
-
-        .mine-footer button {
-            background-color: #4ade80;
-            color: #000;
-            border: none;
-            border-radius: 6px;
-            padding: 0 15px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-            font-size: 12px;
-        }
-
-        .mine-footer button:hover {
-            background-color: #22c55e;
-        }
-
-        .mine-footer button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .mine-hidden { display: none !important; }
+        #mine-chat-modal { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); width: 350px; max-width: 95%; background-color: #121212; border: 1px solid #4ade80; border-radius: 12px; box-shadow: 0 10px 30px rgba(74, 222, 128, 0.15); z-index: 1000; display: flex; flex-direction: column; max-height: 500px; }
+        .mine-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #18181b; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom: 1px solid #27272a; }
+        .mine-title { color: #ffffff; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .mine-dot { width: 8px; height: 8px; background-color: #4ade80; border-radius: 50%; box-shadow: 0 0 8px #4ade80; }
+        .mine-close { background: none; border: none; color: #a1a1aa; font-size: 20px; cursor: pointer; transition: 0.3s; }
+        .mine-close:hover { color: #ef4444; }
+        .mine-body { padding: 15px; overflow-y: auto; flex: 1; max-height: 350px; }
+        .mine-message { background-color: #27272a; color: #e4e4e7; padding: 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; border-left: 3px solid #4ade80; }
+        .mine-message-user span { background-color: #4f46e5; color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; display: inline-block; }
+        .mine-footer { display: flex; padding: 12px; border-top: 1px solid #27272a; gap: 8px; background-color: #18181b; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+        .mine-footer input { flex: 1; padding: 10px 12px; background-color: #1a1a1a; border: 1px solid #3f3f46; border-radius: 6px; color: white; font-size: 12px; outline: none; transition: 0.3s; }
+        .mine-footer input:focus { border-color: #4ade80; }
+        .mine-footer button { background-color: #4ade80; color: #000; border: none; border-radius: 6px; padding: 0 15px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 12px; }
+        .mine-footer button:hover { background-color: #22c55e; }
+        .mine-footer button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* SOPORTE EN VIVO (WIDGET FLOTANTE) */
-        .support-btn-floating {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 1000;
-            transition: 0.3s;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.5);
-        }
-
-        .support-btn-floating:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(147, 51, 234, 0.8);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-
-        .support-window {
-            position: fixed;
-            bottom: 100px;
-            right: 25px;
-            width: 360px;
-            max-width: 90vw;
-            background-color: #121419;
-            border: 1px solid #9333ea;
-            border-radius: 16px;
-            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.25);
-            z-index: 1050;
-            display: flex;
-            flex-direction: column;
-            max-height: 550px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: scale(0);
-            opacity: 0;
-            transform-origin: bottom right;
-            pointer-events: none;
-        }
-
-        .support-window.active {
-            transform: scale(1);
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .support-header {
-            background: linear-gradient(135deg, #9333ea, #4f46e5);
-            padding: 15px 20px;
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .support-body {
-            padding: 20px;
-            overflow-y: auto;
-            flex: 1;
-            min-height: 300px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: #0b0c10;
-        }
-
-        .chat-bubble {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 14px;
-            font-size: 13px;
-            line-height: 1.5;
-            word-wrap: break-word;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .chat-ai {
-            align-self: flex-start;
-            background-color: #1f232b;
-            color: #e4e4e7;
-            border-bottom-left-radius: 4px;
-            border-left: 3px solid #9333ea;
-        }
-
-        .chat-user {
-            align-self: flex-end;
-            background-color: #9333ea;
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .support-footer {
-            padding: 15px;
-            background: #121419;
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
-            border-top: 1px solid #1f232b;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .support-input {
-            flex: 1;
-            background: #0b0c10;
-            border: 1px solid #333;
-            color: white;
-            padding: 12px 15px;
-            border-radius: 25px;
-            font-size: 13px;
-            outline: none;
-            transition: 0.2s;
-        }
-
-        .support-input:focus {
-            border-color: #9333ea;
-            box-shadow: 0 0 10px rgba(147, 51, 234, 0.2);
-        }
-
-        .support-send {
-            background: linear-gradient(135deg, #9333ea, #4f46e5);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 42px;
-            height: 42px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: 0.2s;
-            flex-shrink: 0;
-            box-shadow: 0 4px 10px rgba(147, 51, 234, 0.3);
-        }
-
-        .support-send:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 15px rgba(147, 51, 234, 0.5);
-        }
+        .support-btn-floating { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1000; transition: 0.3s; border: 2px solid rgba(255, 255, 255, 0.2); box-shadow: 0 5px 20px rgba(147, 51, 234, 0.5); }
+        .support-btn-floating:hover { transform: scale(1.1); box-shadow: 0 8px 25px rgba(147, 51, 234, 0.8); border-color: rgba(255, 255, 255, 0.5); }
+        .support-window { position: fixed; bottom: 100px; right: 25px; width: 360px; max-width: 90vw; background-color: #121419; border: 1px solid #9333ea; border-radius: 16px; box-shadow: 0 15px 40px rgba(147, 51, 234, 0.25); z-index: 1050; display: flex; flex-direction: column; max-height: 550px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: scale(0); opacity: 0; transform-origin: bottom right; pointer-events: none; }
+        .support-window.active { transform: scale(1); opacity: 1; pointer-events: all; }
+        .support-header { background: linear-gradient(135deg, #9333ea, #4f46e5); padding: 15px 20px; border-top-left-radius: 15px; border-top-right-radius: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .support-body { padding: 20px; overflow-y: auto; flex: 1; min-height: 300px; display: flex; flex-direction: column; gap: 12px; background: #0b0c10; }
+        .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 14px; font-size: 13px; line-height: 1.5; word-wrap: break-word; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
+        .chat-ai { align-self: flex-start; background-color: #1f232b; color: #e4e4e7; border-bottom-left-radius: 4px; border-left: 3px solid #9333ea; }
+        .chat-user { align-self: flex-end; background-color: #9333ea; color: white; border-bottom-right-radius: 4px; }
+        .support-footer { padding: 15px; background: #121419; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; border-top: 1px solid #1f232b; display: flex; gap: 10px; align-items: center; }
+        .support-input { flex: 1; background: #0b0c10; border: 1px solid #333; color: white; padding: 12px 15px; border-radius: 25px; font-size: 13px; outline: none; transition: 0.2s; }
+        .support-input:focus { border-color: #9333ea; box-shadow: 0 0 10px rgba(147, 51, 234, 0.2); }
+        .support-send { background: linear-gradient(135deg, #9333ea, #4f46e5); color: white; border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; box-shadow: 0 4px 10px rgba(147, 51, 234, 0.3); }
+        .support-send:hover { transform: scale(1.1); box-shadow: 0 6px 15px rgba(147, 51, 234, 0.5); }
 
         /* ZONA DE HIELO (CONGELAMIENTO DE CLIENTE) */
-        .ice-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(5, 20, 30, 0.85);
-            backdrop-filter: blur(12px);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            pointer-events: all;
-        }
-
-        .ice-glass {
-            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(2, 132, 199, 0.2));
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            box-shadow: 0 0 40px rgba(14, 165, 233, 0.3), inset 0 0 20px rgba(56, 189, 248, 0.2);
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-        }
-
-        .ice-text {
-            color: #e0f2fe;
-            text-shadow: 0 0 15px rgba(56, 189, 248, 0.8), 0 0 30px rgba(14, 165, 233, 0.6);
-        }
+        .ice-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 20, 30, 0.85); backdrop-filter: blur(12px); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: all; }
+        .ice-glass { background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(2, 132, 199, 0.2)); border: 1px solid rgba(56, 189, 248, 0.4); box-shadow: 0 0 40px rgba(14, 165, 233, 0.3), inset 0 0 20px rgba(56, 189, 248, 0.2); border-radius: 20px; padding: 40px; text-align: center; max-width: 500px; width: 90%; }
+        .ice-text { color: #e0f2fe; text-shadow: 0 0 15px rgba(56, 189, 248, 0.8), 0 0 30px rgba(14, 165, 233, 0.6); }
 
         /* BROADCAST GLOBAL VISUAL */
-        .broadcast-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(153, 27, 27, 0.85) 0%, rgba(0, 0, 0, 0.95) 100%);
-            backdrop-filter: blur(15px);
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            transform: scale(1.05);
-        }
-
-        .broadcast-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-            transform: scale(1);
-        }
-
-        .broadcast-text {
-            font-family: 'Cinzel', serif;
-            text-align: center;
-            line-height: 1.4;
-            color: #fca5a5;
-            text-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
-        }
+        .broadcast-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(153, 27, 27, 0.85) 0%, rgba(0, 0, 0, 0.95) 100%); backdrop-filter: blur(15px); z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(1.05); }
+        .broadcast-overlay.active { opacity: 1; pointer-events: all; transform: scale(1); }
+        .broadcast-text { font-family: 'Cinzel', serif; text-align: center; line-height: 1.4; color: #fca5a5; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
     </style>
 </head>
 
@@ -1277,7 +752,7 @@
         <div class="mitad-video">
             <div class="filtro-oscuro"></div>
             <video autoplay loop muted playsinline class="video-fondo">
-                <source src="{{ asset('videos/login-animation.mp4') }}" type="video/mp4">
+                <source src="/videos/login-animation.mp4" type="video/mp4">
             </video>
         </div>
 
@@ -1285,16 +760,16 @@
             <div class="caja-login">
                 <div class="titulo-container">
                     <div class="flex items-center justify-center gap-4 mb-5">
-                        <img src="{{ asset('img/favicon.ico') }}" alt="Tu Logo"
+                        <img src="/img/favicon.ico" alt="Tu Logo"
                             class="w-10 h-10 object-contain drop-shadow-[0_0_12px_rgba(76,175,80,0.5)] transition-transform hover:scale-110"
-                            onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                            onerror="this.src='/img/logo-minecraft.ico'">
                         <i data-feather="x" class="text-gray-600 w-4 h-4"></i>
-                        <img src="{{ asset('img/logo-minecraft.ico') }}" alt="Minecraft"
+                        <img src="/img/logo-minecraft.ico" alt="Minecraft"
                             class="w-10 h-10 object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.2)] transition-transform hover:scale-110">
                         <i data-feather="x" class="text-gray-600 w-4 h-4"></i>
-                        <img src="{{ asset('img/modrinth.ico') }}" alt="CurseForge"
+                        <img src="/img/modrinth.ico" alt="CurseForge"
                             class="w-10 h-10 rounded-xl object-contain drop-shadow-[0_0_12px_rgba(27,217,106,0.5)] transition-transform hover:scale-110"
-                            onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                            onerror="this.src='/img/logo-minecraft.ico'">
                     </div>
                     <span class="titulo-pro">Professional</span>
                     <span class="titulo-servers">Servers</span>
@@ -1320,7 +795,7 @@
                                 alt="GitHub" class="invertir-blanco">
                         </div>
                         <div class="btn-circular" id="btn-ms">
-                            <img src="{{ asset('img/microsoft.ico') }}" alt="Microsoft" style="width: 24px; height: 24px;">
+                            <img src="/img/microsoft.ico" alt="Microsoft" style="width: 24px; height: 24px;">
                         </div>
                     </div>
 
@@ -1329,7 +804,6 @@
                     <div id="login-box" class="w-full">
                         <form id="login-form">
                             <div class="grupo-input">
-                                <!-- Modificado para indicar que acepta Nombre de Usuario -->
                                 <label>Email, Teléfono o @Usuario</label>
                                 <input type="text" name="email" placeholder="correo@ejemplo.com, +549... o @usuario"
                                     required>
@@ -1359,7 +833,6 @@
                                 </div>
                             </div>
 
-                            <!-- NUEVO CAMPO: Nombre de Usuario Unico -->
                             <div class="grupo-input">
                                 <label>Nombre de Usuario Único</label>
                                 <input type="text" name="username" placeholder="Ej: @maxpro (Sin espacios)"
@@ -1408,14 +881,14 @@
             </div>
 
             <p style="position: absolute; bottom: 20px; right: 20px; font-size: 10px; color: #197e19;">PROFESSIONAL
-                SERVERS V0.9 BETA | BY @MAXPRO</p>
+                SERVERS V0.9.5 | BY @MAXPRO</p>
         </div>
     </div>
 
     <!-- DASHBOARD CLIENTE -->
     <div id="main-dashboard" class="dashboard-body hidden"></div>
 
-    <!-- BOTÓN FLOTANTE SOPORTE (PARA TODOS LOS PLANES) -->
+    <!-- BOTÓN FLOTANTE SOPORTE -->
     <div id="btn-floating-support" class="support-btn-floating bg-gradient-to-r from-purple-600 to-indigo-600 hidden"
         onclick="window.toggleSupportChat()">
         <i data-feather="message-circle" class="w-7 h-7"></i>
@@ -1426,9 +899,9 @@
         <div class="support-header">
             <div class="flex items-center gap-3 text-white font-bold text-sm">
                 <div class="relative">
-                    <img src="{{ asset('img/favicon.ico') }}"
+                    <img src="/img/favicon.ico"
                         class="w-9 h-9 rounded-full bg-black/40 p-1 border border-purple-300/30"
-                        onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                        onerror="this.src='/img/logo-minecraft.ico'">
                     <span
                         class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-[#4f46e5] rounded-full"></span>
                 </div>
@@ -1482,6 +955,9 @@
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 
     <script type="module">
+        // 1. CAPTURAMOS EL TOKEN CSRF DE LARAVEL
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
         import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, OAuthProvider, signInWithPopup, updateProfile, onAuthStateChanged, signOut, linkWithPopup, unlink } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
@@ -1540,7 +1016,7 @@
                     const forceUserMode = sessionStorage.getItem('forceUserMode') === 'true';
 
                     if (isCEO && !selectedServer && !forceUserMode) {
-                        window.location.href = '/admin';
+                        window.location.href = '/admin.html';
                         return;
                     }
 
@@ -1556,18 +1032,32 @@
 
                             const token = await user.getIdToken();
 
+                            // 2. CONEXIÓN CON LARAVEL: Traemos el perfil de Microsoft SQL Server
                             try {
-                                const verifyRes = await fetch(`${API_URL}/api/user/status?uid=${user.uid}`, {
-                                    headers: { 'Authorization': 'Bearer ' + token }
+                                const perfilRes = await fetch(`/api/perfil/${user.uid}`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': csrfToken
+                                    }
                                 });
-                                const verifyData = await verifyRes.json();
 
-                                if (verifyData.plan) {
-                                    window.userPlan = verifyData.plan;
-                                    window.userPlan.ramNum = parseInt(window.userPlan.ram.replace(/[^0-9]/g, '')) || 8;
+                                if (perfilRes.ok) {
+                                    const datosCliente = await perfilRes.json();
+                                    
+                                    // Actualizamos la variable de plan global basándonos en tu SQL Server
+                                    if (datosCliente.plan_activo !== 'ninguno') {
+                                        window.userPlan.name = datosCliente.plan_activo;
+                                        // TODO: A futuro cruzar con tu tabla Planes para traer MB y acceso a archivos
+                                    }
+                                } else if (perfilRes.status === 404) {
+                                    console.warn("Usuario no encontrado en SQL Server.");
                                 }
-                            } catch (e) { console.error("Error leyendo plan:", e); }
+                            } catch (e) {
+                                console.error("Error conectando con el Cerebro (Laravel):", e);
+                            }
 
+                            // Verificamos si el server existe en la API de Node (Demonio)
                             const res = await fetch(`${API_URL}/api/project/check`, {
                                 headers: { 'Authorization': 'Bearer ' + token }
                             });
@@ -1584,7 +1074,7 @@
                                 entrarAlPanel(config);
                             } else {
                                 sessionStorage.removeItem('selectedServer');
-                                window.location.href = isCEO ? '/crear' : '/planes';
+                                window.location.href = isCEO ? '/crear.html' : '/planes.html';
                             }
                         } catch (e) {
                             entrarAlPanel(JSON.parse(selectedServer));
@@ -1600,13 +1090,13 @@
                                 window.location.reload();
                             } else {
                                 if (isCEO) {
-                                    window.location.href = '/crear';
+                                    window.location.href = '/crear.html';
                                 } else {
-                                    window.location.href = '/planes';
+                                    window.location.href = '/planes.html';
                                 }
                             }
                         } catch (e) {
-                            window.location.href = isCEO ? '/crear' : '/planes';
+                            window.location.href = isCEO ? '/crear.html' : '/planes.html';
                         }
                     }
                 } else {
@@ -1636,34 +1126,34 @@
                 checkingStatus.classList.remove('hidden');
                 const f = e.target;
 
-                // VALIDACIÓN: El correo es el identificador principal en Firebase
                 const emailIngresado = f.email.value.trim();
                 const usernameIngresado = f.username.value.trim();
 
                 try {
-                    // Paso 1: Registrar en Firebase con Email
                     const cred = await createUserWithEmailAndPassword(auth, emailIngresado, f.password.value);
 
-                    // Paso 2: Guardar el @Username en el perfil de Firebase para evitar nulos
-                    // Guardamos Nombre + Apellido | @Username
                     await updateProfile(cred.user, {
                         displayName: `${f.nombre.value.trim()} ${f.apellido.value.trim()} | ${usernameIngresado}`
                     });
 
-                    // Paso 3: Mandar al backend para registrar el usuario en SQL/Mongo (lo implementaremos luego)
-                    const token = await cred.user.getIdToken();
-                    await fetch(`${API_URL}/api/user/register`, {
+                    // 3. CONEXIÓN CON LARAVEL: Enviamos los datos para guardarlos en Microsoft SQL Server
+                    await fetch(`/api/registro`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken 
+                        },
                         body: JSON.stringify({
+                            firebase_uid: cred.user.uid,
+                            email: emailIngresado,
                             username: usernameIngresado,
-                            nombre: f.nombre.value,
-                            apellido: f.apellido.value,
-                            dob: f.dob.value,
-                            pais: f.pais.value,
-                            phone: f.phone.value
+                            nombre: f.nombre.value.trim(),
+                            apellido: f.apellido.value.trim(),
+                            phone: f.phone.value.trim()
                         })
-                    }).catch(err => console.warn("Error enviando datos extra al backend", err));
+                    }).then(res => res.json())
+                      .then(data => console.log("Registrado exitosamente en SQL Server:", data))
+                      .catch(err => console.warn("Error enviando datos al Cerebro:", err));
 
                 } catch (err) {
                     loginBoxesWrapper.classList.remove('hidden');
@@ -1680,7 +1170,6 @@
                 let emailFinal = idIngresado;
 
                 try {
-                    // SI ES UN @USUARIO O NÚMERO DE TELÉFONO, PREGUNTAR AL BACKEND POR EL CORREO REAL
                     if (idIngresado.startsWith('@') || !idIngresado.includes('@')) {
                         const res = await fetch(`${API_URL}/api/user/resolve-email`, {
                             method: 'POST',
@@ -1696,7 +1185,6 @@
                                 throw new Error("Usuario no encontrado.");
                             }
                         } else {
-                            // Sistema temporal o de respaldo si el backend no responde
                             if (!idIngresado.includes('@') && !idIngresado.startsWith('@')) {
                                 emailFinal = idIngresado.replace(/[^0-9+]/g, '') + "@proservers.com";
                             } else {
@@ -1878,12 +1366,10 @@
                 const queryAuth = `?serverId=${config.id}`;
                 const bodyAuth = { serverId: config.id };
 
-                // PARCHE: Evitar TypeError si displayName es null
                 let rawName = auth.currentUser && auth.currentUser.displayName ? auth.currentUser.displayName : 'Usuario Nuevo';
                 let userName = 'Usuario';
                 let usernameTag = '';
 
-                // Extraemos el primer nombre y el @username si existe
                 if (rawName) {
                     if (rawName.includes(' | ')) {
                         const parts = rawName.split(' | ');
@@ -1894,7 +1380,7 @@
                     }
                 }
 
-                const userPhoto = (auth.currentUser && auth.currentUser.photoURL) ? auth.currentUser.photoURL : "{{ asset('img/default-avatar.png') }}";
+                const userPhoto = (auth.currentUser && auth.currentUser.photoURL) ? auth.currentUser.photoURL : "/img/default-avatar.png";
 
                 const pName = window.userPlan.name.toLowerCase();
                 let theme = 'hierro';
@@ -1912,7 +1398,7 @@
 
                 const isCEO = (auth.currentUser && auth.currentUser.email === 'rodasmaximo51@gmail.com');
                 const adminBtnHtml = isCEO ? `
-                    <button class="bg-[#9333ea] hover:bg-[#a855f7] text-white font-bold py-1.5 px-4 rounded-lg transition-colors flex items-center gap-2 text-xs uppercase shadow-[0_0_15px_rgba(147,51,234,0.5)] border border-[#c084fc]" onclick="sessionStorage.removeItem('forceUserMode'); window.location.href='/admin'">
+                    <button class="bg-[#9333ea] hover:bg-[#a855f7] text-white font-bold py-1.5 px-4 rounded-lg transition-colors flex items-center gap-2 text-xs uppercase shadow-[0_0_15px_rgba(147,51,234,0.5)] border border-[#c084fc]" onclick="sessionStorage.removeItem('forceUserMode'); window.location.href='/admin.html'">
                         <i data-feather="shield" class="w-3 h-3"></i> CEO Panel
                     </button>
                 ` : '';
@@ -1924,7 +1410,7 @@
                         <div class="flex justify-between items-center mb-8 bg-[#0f0f0f] p-6 rounded-xl border border-[#333] shadow-lg header-panel">
                             <div class="flex items-center gap-6 header-left w-full md:w-auto">
                                 <div class="flex flex-col items-center justify-center text-center border-r border-[#333] pr-6">
-                                    <img src="{{ asset('img/favicon.ico') }}" alt="Logo" class="w-12 h-12 object-contain drop-shadow-[0_0_12px_rgba(76,175,80,0.5)] mb-2" onerror="this.src='{{ asset('img/logo-minecraft.ico') }}'">
+                                    <img src="/img/favicon.ico" alt="Logo" class="w-12 h-12 object-contain drop-shadow-[0_0_12px_rgba(76,175,80,0.5)] mb-2" onerror="this.src='/img/logo-minecraft.ico'">
                                     <p class="text-[10px] uppercase tracking-widest text-green-500 font-bold glowing-text">Professional Servers</p>
                                 </div>
                                 
@@ -1949,12 +1435,12 @@
                                             ${usernameTag ? `<p class="text-[10px] text-blue-400 font-mono mt-1">${usernameTag}</p>` : ''}
                                         </div>
                                     </div>
-                                    <img src="${userPhoto}" alt="Avatar" class="header-user-avatar theme-border-${theme}" onerror="this.src='{{ asset('img/default-avatar.png') }}'">
+                                    <img src="${userPhoto}" alt="Avatar" class="header-user-avatar theme-border-${theme}" onerror="this.src='/img/default-avatar.png'">
                                 </div>
                                 <div class="flex items-center justify-end gap-3 mt-3">
                                     ${adminBtnHtml}
                                     <span class="plan-badge-base theme-badge-${theme}">${window.userPlan.name}</span>
-                                    <button class="btn-planes" onclick="window.location.href='/planes'">Ver Planes</button>
+                                    <button class="btn-planes" onclick="window.location.href='/planes.html'">Ver Planes</button>
                                 </div>
                             </div>
                         </div>
@@ -2003,6 +1489,13 @@
                             <a data-panel="mods-panel">
                                 <i data-feather="package"></i><span class="title">Mods & APIS</span>
                             </a>
+                            
+                            <!-- BOTÓN DE BACKUPS AGREGADO ACÁ -->
+                            <a data-panel="nube-panel" class="relative">
+                                <i data-feather="cloud"></i><span class="title">Backups</span>
+                                ${lockHtml}
+                            </a>
+
                             <a data-panel="compartidos-panel">
                                 <i data-feather="share-2"></i><span class="title">Accesos</span>
                             </a>
@@ -2010,12 +1503,11 @@
                                 <i data-feather="settings"></i><span class="title">Ajustes</span>
                             </a>
                             
-                            <a onclick="sessionStorage.removeItem('selectedServer'); window.location.href='/crear';" class="btn-hub cursor-pointer">
+                            <a onclick="sessionStorage.removeItem('selectedServer'); window.location.href='/crear.html';" class="btn-hub cursor-pointer">
                                 <i data-feather="list"></i><span class="title">Mis Servers</span>
                             </a>
                             
-                            <!-- Perfil desacoplado: Redirige a la nueva URL -->
-                            <a href="/perfil" class="cursor-pointer">
+                            <a href="/perfil.html" class="cursor-pointer">
                                 <i data-feather="user"></i><span class="title">Perfil</span>
                             </a>
                             
@@ -2063,7 +1555,7 @@
                                     <i data-feather="lock" class="w-12 h-12 text-red-500 mx-auto mb-3"></i>
                                     <h4 class="text-white font-bold text-sm uppercase">Función Premium</h4>
                                     <p class="text-xs text-gray-400 mt-2 px-4">Mine AI requiere Plan Oro o superior para analizar logs masivos y resolver errores automáticamente.</p>
-                                    <button onclick="window.location.href='/planes'" class="mt-4 bg-yellow-600 hover:bg-yellow-500 transition-colors px-6 py-2 rounded-lg font-bold text-xs text-white uppercase shadow-lg shadow-yellow-900/50">Mejorar a Plan Oro</button>
+                                    <button onclick="window.location.href='/planes.html'" class="mt-4 bg-yellow-600 hover:bg-yellow-500 transition-colors px-6 py-2 rounded-lg font-bold text-xs text-white uppercase shadow-lg shadow-yellow-900/50">Mejorar a Plan Oro</button>
                                 </div>`;
                             document.getElementById('mine-send-btn').disabled = true;
                             feather.replace();
@@ -2401,7 +1893,7 @@
                                     <i data-feather="lock" class="w-16 h-16 text-red-500 mb-4 opacity-80"></i>
                                     <h3 class="text-2xl font-bold text-white font-['Cinzel'] tracking-widest uppercase">Acceso Denegado</h3>
                                     <p class="text-gray-400 mt-3 max-w-md">El Gestor de Archivos y la descarga de Modpacks masivos requieren recursos de almacenamiento avanzados. Actualiza al <b class="text-yellow-500">Plan Oro</b> o superior para desbloquear esta función.</p>
-                                    <button onclick="window.location.href='/planes'" class="mt-8 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-8 rounded-lg transition-colors uppercase text-sm tracking-wider shadow-[0_0_15px_rgba(202,138,4,0.3)] text-black">Mejorar a Plan Oro</button>
+                                    <button onclick="window.location.href='/planes.html'" class="mt-8 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-8 rounded-lg transition-colors uppercase text-sm tracking-wider shadow-[0_0_15px_rgba(202,138,4,0.3)] text-black">Mejorar a Plan Oro</button>
                                 </div>`;
                             feather.replace();
                             return;
@@ -2576,7 +2068,7 @@
                                 if (data.data && data.data.length > 0) {
                                     data.data.forEach(mod => {
                                         found++;
-                                        const icon = (mod.logo && mod.logo.url) ? mod.logo.url : "{{ asset('img/favicon.ico') }}";
+                                        const icon = (mod.logo && mod.logo.url) ? mod.logo.url : "/img/favicon.ico";
                                         const hasServerPack = mod.latestFiles && mod.latestFiles.some(f => f.serverPackFileId);
 
                                         let badgeHtml = '';
@@ -2738,7 +2230,7 @@
                                     </div>
                                     <div class="cloud-badge flex-col items-start gap-4">
                                         <div class="flex items-center gap-3 w-full border-b border-[#333] pb-3">
-                                            <img src="{{ asset('img/microsoft.ico') }}" class="w-6 h-6" onerror="this.style.display='none'">
+                                            <img src="/img/microsoft.ico" class="w-6 h-6" onerror="this.style.display='none'">
                                             <span class="font-bold text-white">OneDrive</span>
                                         </div>
                                         <button id="btn-onedrive" class="text-xs text-green-400 hover:underline">Vincular y Dar Permiso</button>
@@ -2771,7 +2263,7 @@
 
                         let btnClonarHtml = canClone
                             ? `<button onclick="window.clonarServidor()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-lg transition-colors whitespace-nowrap text-xs shadow-[0_0_15px_rgba(147,51,234,0.4)] uppercase w-full md:w-auto"><i data-feather="copy" class="inline w-3 h-3 mr-1"></i> Clonar Servidor</button>`
-                            : `<button onclick="window.location.href='/planes'" class="bg-[#222] border border-purple-500/30 text-purple-400 hover:bg-purple-900/30 font-bold py-2.5 px-6 rounded-lg transition-colors whitespace-nowrap text-xs uppercase w-full md:w-auto"><i data-feather="lock" class="inline w-3 h-3 mr-1"></i> Requiere Plan Diamante</button>`;
+                            : `<button onclick="window.location.href='/planes.html'" class="bg-[#222] border border-purple-500/30 text-purple-400 hover:bg-purple-900/30 font-bold py-2.5 px-6 rounded-lg transition-colors whitespace-nowrap text-xs uppercase w-full md:w-auto"><i data-feather="lock" class="inline w-3 h-3 mr-1"></i> Requiere Plan Diamante</button>`;
 
                         panel.innerHTML = `
                             <div class="content-panel">

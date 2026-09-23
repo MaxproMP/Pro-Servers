@@ -124,9 +124,8 @@
     <aside class="w-64 border-r border-[#1f232b] flex flex-col justify-between hidden md:flex bg-[#0b0c10]">
         <div class="p-6">
             <div class="flex items-center gap-3 mb-1 cursor-pointer transition-transform hover:scale-105"
-                onclick="sessionStorage.setItem('forceUserMode', 'true'); window.location.href='/panel'">
-                <img src="{{ asset('img/favicon.ico') }}" alt="Logo"
-                    class="w-8 h-8 drop-shadow-[0_0_10px_rgba(147,51,234,0.5)]">
+                onclick="sessionStorage.setItem('forceUserMode', 'true'); window.location.href='/panel.html'">
+                <img src="/img/favicon.ico" alt="Logo" class="w-8 h-8 drop-shadow-[0_0_10px_rgba(147,51,234,0.5)]">
                 <span class="text-xl font-bold tracking-wide">ProServers</span>
             </div>
             <div class="text-[11px] text-gray-500 font-semibold mt-1" id="sidebar-role-title">Centro de Comando Global
@@ -152,6 +151,14 @@
                 <i class="fas fa-headset w-5"></i> Soporte & Tickets
                 <span id="soporte-badge"
                     class="hidden absolute right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]">!</span>
+            </button>
+
+            <!-- PESTAÑA MINE VOICE (FUTURA) -->
+            <button id="btn-tab-minevoice" onclick="window.switchTab('tab-minevoice', this)"
+                class="tab-btn sidebar-item text-gray-400 hover:text-white hover:bg-[#121419] w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left relative">
+                <i class="fas fa-microphone-alt w-5"></i> Mine Voice
+                <span
+                    class="absolute right-3 bg-indigo-500/20 text-indigo-400 text-[8px] font-bold px-1.5 py-0.5 rounded uppercase border border-indigo-500/30">Próximamente</span>
             </button>
 
             <!-- PESTAÑA STAFF -->
@@ -182,7 +189,7 @@
         <!-- FOOTER: PERFIL DEL ADMINISTRADOR -->
         <div class="p-5 flex items-center gap-3 border-t border-[#1f232b] cursor-pointer hover:bg-[#121419] transition"
             onclick="window.switchTab('tab-perfil', document.getElementById('btn-perfil-sidebar'))">
-            <img src="{{ asset('img/default-avatar.png') }}" id="sidebar-admin-avatar"
+            <img src="/img/default-avatar.png" id="sidebar-admin-avatar"
                 class="w-10 h-10 rounded-full object-cover shadow-[0_0_10px_rgba(147,51,234,0.5)] border-2 border-[#9333ea]">
             <div class="overflow-hidden">
                 <p class="text-xs font-semibold text-white truncate" id="sidebar-admin-name">Cargando...</p>
@@ -386,6 +393,33 @@
             </div>
         </section>
 
+        <!-- ==================== PESTAÑA MINE VOICE ==================== -->
+        <section id="tab-minevoice" class="tab-content hidden pb-20 h-[calc(100vh-200px)]">
+            <div
+                class="card-bg p-10 rounded-xl flex flex-col items-center justify-center text-center h-full border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.1)] relative overflow-hidden">
+                <div
+                    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none">
+                </div>
+
+                <div
+                    class="w-20 h-20 rounded-2xl bg-indigo-900/30 flex items-center justify-center border border-indigo-500/50 mb-6 z-10 animate-pulse">
+                    <i class="fas fa-microphone-alt text-indigo-400 text-4xl"></i>
+                </div>
+                <h3 class="text-3xl font-bold text-white font-['Cinzel'] tracking-wider mb-2 z-10">Mine Voice</h3>
+                <p class="text-indigo-400 font-bold tracking-widest uppercase text-xs mb-6 z-10">Módulo de Voz Nativo
+                    (En Desarrollo)</p>
+                <p class="text-sm text-gray-400 max-w-lg mb-8 z-10">
+                    La infraestructura para el sistema de chat de voz de proximidad sin mods está en construcción.
+                    Próximamente podrás gestionar canales, asignar puertos UDP de voz a los nodos y monitorear la
+                    latencia de audio de los jugadores en tiempo real desde este panel.
+                </p>
+                <button disabled
+                    class="bg-[#1f232b] text-gray-500 font-bold px-8 py-3 rounded-lg uppercase tracking-wider text-xs border border-[#333] cursor-not-allowed z-10">
+                    Desplegar Servidor de Voz (Próximamente)
+                </button>
+            </div>
+        </section>
+
         <!-- ==================== PESTAÑA 5: SEGURIDAD ==================== -->
         <section id="tab-seguridad" class="tab-content hidden pb-20">
             <div class="card-bg p-6 rounded-xl mb-6">
@@ -483,7 +517,7 @@
                 <form id="admin-profile-form" class="space-y-6">
                     <div class="flex flex-col md:flex-row items-center gap-6 mb-6 pb-6 border-b border-[#1f232b]">
                         <div class="relative">
-                            <img src="{{ asset('img/default-avatar.png') }}" id="preview-admin-avatar"
+                            <img src="/img/default-avatar.png" id="preview-admin-avatar"
                                 class="w-24 h-24 rounded-full border-4 border-[#9333ea] object-cover shadow-[0_0_15px_rgba(147,51,234,0.3)]">
                         </div>
                         <div class="flex-1 w-full">
@@ -492,7 +526,7 @@
                             <input type="url" id="admin-profile-avatar"
                                 class="w-full bg-[#0b0c10] border border-[#333] rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-[#9333ea] transition"
                                 placeholder="https://..."
-                                oninput="document.getElementById('preview-admin-avatar').src = this.value || '{{ asset('img/default-avatar.png') }}'">
+                                oninput="document.getElementById('preview-admin-avatar').src = this.value || '/img/default-avatar.png'">
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -550,7 +584,7 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                window.location.href = "/";
+                window.location.href = "/index.html";
                 return;
             }
 
@@ -574,7 +608,7 @@
 
                     // Actualizar UI según el rol
                     const displayName = user.displayName || user.email.split('@')[0];
-                    const photoURL = user.photoURL || '{{ asset('img/default-avatar.png') }}';
+                    const photoURL = user.photoURL || '/img/default-avatar.png';
 
                     document.getElementById('sidebar-admin-name').innerText = displayName;
                     document.getElementById('sidebar-admin-avatar').src = photoURL;
@@ -889,6 +923,9 @@
                 subtitle.innerText = 'Asistencia en tiempo real a clientes y monitoreo de Mine AI';
                 document.getElementById('soporte-badge').classList.add('hidden');
                 window.renderTicketsList();
+            } else if (tabId === 'tab-minevoice') {
+                title.innerText = 'Mine Voice (Beta)';
+                subtitle.innerText = 'Servidor de Voz de Proximidad UDP / Enrutamiento de Audio';
             } else if (tabId === 'tab-staff') {
                 title.innerText = 'Gestión de Equipo';
                 subtitle.innerText = 'Asignación de roles de Soporte a empleados.';
@@ -1154,7 +1191,7 @@
             const serverData = JSON.parse(decodeURIComponent(serverJsonEncoded));
             sessionStorage.setItem('selectedServer', JSON.stringify(serverData));
             window.logAuditoria(`Ingreso en Modo Espía al servidor ${serverData.id} (${serverData.projectName}).`, "WARN");
-            window.location.href = '/panel';
+            window.location.href = '/panel.html';
         };
 
         window.accionServer = async (serverId, action) => {

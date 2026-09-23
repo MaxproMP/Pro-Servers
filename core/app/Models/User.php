@@ -6,12 +6,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens; // ESTA ES LA LÍNEA MÁGICA QUE FALTA
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable; // ACÁ SE AGREGA HasApiTokens
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -25,7 +24,12 @@ class User extends Authenticatable
         'firebase_uid',
         'discord_id',
         'plan_activo',
-        'role'
+        'role',
+        // --- Campos agregados para la v0.9.5 ---
+        'username',
+        'nombre',
+        'apellido',
+        'phone',
     ];
 
     /**

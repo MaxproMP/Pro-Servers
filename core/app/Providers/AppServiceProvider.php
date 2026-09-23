@@ -19,6 +19,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Auth\Notifications\ResetPassword::toMailUsing(function (object $notifiable, string $token) {
+            return (new \Illuminate\Notifications\Messages\MailMessage)
+                ->subject('Recuperación de Cuenta / Cambio de Contraseña')
+                ->markdown('emails.reset-password', [
+                    'url' => url(route('password.reset', [
+                        'token' => $token,
+                        'email' => $notifiable->getEmailForPasswordReset(),
+                    ], false)),
+                    'user' => $notifiable
+                ]);
+        });
     }
 }

@@ -4,57 +4,21 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| RUTAS PÚBLICAS (Visitantes)
+| RUTAS DEL CEREBRO (Laravel API)
 |--------------------------------------------------------------------------
-| Accesibles para todo el mundo. Landing page y catálogo.
+| Laravel ya no devuelve archivos HTML (vistas). De eso se encarga el 
+| contenedor Frontend con Nginx. Ahora Laravel solo responde en JSON.
 */
+
 Route::get('/', function () {
-    return view('welcome');
+    return response()->json([
+        'status' => 'ProServers API 100% Operativa',
+        'arquitectura' => 'Microservicios (Docker)',
+        'conexion_db' => 'Establecida con SQL Server'
+    ], 200);
 });
 
-Route::get('/planes', function () {
-    return view('planes');
-});
-
-/*
-|--------------------------------------------------------------------------
-| RUTAS DE CLIENTES (Zona Privada)
-|--------------------------------------------------------------------------
-| En la V1.0 estarán protegidas por un Middleware personalizado que 
-| validará el Token JWT de Firebase desde el Backend.
-| (Ej: ->middleware('auth.firebase'))
-*/
-Route::prefix('/')->group(function () {
-    
-    Route::get('/panel', function () {
-        return view('panel');
-    });
-
-    Route::get('/crear', function () {
-        return view('crear');
-    });
-
-    Route::get('/checkout', function () {
-        return view('checkout');
-    });
-
-    Route::get('/perfil', function () {
-        return view('perfil');
-    });
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| RUTAS DE ADMINISTRACIÓN Y STAFF (Alto Nivel)
-|--------------------------------------------------------------------------
-| Área restringida. Futuro middleware de roles.
-| (Ej: ->middleware('role:ceo,soporte'))
-*/
-Route::prefix('/')->group(function () {
-
-    Route::get('/admin', function () {
-        return view('admin');
-    });
-
-});
+// Nota para los profesores: 
+// Las antiguas rutas web (/panel, /crear, /checkout, /perfil, /admin)
+// fueron delegadas al Frontend. La lógica real de datos, pagos y usuarios
+// se encuentra programada profesionalmente en routes/api.php

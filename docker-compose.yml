@@ -1,21 +1,34 @@
 services:
+  # PROXY PRINCIPAL
+  proxy:
+    image: nginx:alpine
+    container_name: minecraft-panel-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend
+      - laravel-api
+      - backend
+    networks:
+      - minecraft-net
+
+  # FRONTEND (Tus HTML limpios)
   frontend:
     build: ./frontend
     container_name: minecraft-panel-frontend
     restart: unless-stopped
-    ports:
-      - "8081:80"
     networks:
       - minecraft-net
-    depends_on:
-      - backend
 
+  # BACKEND (Node.js)
   backend:
     build: ./backend
     container_name: minecraft-panel-backend
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     env_file:
       - ./backend/.env
     volumes:
@@ -26,25 +39,23 @@ services:
     networks:
       - minecraft-net
 
+  # CEREBRO (Laravel API)
   laravel-api:
-    build: ./proservers-api
+    build: ./core
     container_name: minecraft-panel-laravel
     restart: unless-stopped
-    ports:
-      - "8000:8000"
     volumes:
-      - ./proservers-api:/app
+      - ./core:/var/www/html
     networks:
       - minecraft-net
 
+  # DISCORD BOT
   discord-bot:
     build: ./proservers-bot
     container_name: minecraft-discord-bot
     restart: unless-stopped
-    ports:
-      - "3001:3001"
     env_file:
-      - ./proservers-api/.env
+      - ./core/.env
     networks:
       - minecraft-net
 

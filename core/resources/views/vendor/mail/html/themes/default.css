@@ -1,0 +1,229 @@
+/* Base - TEMA OSCURO PROSERVERS */
+
+body,
+body *:not(html):not(style):not(br):not(tr):not(code) {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    position: relative;
+}
+
+body {
+    -webkit-text-size-adjust: none;
+    background-color: #121212; /* Fondo súper oscuro */
+    color: #e4e4e7; /* Texto gris claro/blanco */
+    height: 100%;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+    width: 100% !important;
+}
+
+p, ul, ol, blockquote {
+    line-height: 1.4;
+    text-align: start;
+}
+
+a {
+    color: #4ade80; /* Enlaces verdes */
+    text-decoration: none;
+}
+
+a img { border: none; }
+
+/* Typography */
+
+h1 {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 0;
+    text-align: center;
+}
+
+h2 {
+    color: #4ade80; /* Títulos secundarios en verde Minecraft */
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 0;
+    text-align: start;
+}
+
+h3 {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 0;
+    text-align: left;
+}
+
+p {
+    color: #d4d4d8;
+    font-size: 15px;
+    line-height: 1.5em;
+    margin-top: 0;
+    text-align: center; /* Centrado como en la imagen */
+}
+
+p.sub { font-size: 12px; }
+
+img { max-width: 100%; }
+
+/* Layout */
+
+.wrapper, .content, .body {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    background-color: #18181b; /* Fondo exterior oscuro */
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* Header */
+
+.header {
+    padding: 25px 0;
+    text-align: center;
+}
+
+.header a {
+    color: #ffffff;
+    font-size: 19px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+/* Logo */
+.logo {
+    height: 90px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    max-height: 90px;
+}
+
+/* Inner Body (La caja principal del correo) */
+
+.inner-body {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 570px;
+    background-color: #27272a; /* Fondo gris oscuro de la tarjeta */
+    border-color: #3f3f46;
+    border-radius: 8px;
+    border-width: 1px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    margin: 0 auto;
+    padding: 0;
+    width: 570px;
+}
+
+.inner-body a { word-break: break-all; }
+
+/* Subcopy */
+.subcopy {
+    border-top: 1px solid #3f3f46;
+    margin-top: 25px;
+    padding-top: 25px;
+}
+
+.subcopy p { font-size: 14px; }
+
+/* Footer */
+.footer {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 570px;
+    margin: 0 auto;
+    padding: 0;
+    text-align: center;
+    width: 570px;
+}
+
+.footer p {
+    color: #71717a;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* --- TABLAS ESTILO INVENTARIO MINECRAFT --- */
+
+.table table {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    margin: 20px auto;
+    width: 100%;
+    border-collapse: collapse; /* Une los bordes */
+}
+
+.table th, .table td {
+    border: 1px solid #4ade80; /* Borde verde en toda la grilla */
+    margin: 0;
+    padding: 10px;
+    color: #e4e4e7;
+}
+
+.table th {
+    background-color: #18181b;
+    text-align: left;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #4ade80;
+}
+
+.content-cell {
+    max-width: 100vw;
+    padding: 32px;
+}
+
+/* --- BOTONES --- */
+
+.action {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    margin: 30px auto;
+    padding: 0;
+    text-align: center;
+    width: 100%;
+    float: unset;
+}
+
+.button {
+    -webkit-text-size-adjust: none;
+    border-radius: 4px;
+    color: #ffffff;
+    display: inline-block;
+    overflow: hidden;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Botón Cyan/Teal oscuro como en la imagen */
+.button-blue,
+.button-primary {
+    background-color: #0e7490;
+    border-bottom: 10px solid #0e7490;
+    border-left: 22px solid #0e7490;
+    border-right: 22px solid #0e7490;
+    border-top: 10px solid #0e7490;
+    border: 1px solid #22d3ee; /* Borde brillante */
+}
+
+/* Panels */
+.panel {
+    border-left: #4ade80 solid 4px;
+    margin: 21px 0;
+}
+
+.panel-content {
+    background-color: #18181b;
+    color: #d4d4d8;
+    padding: 16px;
+}
+
+.panel-content p { color: #d4d4d8; }
+.panel-item { padding: 0; }
+.panel-item p:last-of-type { margin-bottom: 0; padding-bottom: 0; }
+.break-all { word-break: break-all; }
