@@ -70,12 +70,12 @@ El nacimiento de ProServers no fue corporativo, sino académico y lleno de anéc
 *Motivo del cambio: Separación de responsabilidades. Aislamiento de la lógica de negocio y facturación (Laravel/SQL) del acceso de bajo nivel a los contenedores y el disco duro (Node/Docker).*
 - [x] **Arquitectura Monorepo:** Consolidación de Nginx, Dockerfile, Laravel y Node.js en un entorno unificado.
 - [x] **Dominio y proxy HTTPS:** Publicación del frontend y APIs bajo `professional-servers.com.ar`, incluyendo health checks y WebSockets.
-- [x] **Daemon de infraestructura:** Node.js quedó enfocado en Docker, I/O, consola, acciones de servidor y persistencia de volúmenes.
+- [x] **Refactorización de Node.js:** El daemon quedó enfocado en Docker, I/O, consola, acciones de servidor y persistencia de volúmenes.
 - [x] **Persistencia Docker:** Corrección de rutas host para que los archivos de Minecraft se conserven en `./servers/srv-*`.
 - [x] **Seguridad de infraestructura:** Firebase en las APIs del daemon, autorización de propiedad, Socket.io autenticado y secreto interno Laravel → Node.
 - [x] **CurseForge y Mine AI:** Proxy seguro de CurseForge, búsqueda de modpacks y endpoint autenticado de diagnóstico de logs con Groq.
 - [x] **Modo CEO:** Acceso administrativo y funciones premium habilitadas para la cuenta corporativa del propietario.
-- [x] **Modelo relacional base:** Relaciones `clientes -> suscripciones -> servidores`, pagos normalizados y restricciones de dominio preparadas en Laravel.
+- [x] **Modelado SQL base:** Modelos Eloquent, migraciones, relaciones `clientes -> suscripciones -> servidores`, pagos normalizados y restricciones de dominio preparados en Laravel.
 - [x] **Validación técnica:** Pest, Pint, validaciones de sintaxis y builds Docker ejecutados correctamente.
 - [ ] **Migración controlada de RDS:** Ejecutar y verificar el nuevo esquema sobre la base Microsoft SQL Server real sin pérdida de datos.
 - [ ] **Identidad Laravel definitiva:** Completar la validación directa de tokens Firebase y retirar los flujos heredados que todavía usan la entidad `users`.
