@@ -13,7 +13,16 @@
 ---
 
 ## 📌 Estado Actual del Proyecto
-El proyecto ha superado la fase v0.9 y actualmente se encuentra en la **v0.9.5 (El Punto de Inflexión Híbrido)**. Debido a la necesidad de escalar comercialmente y mantener una seguridad empresarial estricta, se tomó la decisión crítica de frenar el lanzamiento de la v1.0 para cambiar radicalmente la arquitectura. Dejamos atrás el monolito para convertirnos en un **Monorepo Híbrido**, separando el cerebro financiero y de negocio (Laravel) del músculo de infraestructura y bajo nivel (Node.js). Todo orquestado bajo un proxy Nginx, preparando el terreno definitivo para el despegue comercial 🎯.
+El proyecto se encuentra en la **v0.9.5 Beta (El Punto de Inflexión Híbrido)**. Esta versión ya cuenta con una base funcional desplegada en el dominio oficial, pero todavía no es la v1.0 de producción. El objetivo actual es cerrar la estabilización técnica, validar las migraciones sobre la base de datos real, completar la observabilidad y preparar la operación comercial sin sacrificar seguridad ni trazabilidad.
+
+### Estado de la versión v0.9.5
+- **Fase:** estabilización y endurecimiento previo a producción.
+- **Entorno:** monorepo híbrido operativo con Nginx, Laravel, Node.js, Docker, Firebase y Playit.gg.
+- **Dominio:** `https://www.professional-servers.com.ar` operativo con HTTPS.
+- **Despliegue:** creación de servidores, contenedores Minecraft/Playit, volúmenes persistentes y acciones de inicio, detención y reinicio implementadas.
+- **Seguridad:** APIs del daemon protegidas con Firebase; comunicación interna Laravel → Node protegida con `x-daemon-secret`; WebSocket con autenticación y control de propiedad.
+- **Calidad:** suite Pest ejecutada correctamente, validaciones de sintaxis para PHP/Node/Python y configuración Docker verificada.
+- **Límite actual:** aún no se declara producción v1.0 hasta completar la migración controlada de RDS, la rotación de credenciales y la integración definitiva de auditoría/MongoDB.
 
 ---
 
@@ -60,13 +69,23 @@ El nacimiento de ProServers no fue corporativo, sino académico y lleno de anéc
 ### FASE 3: El Punto de Inflexión Híbrido (v0.9.5 - En Progreso ⏳)
 *Motivo del cambio: Separación de responsabilidades. Aislamiento de la lógica de negocio y facturación (Laravel/SQL) del acceso de bajo nivel a los contenedores y el disco duro (Node/Docker).*
 - [x] **Arquitectura Monorepo:** Consolidación de Nginx, Dockerfile, Laravel y Node.js en un entorno unificado.
-- [x] **Refactorización de Node.js:** Limpieza total de lógica comercial, transformado en Daemon puro de Docker e I/O.
-- [x] **Modelado SQL (Laravel):** Configuración de modelos Eloquent y migraciones apuntando a Microsoft SQL Server (Azure).
-- [ ] **Migración de Controladores:** Trasladar la lógica de registro, creación de nodos y validaciones de Firebase al backend de Laravel.
-- [ ] **Frontend Footer:** Desarrollar pie de página con datos corporativos y accesos legales.
-- [ ] **Hub de Facturación (Billing):** Integración definitiva en producción de pasarelas de pago.
+- [x] **Dominio y proxy HTTPS:** Publicación del frontend y APIs bajo `professional-servers.com.ar`, incluyendo health checks y WebSockets.
+- [x] **Daemon de infraestructura:** Node.js quedó enfocado en Docker, I/O, consola, acciones de servidor y persistencia de volúmenes.
+- [x] **Persistencia Docker:** Corrección de rutas host para que los archivos de Minecraft se conserven en `./servers/srv-*`.
+- [x] **Seguridad de infraestructura:** Firebase en las APIs del daemon, autorización de propiedad, Socket.io autenticado y secreto interno Laravel → Node.
+- [x] **CurseForge y Mine AI:** Proxy seguro de CurseForge, búsqueda de modpacks y endpoint autenticado de diagnóstico de logs con Groq.
+- [x] **Modo CEO:** Acceso administrativo y funciones premium habilitadas para la cuenta corporativa del propietario.
+- [x] **Modelo relacional base:** Relaciones `clientes -> suscripciones -> servidores`, pagos normalizados y restricciones de dominio preparadas en Laravel.
+- [x] **Validación técnica:** Pest, Pint, validaciones de sintaxis y builds Docker ejecutados correctamente.
+- [ ] **Migración controlada de RDS:** Ejecutar y verificar el nuevo esquema sobre la base Microsoft SQL Server real sin pérdida de datos.
+- [ ] **Identidad Laravel definitiva:** Completar la validación directa de tokens Firebase y retirar los flujos heredados que todavía usan la entidad `users`.
+- [ ] **Auditoría persistente:** Integrar MongoDB Atlas y persistir diagnósticos de Mine AI, logs y eventos de contenedores.
+- [ ] **Secretos de producción:** Rotar credenciales expuestas, centralizar el entorno operativo y revisar permisos de certificados.
+- [ ] **Frontend corporativo:** Desarrollar footer, términos, privacidad y accesos legales.
+- [ ] **Hub de Facturación (Billing):** Completar pruebas de pasarelas y habilitar operación comercial de producción.
 
 ### FASE 4: Monetización, Publicidad y Lanzamiento (v1.0) 🎯
+- [ ] **Criterio de entrada v1.0:** Cerrar todos los pendientes críticos de la Fase 3 y aprobar una prueba de regresión completa.
 - [ ] **Estructura Legal y Derechos:** Agregar términos y condiciones, contratos y políticas de privacidad.
 - [ ] **Estrategia de Google Ads y Paid Media:** Campañas orientadas a palabras clave de alto tráfico para captación de clientes de hosting de juegos y servidores dedicados.
 - [ ] **Posicionamiento CEO y Redes Sociales:** Optimización técnica del sitio público para buscadores y campañas orgánicas en comunidades de gaming.
