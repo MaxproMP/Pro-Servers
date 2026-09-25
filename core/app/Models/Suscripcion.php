@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Suscripcion extends Model
 {
@@ -14,15 +16,12 @@ class Suscripcion extends Model
     protected $table = 'suscripciones';
 
     protected $fillable = [
-        'user_id', 
-        'plan_id', 
-        'estado', 
-        'fecha_inicio', 
+        'cliente_id',
+        'plan_id',
+        'estado',
+        'fecha_inicio',
         'fecha_vencimiento',
-        // --- Campos agregados para el Webhook y Checkout ---
-        'firebase_uid',
-        'plan_nombre',
-        'ciclo_meses'
+        'ciclo_meses',
     ];
 
     protected $casts = [
@@ -30,9 +29,9 @@ class Suscripcion extends Model
         'fecha_vencimiento' => 'datetime',
     ];
 
-    public function user(): BelongsTo
+    public function cliente(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Cliente::class);
     }
 
     public function plan(): BelongsTo

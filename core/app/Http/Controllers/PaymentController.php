@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
+use App\Models\Plan;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class PaymentController extends Controller
@@ -17,7 +21,7 @@ class PaymentController extends Controller
         'oro' => 15.00,
         'diamante' => 25.00,
         'netherite' => 45.00,
-        'ghost-warrior' => 85.00
+        'ghost-warrior' => 85.00,
     ];
 
     public function procesarAstroPay(Request $request)
@@ -26,49 +30,49 @@ class PaymentController extends Controller
         $planSeleccionado = strtolower($request->input('plan', 'redstone'));
         $ciclo = (int) $request->input('ciclo', 1);
 
-        if (!array_key_exists($planSeleccionado, $this->preciosBase)) {
-            return response()->json(['error' => 'El plan seleccionado no es válido: ' . $planSeleccionado], 400);
+        if (! array_key_exists($planSeleccionado, $this->preciosBase)) {
+            return response()->json(['error' => 'El plan seleccionado no es válido: '.$planSeleccionado], 400);
         }
 
         // 3. Calculamos los descuentos igual que en el frontend
         $descuentos = [1 => 0, 3 => 10, 6 => 15, 12 => 20];
         $porcentajeDescuento = $descuentos[$ciclo] ?? 0;
-        
+
         $precioBaseMensual = $this->preciosBase[$planSeleccionado];
         $precioMensualConDescuento = $precioBaseMensual * (1 - ($porcentajeDescuento / 100));
         $totalACobrar = round($precioMensualConDescuento * $ciclo, 2);
 
-        $transactionId = 'PRO-' . Str::upper(Str::random(6));
-        
-        $firebaseUid = $request->input('uid', 'usuario_anonimo'); 
-        $planId = DB::table('planes')->where('nombre', $planSeleccionado)->value('id') ?? 1;
+        $transactionId = 'PRO-'.Str::upper(Str::random(6));
+
+        $firebaseUid = (string) $request->input('uid', '');
+        $cliente = Cliente::where('firebase_uid', $firebaseUid)->first();
+        $plan = Plan::where('nombre', $planSeleccionado)->first();
+
+        if (! $cliente || ! $plan) {
+            return response()->json(['error' => 'Cliente o plan no encontrado.'], 404);
+        }
 
         // 4. Guardamos la suscripción y el pago en SQL Server como "pendiente"
-        $suscripcionId = DB::table('Suscripciones')->insertGetId([
-            'user_id'           => 1, 
-            'firebase_uid'      => $firebaseUid,
-            'plan_id'           => $planId,
-            'plan_nombre'       => $planSeleccionado,
-            'ciclo_meses'       => $ciclo,
-            'estado'            => 'suspendida',
-            'fecha_inicio'      => now(),
+        $suscripcionId = DB::table('suscripciones')->insertGetId([
+            'cliente_id' => $cliente->id,
+            'plan_id' => $plan->id,
+            'ciclo_meses' => $ciclo,
+            'estado' => 'suspendida',
+            'fecha_inicio' => now(),
             'fecha_vencimiento' => now()->addMonths($ciclo),
-            'created_at'        => now(),
-            'updated_at'        => now()
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        DB::table('Pagos')->insert([
+        DB::table('pagos')->insert([
             'suscripcion_id' => $suscripcionId,
-            'firebase_uid'   => $firebaseUid,
-            'monto'          => $totalACobrar,
-            'pasarela_pago'  => 'astropay',
-            'medio_pago'     => 'no_definido',
-            'metodo'         => 'astropay',
-            'estado'         => 'pendiente',
+            'monto' => $totalACobrar,
+            'pasarela_pago' => 'astropay',
+            'medio_pago' => 'no_definido',
+            'estado' => 'pendiente',
             'transaccion_id' => $transactionId,
-            'fecha'          => now(),
-            'created_at'     => now(),
-            'updated_at'     => now()
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         // 5. Armamos la firma y mandamos la orden a AstroPay
@@ -76,16 +80,16 @@ class PaymentController extends Controller
         $secret = env('ASTROPAY_SECRET');
         $apiUrl = env('ASTROPAY_API_URL', 'https://api.astropay.com/v1/sandbox/payments');
 
-        $signature = hash_hmac('sha256', $clientId . $transactionId, $secret);
+        $signature = hash_hmac('sha256', $clientId.$transactionId, $secret);
 
         $response = Http::withHeaders([
             'Merchant-Id' => $clientId,
-            'Signature' => $signature, 
+            'Signature' => $signature,
         ])->post($apiUrl, [
             'merchant_invoice_id' => $transactionId,
             'amount' => $totalACobrar,
-            'currency' => 'USD', 
-            'callback_url' => url('/api/pagos/webhook/astropay'), 
+            'currency' => 'USD',
+            'callback_url' => url('/api/pagos/webhook/astropay'),
         ]);
 
         if ($response->successful()) {
@@ -98,35 +102,36 @@ class PaymentController extends Controller
             'http_status' => $response->status(),
             'client_id_detectado' => $clientId ? 'Sí, cargado' : 'VACÍO (Reiniciar servidor Laravel)',
             'url_consultada' => $apiUrl,
-            'cuerpo_crudo' => $response->body()
+            'cuerpo_crudo' => $response->body(),
         ], $response->status() === 0 ? 500 : $response->status());
     }
 
     public function webhookAstroPay(Request $request)
     {
         $transactionId = $request->input('merchant_invoice_id');
-        $status = $request->input('status'); 
+        $status = $request->input('status');
 
         if ($status === 'APPROVED') {
-            $pago = DB::table('Pagos')->where('transaccion_id', $transactionId)->first();
-            
-            if ($pago) {
-                DB::table('Pagos')->where('id', $pago->id)->update(['estado' => 'completado']);
-                
-                $suscripcion = DB::table('Suscripciones')->where('id', $pago->suscripcion_id)->first();
-                if ($suscripcion) {
-                    DB::table('Suscripciones')->where('id', $suscripcion->id)->update(['estado' => 'activa']);
+            $pago = DB::table('pagos')->where('transaccion_id', $transactionId)->first();
 
-                Http::withHeaders([
-                    'Authorization' => 'Bearer ' . env('NODE_SECRET_KEY', 'clave_super_secreta_123')
-                ])->post('http://127.0.0.1:3000/api/internal/upgrade-plan', [
-                    'uid' => $suscripcion->firebase_uid,
-                    'newPlan' => $suscripcion->plan_nombre
-                ]);
+            if ($pago) {
+                DB::table('pagos')->where('id', $pago->id)->update(['estado' => 'completado']);
+
+                $suscripcion = DB::table('suscripciones')->where('id', $pago->suscripcion_id)->first();
+                if ($suscripcion) {
+                    DB::table('suscripciones')->where('id', $suscripcion->id)->update(['estado' => 'activa']);
+                    $plan = DB::table('planes')->where('id', $suscripcion->plan_id)->value('nombre');
+
+                    Http::withHeaders([
+                        'x-daemon-secret' => (string) env('NODE_SECRET_KEY'),
+                    ])->post('http://backend:3000/api/internal/upgrade-plan', [
+                        'cliente_id' => $suscripcion->cliente_id,
+                        'plan' => $plan,
+                    ]);
                 }
             }
         }
 
         return response()->json(['status' => 'recibido']);
     }
-} 
+}

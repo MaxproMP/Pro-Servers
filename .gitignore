@@ -34,3 +34,10 @@ backend/data/
 .DS_Store
 *.sqlite
 Thumbs.db
+
+# ==========================================
+# Certificados públicos (nunca subir claves privadas)
+# ==========================================
+!ssl/
+!ssl/origin.crt
+ssl/origin.key

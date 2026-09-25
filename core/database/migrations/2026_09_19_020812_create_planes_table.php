@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,6 +20,10 @@ return new class extends Migration
             $table->integer('memoria_mb');
             $table->integer('cpu_cores');
             $table->integer('almacenamiento_gb');
+            $table->check('precio_mensual >= 0');
+            $table->check('memoria_mb > 0');
+            $table->check('cpu_cores > 0');
+            $table->check('almacenamiento_gb > 0');
             $table->timestamps();
         });
     }

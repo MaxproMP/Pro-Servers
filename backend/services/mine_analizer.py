@@ -6,9 +6,12 @@ from openai import OpenAI
 
 # Configuración de Groq
 client = OpenAI(
-    api_key="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", 
+    api_key=os.environ.get("GROQ_API_KEY"),
     base_url="https://api.groq.com/openai/v1"
 )
+
+if not client.api_key:
+    raise RuntimeError("GROQ_API_KEY no está configurada")
 
 def capturar_logs_servidor(ruta_archivo, lineas=100):
     try:
@@ -22,11 +25,11 @@ def capturar_logs_servidor(ruta_archivo, lineas=100):
 
 # EL BRAZO EJECUTOR (Ahora elimina de verdad)
 def ejecutar_castigo_mine(archivo_objetivo):
-    ruta_mods = "mods" 
-    if not os.path.exists(ruta_mods):
-        os.makedirs(ruta_mods)
+    ruta_mods = os.path.realpath("mods")
+    ruta_archivo = os.path.realpath(os.path.join(ruta_mods, archivo_objetivo))
 
-    ruta_archivo = os.path.join(ruta_mods, archivo_objetivo)
+    if os.path.commonpath([ruta_mods, ruta_archivo]) != ruta_mods:
+        return "\n[SISTEMA]: Ruta de archivo no permitida."
     
     try:
         if os.path.exists(ruta_archivo):

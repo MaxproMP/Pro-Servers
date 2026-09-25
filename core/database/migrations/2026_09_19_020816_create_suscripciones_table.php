@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,22 +15,21 @@ return new class extends Migration
     {
         Schema::create('suscripciones', function (Blueprint $table) {
             $table->id();
-            
-            // Claves foráneas (Relaciones con users y planes)
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->foreignId('plan_id')->nullable()->constrained('planes')->onDelete('set null');
-            
-            // Campos de facturación y webhook
-            $table->string('firebase_uid')->nullable();
-            $table->string('plan_nombre')->nullable();
+
+            // Jerarquía canónica: clientes -> suscripciones -> servidores.
+            $table->foreignId('cliente_id')->constrained('clientes')->onDelete('restrict');
+            $table->foreignId('plan_id')->constrained('planes')->onDelete('restrict');
+
             $table->string('estado')->default('pendiente'); // 'pendiente', 'activo'
             $table->integer('ciclo_meses')->default(1);
-            
+
             // Fechas de control
             $table->timestamp('fecha_inicio')->nullable();
             $table->timestamp('fecha_vencimiento')->nullable();
-            
+
             $table->softDeletes();
+            $table->check("estado in ('pendiente', 'activa', 'suspendida', 'cancelada')");
+            $table->check('ciclo_meses > 0');
             $table->timestamps();
         });
     }

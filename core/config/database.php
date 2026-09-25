@@ -111,7 +111,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'encrypt' => env('DB_ENCRYPT', 'yes'),
-            'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'true'),
+            'trust_server_certificate' => filter_var(env('DB_TRUST_SERVER_CERTIFICATE', false), FILTER_VALIDATE_BOOL),
         ],
 
         'mongodb' => [

@@ -9,6 +9,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./ssl:/etc/nginx/ssl:ro
     depends_on:
       - frontend
       - laravel-api
@@ -29,12 +30,17 @@ services:
     build: ./backend
     container_name: minecraft-panel-backend
     restart: unless-stopped
+    # Hacemos que Node.js lea el MISMO .env maestro de Laravel
     env_file:
-      - ./backend/.env
+      - ./core/.env
+    environment:
+      DOCKER_SERVERS_DIR: /home/ubuntu/Proservers/servers
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data:/usr/src/app/data
       - ./servers:/usr/src/app/servers
+      - ./servers:/home/ubuntu/Proservers/servers
+      # ACA ESTA LA CLAVE QUE FALTABA PARA EL LOGIN
       - ./backend/firebase-adminsdk.json:/usr/src/app/firebase-adminsdk.json
     networks:
       - minecraft-net
@@ -44,6 +50,9 @@ services:
     build: ./core
     container_name: minecraft-panel-laravel
     restart: unless-stopped
+    # Laravel también usa su .env
+    env_file:
+      - ./core/.env
     volumes:
       - ./core:/var/www/html
     networks:

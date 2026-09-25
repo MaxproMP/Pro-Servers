@@ -547,9 +547,9 @@
 
                 try {
                     const token = await auth.currentUser.getIdToken();
-                    let fetchUrl = `${API_URL}/api/curseforge/search?categoryId=4471`;
+                    let fetchUrl = `${API_URL}/api/curseforge/search?classId=4471&pageSize=50&sortField=5`;
                     if (input && input.trim() !== '') {
-                        fetchUrl += `&query=${encodeURIComponent(input.trim())}`;
+                        fetchUrl += `&searchFilter=${encodeURIComponent(input.trim())}`;
                     }
 
                     const res = await fetch(fetchUrl, {
@@ -561,16 +561,22 @@
                         throw new Error(`Error en el servidor o CurseForge no responde. (HTTP ${res.status}: ${errTxt})`);
                     }
 
-                    const data = await json();
+                    const data = await res.json();
 
                     resDiv.innerHTML = '';
                     let found = 0;
-                    if (data.data && data.data.length > 0) {
-                        data.data.forEach(mod => {
+                    const searchTerm = input.trim().toLowerCase();
+                    const matchingMods = (data.data || []).filter(mod => {
+                        if (!searchTerm) return true;
+                        return `${mod.name || ''} ${mod.slug || ''}`.toLowerCase().includes(searchTerm);
+                    });
+
+                    if (matchingMods.length > 0) {
+                        matchingMods.forEach(mod => {
                             found++;
                             const icon = (mod.logo && mod.logo.url) ? mod.logo.url : "/img/favicon.ico";
 
-                            const hasServerPack = mod.latestFiles && mod.latestFiles.some(f => f.serverPackFileId);
+                            const hasServerPack = mod.latestFiles && mod.latestFiles.some(f => f.isServerPack === true);
 
                             const badgeHtml = hasServerPack
                                 ? `<span class="text-[9px] bg-green-600/20 text-green-400 border border-green-600/50 px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1 shadow-sm"><i data-feather="server" class="w-3 h-3"></i> Server Pack Oficial</span>`
@@ -642,12 +648,12 @@
 
                     if (data.data && data.data.length > 0) {
                         data.data.forEach(f => {
-                            if (f.serverPackFileId) {
+                            if (f.isServerPack === true) {
                                 foundVersions++;
                                 const type = f.releaseType === 1 ? 'RELEASE' : (f.releaseType === 2 ? 'BETA' : 'ALPHA');
                                 const mcVer = f.gameVersions.find(v => v.match(/^1\.\d/)) || "Auto";
 
-                                mcVersion.innerHTML += `<option value="${f.serverPackFileId}" data-mc="${mcVer}">${f.displayName} | MC ${mcVer} (${type})</option>`;
+                                mcVersion.innerHTML += `<option value="${f.id}" data-mc="${mcVer}">${f.displayName} | MC ${mcVer} (${type})</option>`;
                             }
                         });
 
@@ -679,7 +685,7 @@
 
             onAuthStateChanged(auth, async (user) => {
                 if (!user) {
-                    window.location.href = '/panel.html';
+                    window.location.href = '/index.html';
                     return;
                 }
                 try {
@@ -796,7 +802,7 @@
 
             window.enterServer = (s) => {
                 sessionStorage.setItem('selectedServer', decodeURIComponent(s));
-                window.location.href = '/panel.html';
+                window.location.href = '/index.html';
             };
 
             window.deleteServer = async (id) => {
@@ -967,7 +973,7 @@
                                         setTimeout(() => {
                                             responseData.server.version = finalVersion;
                                             sessionStorage.setItem('selectedServer', JSON.stringify(responseData.server));
-                                            window.location.href = '/panel.html';
+                                            window.location.href = '/index.html';
                                         }, 1200);
                                     }
                                 }

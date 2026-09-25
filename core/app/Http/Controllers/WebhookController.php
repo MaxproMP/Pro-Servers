@@ -1,10 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
+use App\Models\Pago;
+use App\Models\Plan;
+use App\Models\Suscripcion;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
@@ -14,7 +20,7 @@ class WebhookController extends Controller
     {
         $estado = $request->input('status'); // Ej: 'APPROVED'
         $transaccionId = $request->input('merchant_deposit_id') ?? $request->input('merchant_order_id');
-        $firebaseUid = $request->input('user_id'); 
+        $firebaseUid = $request->input('user_id');
         $planNombre = $request->input('plan_name');
         $monto = $request->input('amount');
 
@@ -44,51 +50,60 @@ class WebhookController extends Controller
     // 3. LA LÓGICA QUE HACE LA MAGIA Y PRENDE EL SERVER
     private function procesarPagoExitoso($firebaseUid, $planNombre, $monto, $metodo, $transaccionId)
     {
-        // Evitar procesar el mismo pago dos veces
-        $existe = DB::table('Pagos')->where('transaccion_id', $transaccionId)->first();
+        $cliente = Cliente::where('firebase_uid', $firebaseUid)->first();
+        $plan = Plan::where('nombre', $planNombre)->first();
+
+        if (! $cliente || ! $plan || ! is_numeric($monto) || (float) $monto <= 0 || ! $transaccionId) {
+            return response()->json(['mensaje' => 'Webhook inválido o cliente/plan inexistente.'], 422);
+        }
+
+        // Evitar procesar el mismo pago dos veces.
+        $existe = Pago::where('transaccion_id', $transaccionId)->first();
         if ($existe) {
+            if ($existe->estado !== 'completado') {
+                $existe->update(['estado' => 'completado']);
+            }
+
             return response()->json(['mensaje' => 'Pago ya procesado'], 200);
         }
 
-        // A. Guardamos en Azure SQL Server
-        DB::table('Pagos')->insert([
-            'firebase_uid'   => $firebaseUid,
-            'monto'          => $monto,
-            'metodo'         => $metodo,
-            'estado'         => 'completado',
-            'transaccion_id' => $transaccionId,
-            'created_at'     => now(),
-            'updated_at'     => now()
-        ]);
+        [$suscripcion] = DB::transaction(function () use ($cliente, $plan, $monto, $metodo, $transaccionId) {
+            $suscripcion = Suscripcion::create([
+                'cliente_id' => $cliente->id,
+                'plan_id' => $plan->id,
+                'estado' => 'activa',
+                'ciclo_meses' => 1,
+                'fecha_inicio' => now(),
+                'fecha_vencimiento' => now()->addMonth(),
+            ]);
 
-        DB::table('Suscripciones')->insert([
-            'firebase_uid'      => $firebaseUid,
-            'plan_nombre'       => $planNombre,
-            'estado'            => 'activo',
-            'fecha_inicio'      => now(),
-            'fecha_vencimiento' => now()->addDays(30),
-            'created_at'        => now(),
-            'updated_at'        => now()
-        ]);
+            Pago::create([
+                'suscripcion_id' => $suscripcion->id,
+                'monto' => $monto,
+                'pasarela_pago' => $metodo,
+                'medio_pago' => 'no_definido',
+                'estado' => 'completado',
+                'transaccion_id' => $transaccionId,
+            ]);
 
-        // Actualizamos el plan activo en el usuario
-        DB::table('users')->where('firebase_uid', $firebaseUid)->update([
-            'plan_activo' => $planNombre,
-            'updated_at'  => now()
-        ]);
+            $cliente->update(['plan_activo' => $plan->nombre]);
+
+            return [$suscripcion];
+        });
 
         // B. Le pegamos al Demonio de Node.js para que orqueste el contenedor en Docker
         try {
             Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('NODE_SECRET_KEY')
-            ])->post('http://minecraft-panel-backend:3000/api/internal/deploy', [
-                'firebase_uid' => $firebaseUid,
-                'plan'         => $planNombre
-            ]);
-            
+                'x-daemon-secret' => (string) env('NODE_SECRET_KEY'),
+            ])->post('http://backend:3000/api/internal/deploy', [
+                'cliente_id' => $cliente->id,
+                'plan' => $plan->nombre,
+                'suscripcion_id' => $suscripcion->id,
+            ])->throw();
+
             Log::info("🚀 Servidor desplegado exitosamente para $firebaseUid via $metodo");
         } catch (\Exception $e) {
-            Log::error("❌ Error al contactar a Node.js: " . $e->getMessage());
+            Log::error('❌ Error al contactar a Node.js: '.$e->getMessage());
         }
 
         return response()->json(['mensaje' => 'Pago procesado y servidor desplegado'], 200);

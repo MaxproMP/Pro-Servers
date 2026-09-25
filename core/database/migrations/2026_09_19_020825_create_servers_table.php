@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,22 +15,19 @@ return new class extends Migration
     {
         Schema::create('servers', function (Blueprint $table) {
             $table->id();
-            
-            // Relaciones
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->string('firebase_uid')->nullable();
-            
-            // Datos del Servidor / Plan
-            $table->string('plan_nombre')->nullable();
-            
+
+            // Un servidor pertenece a una suscripción y hereda sus límites.
+            $table->foreignId('suscripcion_id')->unique()->constrained('suscripciones')->onDelete('cascade');
+
             // Datos Técnicos (Docker & Facturación)
-            $table->string('transaction_id')->nullable(); 
-            $table->string('container_id')->nullable();   
-            $table->integer('port')->nullable();          
-            
+            $table->string('transaction_id')->nullable();
+            $table->string('container_id')->nullable();
+            $table->integer('port')->nullable();
+
             // Estado del contenedor
-            $table->string('status')->default('pending'); 
-            
+            $table->string('status')->default('pending');
+            $table->check('port is null or (port between 1024 and 65535)');
+
             $table->timestamps();
         });
     }

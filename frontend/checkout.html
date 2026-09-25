@@ -534,7 +534,7 @@
 
             onAuthStateChanged(auth, (user) => {
                 if (!user) {
-                    window.location.href = '/panel.html';
+                    window.location.href = '/index.html';
                 }
             });
         });
@@ -730,7 +730,7 @@
                     btn.classList.replace('bg-red-600', 'bg-green-600');
                     btn.classList.replace('hover:bg-red-500', 'hover:bg-green-500');
                     feather.replace();
-                    window.location.href = '/panel.html';
+                    window.location.href = '/index.html';
 
                     // Nota futura: Acá deberíamos pegarle a un endpoint de Laravel que le active el rango de prueba en la base de datos a ese usuario.
                 }, 1800);
