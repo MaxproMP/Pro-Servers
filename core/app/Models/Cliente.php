@@ -52,7 +52,7 @@ class Cliente extends Model
      */
     public function suscripciones(): HasMany
     {
-        return $this->hasMany(Suscripcion::class, 'id_cliente');
+        return $this->hasMany(Suscripcion::class, 'cliente_id');
     }
 
     /**
@@ -60,7 +60,7 @@ class Cliente extends Model
      */
     public function suscripcionActiva()
     {
-        return $this->hasOne(Suscripcion::class, 'id_cliente')
+        return $this->hasOne(Suscripcion::class, 'cliente_id')
             ->where('estado', 'activa')
             ->latest();
     }

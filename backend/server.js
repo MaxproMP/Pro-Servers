@@ -75,6 +75,29 @@ const verificarCerebro = (req, res, next) => {
     next();
 };
 
+async function registrarAuditoria(event, actorId, serverId, payload = {}) {
+    if (!process.env.NODE_SECRET_KEY) return;
+
+    try {
+        await fetch('http://laravel-api/api/internal/audit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-daemon-secret': process.env.NODE_SECRET_KEY,
+            },
+            body: JSON.stringify({
+                event,
+                actor_type: 'daemon',
+                actor_id: actorId,
+                server_id: serverId,
+                payload,
+            }),
+        });
+    } catch (error) {
+        console.warn(`[AUDIT] No se pudo persistir ${event}: ${error.message}`);
+    }
+}
+
 app.use('/api/project', verificarTokenFirebase);
 app.use('/api/server', verificarTokenFirebase);
 app.use('/api/curseforge', verificarTokenFirebase);
@@ -310,6 +333,7 @@ app.post('/api/project/create', async (req, res) => {
         }
 
         console.log(`[DEPLOY] ✅ Servidor ${serverId} y Túnel levantados.`);
+        void registrarAuditoria('server.deploy.completed', uid, serverId, { port, edition, software });
 
     } catch (deployErr) {
         console.error(`[DEPLOY] ❌ Error desplegando ${serverId}:`, deployErr.message);
@@ -321,6 +345,7 @@ app.post('/api/project/create', async (req, res) => {
             const srv = dbErr[uid].servers.find(s => s.id === serverId);
             if (srv) { srv.status = 'error'; srv.error = deployErr.message; saveDB(dbErr); }
         }
+        void registrarAuditoria('server.deploy.failed', uid, serverId, { error: deployErr.message });
     }
 });
 
@@ -584,6 +609,10 @@ app.post('/api/server/mine-ai', async (req, res) => {
         }
 
         const analysis = JSON.parse(responseData.choices?.[0]?.message?.content || '{}');
+        void registrarAuditoria('mine-ai.diagnosis.completed', req.user.uid, serverId, {
+            hay_que_borrar: Boolean(analysis.hay_que_borrar),
+            archivo_a_borrar: analysis.archivo_a_borrar || null,
+        });
         return res.json({ success: true, analysis });
     } catch (error) {
         return res.status(500).json({ success: false, error: 'Error analizando el log: ' + error.message });

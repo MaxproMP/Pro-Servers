@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'daemon' => [
+        'secret' => env('NODE_SECRET_KEY'),
+    ],
+
 ];

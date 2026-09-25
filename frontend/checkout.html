@@ -754,19 +754,19 @@
             try {
                 const user = auth.currentUser;
                 if (!user) throw new Error("Debes iniciar sesión para procesar un pago.");
+                const token = await user.getIdToken();
 
                 const res = await fetch(`/api/checkout/${pasarela}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token,
                         'X-CSRF-TOKEN': csrfToken
                     },
                     body: JSON.stringify({
-                        firebase_uid: user.uid,
                         email: user.email,
                         plan_nombre: currentPlan.name,
-                        ciclo_meses: selectedMonths,
-                        monto: finalNetTotal
+                        ciclo_meses: selectedMonths
                     })
                 });
 

@@ -55,6 +55,7 @@ services:
       - ./core/.env
     volumes:
       - ./core:/var/www/html
+      - ./backend/firebase-adminsdk.json:/var/www/html/storage/app/firebase-adminsdk.json:ro
     networks:
       - minecraft-net
 

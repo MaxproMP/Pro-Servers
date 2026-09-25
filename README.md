@@ -22,7 +22,7 @@ El proyecto se encuentra en la **v0.9.5 Beta (El Punto de Inflexión Híbrido)**
 - **Despliegue:** creación de servidores, contenedores Minecraft/Playit, volúmenes persistentes y acciones de inicio, detención y reinicio implementadas.
 - **Seguridad:** APIs del daemon protegidas con Firebase; comunicación interna Laravel → Node protegida con `x-daemon-secret`; WebSocket con autenticación y control de propiedad.
 - **Calidad:** suite Pest ejecutada correctamente, validaciones de sintaxis para PHP/Node/Python y configuración Docker verificada.
-- **Límite actual:** aún no se declara producción v1.0 hasta completar la migración controlada de RDS, la rotación de credenciales y la integración definitiva de auditoría/MongoDB.
+- **Límite actual:** aún no se declara producción v1.0 hasta completar la rotación de credenciales, la verificación estricta de la CA de RDS y la habilitación de todas las pasarelas comerciales.
 
 ---
 
@@ -77,12 +77,15 @@ El nacimiento de ProServers no fue corporativo, sino académico y lleno de anéc
 - [x] **Modo CEO:** Acceso administrativo y funciones premium habilitadas para la cuenta corporativa del propietario.
 - [x] **Modelado SQL base:** Modelos Eloquent, migraciones, relaciones `clientes -> suscripciones -> servidores`, pagos normalizados y restricciones de dominio preparados en Laravel.
 - [x] **Validación técnica:** Pest, Pint, validaciones de sintaxis y builds Docker ejecutados correctamente.
-- [ ] **Migración controlada de RDS:** Ejecutar y verificar el nuevo esquema sobre la base Microsoft SQL Server real sin pérdida de datos.
-- [ ] **Identidad Laravel definitiva:** Completar la validación directa de tokens Firebase y retirar los flujos heredados que todavía usan la entidad `users`.
-- [ ] **Auditoría persistente:** Integrar MongoDB Atlas y persistir diagnósticos de Mine AI, logs y eventos de contenedores.
+- [x] **Migración controlada de RDS:** Esquema v0.9.5 aplicado y verificado sobre Microsoft SQL Server RDS; planes comerciales cargados.
+- [x] **Identidad Firebase en Laravel:** Middleware Bearer, login, perfil, estado y checkout validan directamente tokens Firebase.
+- [x] **Auditoría persistente:** MongoDB Atlas conectado; Laravel persiste eventos y Node exporta deploys y diagnósticos Mine AI mediante endpoint firmado.
+- [ ] **Retiro del legado `users`:** Eliminar completamente la entidad y migraciones heredadas después de validar compatibilidad histórica.
 - [ ] **Secretos de producción:** Rotar credenciales expuestas, centralizar el entorno operativo y revisar permisos de certificados.
 - [ ] **Frontend corporativo:** Desarrollar footer, términos, privacidad y accesos legales.
-- [ ] **Hub de Facturación (Billing):** Completar pruebas de pasarelas y habilitar operación comercial de producción.
+- [x] **Billing base:** Planes en RDS, cálculo server-side del monto, checkout protegido y flujo AstroPay conectado.
+- [ ] **Pasarelas adicionales:** Configurar y probar Ualá Bis y Openpay con credenciales productivas reales.
+- [ ] **Hub de Facturación (Billing):** Completar pruebas de todas las pasarelas y habilitar operación comercial de producción.
 
 ### FASE 4: Monetización, Publicidad y Lanzamiento (v1.0) 🎯
 - [ ] **Criterio de entrada v1.0:** Cerrar todos los pendientes críticos de la Fase 3 y aprobar una prueba de regresión completa.

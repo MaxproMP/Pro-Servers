@@ -1727,6 +1727,7 @@
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
+                            'Authorization': 'Bearer ' + await cred.user.getIdToken(),
                             'X-CSRF-TOKEN': csrfToken
                         },
                         body: JSON.stringify({

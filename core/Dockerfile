@@ -2,8 +2,13 @@ FROM php:8.4-fpm
 
 # 1. Instalar dependencias
 RUN apt-get update && apt-get install -y \
-    nginx git curl libpng-dev libonig-dev libxml2-dev zip unzip \
+    nginx git curl ca-certificates libpng-dev libonig-dev libxml2-dev zip unzip \
     libssl-dev pkg-config gnupg2 apt-transport-https
+
+# CA oficial para validar certificados de Amazon RDS sin confiar ciegamente.
+RUN curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
+    -o /usr/local/share/ca-certificates/rds-global-bundle.crt \
+    && update-ca-certificates
 
 # 2. Agregar repositorio de Microsoft
 RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \

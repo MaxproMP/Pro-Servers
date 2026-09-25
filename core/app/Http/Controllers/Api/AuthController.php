@@ -42,13 +42,8 @@ class AuthController extends Controller
     // === MÉTODO DE LOGIN (Sprint 7) ===
     public function login(Request $request)
     {
-        // 1. Frontend nos manda el UID después de que Firebase le dio el OK
-        $request->validate([
-            'firebase_uid' => 'required|string'
-        ]);
-
-        // 2. POO: Buscamos el objeto Cliente en SQL Server
-        $cliente = Cliente::where('firebase_uid', $request->firebase_uid)->first();
+        $firebaseUid = (string) $request->attributes->get('firebase_uid');
+        $cliente = Cliente::where('firebase_uid', $firebaseUid)->first();
 
         // 3. Si no existe, lo rebotamos
         if (!$cliente) {
