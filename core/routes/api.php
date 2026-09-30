@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RefundController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebhookController;
 use App\Models\Cliente;
@@ -66,4 +67,6 @@ Route::middleware('firebase.auth')->group(function () {
     // === PERFIL DEL USUARIO ===
     Route::get('/user/{firebase_uid}', [UserController::class, 'perfil']);
     Route::post('/checkout/{pasarela}', [CheckoutController::class, 'crearPago']);
+    Route::post('/payments/{pagoId}/refund', [RefundController::class, 'solicitarReembolso']);
+    Route::get('/admin/refunds', [RefundController::class, 'historial']);
 });

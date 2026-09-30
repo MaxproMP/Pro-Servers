@@ -701,6 +701,50 @@ app.post('/daemon/server/start', verificarCerebro, recibirOrdenLaravel);
 app.post('/api/internal/deploy', verificarCerebro, recibirOrdenLaravel);
 app.post('/api/internal/upgrade-plan', verificarCerebro, recibirOrdenLaravel);
 
+app.post('/daemon/server/destroy-forced', verificarCerebro, async (req, res) => {
+    const { firebase_uid: uid } = req.body;
+    if (!uid) return res.status(400).json({ success: false, error: 'Falta firebase_uid.' });
+
+    const db = loadDB();
+    const servers = db[uid]?.servers || [];
+    const destroyed = [];
+    const failures = [];
+
+    for (const serverRecord of servers) {
+        const serverId = serverRecord.id;
+        for (const containerName of [serverRecord.containerName || `mc-${serverId}`, `playit-${serverId}`]) {
+            try {
+                const container = docker.getContainer(containerName);
+                try { await container.stop({ t: 15 }); } catch (error) {
+                    if (error.statusCode !== 304 && error.statusCode !== 404) throw error;
+                }
+                try { await container.remove({ force: true }); } catch (error) {
+                    if (error.statusCode !== 404) throw error;
+                }
+            } catch (error) {
+                failures.push({ serverId, containerName, error: error.message });
+            }
+        }
+
+        try {
+            fs.rmSync(path.join(DOCKER_SERVERS_DIR, serverId), { recursive: true, force: true });
+            destroyed.push(serverId);
+        } catch (error) {
+            failures.push({ serverId, error: error.message });
+        }
+    }
+
+    delete db[uid];
+    saveDB(db);
+    await registrarAuditoria('server.refund.purge.completed', uid, null, { destroyed, failures });
+
+    return res.status(failures.length ? 500 : 200).json({
+        success: failures.length === 0,
+        destroyed,
+        failures,
+    });
+});
+
 // --- Ver Logs de Playit (Para el túnel de red) ---
 app.get('/api/server/playitlogs', async (req, res) => {
     try {

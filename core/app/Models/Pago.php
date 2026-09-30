@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pago extends Model
 {
@@ -18,10 +19,21 @@ class Pago extends Model
         'medio_pago',
         'transaccion_id',
         'estado',
+        'fecha_transaccion',
+    ];
+
+    protected $casts = [
+        'monto' => 'decimal:2',
+        'fecha_transaccion' => 'datetime',
     ];
 
     public function suscripcion(): BelongsTo
     {
         return $this->belongsTo(Suscripcion::class);
+    }
+
+    public function auditoriasReembolso(): HasMany
+    {
+        return $this->hasMany(AuditoriaReembolso::class);
     }
 }
