@@ -17,8 +17,8 @@ return new class extends Migration
             $table->id();
 
             // Jerarquía canónica: clientes -> suscripciones -> servidores.
-            $table->foreignId('cliente_id')->constrained('clientes')->onDelete('restrict');
-            $table->foreignId('plan_id')->constrained('planes')->onDelete('restrict');
+            $table->foreignId('cliente_id')->constrained('clientes');
+            $table->foreignId('plan_id')->constrained('planes');
 
             $table->string('estado')->default('pendiente'); // 'pendiente', 'activo'
             $table->integer('ciclo_meses')->default(1);
@@ -28,8 +28,6 @@ return new class extends Migration
             $table->timestamp('fecha_vencimiento')->nullable();
 
             $table->softDeletes();
-            $table->check("estado in ('pendiente', 'activa', 'suspendida', 'cancelada')");
-            $table->check('ciclo_meses > 0');
             $table->timestamps();
         });
     }

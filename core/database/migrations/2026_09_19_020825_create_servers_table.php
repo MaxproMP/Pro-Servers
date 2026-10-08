@@ -26,8 +26,6 @@ return new class extends Migration
 
             // Estado del contenedor
             $table->string('status')->default('pending');
-            $table->check('port is null or (port between 1024 and 65535)');
-
             $table->timestamps();
         });
     }

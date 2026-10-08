@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
 
             // Relación con Suscripciones
-            $table->foreignId('suscripcion_id')->constrained('suscripciones')->onDelete('restrict');
+            $table->foreignId('suscripcion_id')->constrained('suscripciones');
 
             // Campos de facturación
             $table->decimal('monto', 10, 2);
@@ -25,8 +25,6 @@ return new class extends Migration
             $table->string('medio_pago');
             $table->string('transaccion_id')->unique()->nullable();
             $table->string('estado')->default('pendiente');
-            $table->check('monto > 0');
-
             $table->timestamps();
         });
     }

@@ -13,6 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Esta tabla debe existir antes de crear las suscripciones que la referencian.
         Schema::create('clientes', function (Blueprint $table) {
             $table->id();
             // Identificador único y seguro que nos manda Firebase:

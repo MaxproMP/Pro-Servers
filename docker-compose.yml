@@ -30,17 +30,15 @@ services:
     build: ./backend
     container_name: minecraft-panel-backend
     restart: unless-stopped
-    # Hacemos que Node.js lea el MISMO .env maestro de Laravel
     env_file:
       - ./core/.env
     environment:
-      DOCKER_SERVERS_DIR: /home/ubuntu/Proservers/servers
+      DOCKER_SERVERS_DIR: /home/Rodasmaximo/Proservers/servers
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data:/usr/src/app/data
       - ./servers:/usr/src/app/servers
-      - ./servers:/home/ubuntu/Proservers/servers
-      # ACA ESTA LA CLAVE QUE FALTABA PARA EL LOGIN
+      - ./servers:/home/Rodasmaximo/Proservers/servers
       - ./backend/firebase-adminsdk.json:/usr/src/app/firebase-adminsdk.json
     networks:
       - minecraft-net
