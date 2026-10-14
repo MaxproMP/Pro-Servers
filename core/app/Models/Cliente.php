@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cliente extends Authenticatable
 {
-    use HasApiTokens, HasFactory, SoftDeletes;
+    use HasApiTokens, SoftDeletes;
 
     protected $table = 'clientes';
 
