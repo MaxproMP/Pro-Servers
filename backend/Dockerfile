@@ -11,6 +11,10 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 
+# Fix compatibilidad Node 20: docker-modem bundlea readable-stream@3 que rompe
+# con el util.inherits() de Node 20. Lo eliminamos para usar los streams nativos.
+RUN rm -rf node_modules/docker-modem/node_modules/readable-stream
+
 EXPOSE 3000
 
 # Ejecutamos Node directamente

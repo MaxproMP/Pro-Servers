@@ -14,12 +14,13 @@
         .bg-glow { position: absolute; top: -20%; left: 50%; transform: translateX(-50%); width: 80vw; height: 50vh; background: radial-gradient(circle, rgba(76,175,80,0.15) 0%, rgba(10,10,10,0) 70%); z-index: -1; }
         .glass-nav { background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
         
-        /* Efecto Neon Retro */
+        /* Efecto Neon Retro Corregido */
         .neon-green {
             text-shadow: 0 0 5px #4ade80, 0 0 15px #22c55e, 0 0 30px #16a34a;
         }
         .neon-blue {
-            text-shadow: 0 0 5px #60a5fa, 0 0 15px #3b82f6, 0 0 30px #2563eb;
+            /* Mismos valores de expansión que el verde, pero con un azul suave/hielo y opacidades para no saturar */
+            text-shadow: 0 0 5px rgba(147, 197, 253, 0.9), 0 0 15px rgba(96, 165, 250, 0.6), 0 0 30px rgba(59, 130, 246, 0.4);
         }
 
         /* Efecto del cursor titilando para la terminal */
@@ -107,7 +108,8 @@
             <span id="terminal-prompt" class="font-mono text-green-400 neon-green font-normal opacity-100 transition-opacity duration-500">:> </span>
             
             <span id="type-line1" class="text-white"></span><br>
-            <span id="type-line2" class="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 neon-blue"></span>
+            <!-- Aquí aplicamos el azul claro como base y la clase neon-blue limpia -->
+            <span id="type-line2" class="text-blue-200 font-bold neon-blue"></span>
             
             <span id="cursor" class="cursor-blink font-mono font-normal text-green-400 opacity-100 transition-opacity duration-500">_</span>
         </h1>
@@ -146,9 +148,8 @@
         </div>
     </main>
 
-    <!-- FOOTER (Vacío según indicaciones) -->
+    <!-- FOOTER -->
     <footer class="border-t border-[#111] py-8 text-center bg-[#050505]">
-        <!-- Contenido vacío hasta que el usuario lo solicite -->
     </footer>
 
     <script>

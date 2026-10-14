@@ -8,10 +8,13 @@
     "require": {
         "php": "^8.4",
         "kreait/laravel-firebase": "^7.2",
+        "laragear/webauthn": "^5.0",
         "laravel/framework": "^13.17",
         "laravel/sanctum": "^4.0",
+        "laravel/socialite": "^5.31",
         "laravel/tinker": "^3.0",
-        "mongodb/laravel-mongodb": "^5.11"
+        "mongodb/laravel-mongodb": "^5.11",
+        "pragmarx/google2fa-laravel": "^3.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

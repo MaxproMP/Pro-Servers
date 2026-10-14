@@ -1506,6 +1506,7 @@
 
         window.userPlan = { name: 'Plan Redstone', maxServers: 1, ram: '8GB', ramNum: 8, fileManager: false };
         let isSharedServer = false;
+        let isRegistering = false;
         let guestPermissions = [];
         let clientSocket = null;
 
@@ -1533,6 +1534,7 @@
             });
 
             onAuthStateChanged(auth, async (user) => {
+                if (isRegistering) return;
                 if (user) {
                     loginBoxesWrapper.classList.add('hidden');
                     checkingStatus.classList.remove('hidden');
@@ -1564,7 +1566,8 @@
                                     method: 'GET',
                                     headers: {
                                         'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': csrfToken
+                                        'X-CSRF-TOKEN': csrfToken,
+                                        'Authorization': 'Bearer ' + await user.getIdToken()
                                     }
                                 });
 
@@ -1604,10 +1607,13 @@
                                 entrarAlPanel(config);
                             } else {
                                 sessionStorage.removeItem('selectedServer');
-                                window.location.href = isCEO ? '/crear.html' : '/planes.html';
+                                window.location.href = isCEO ? (forceUserMode ? '/crear.html' : '/admin.html') : '/planes.html';
                             }
                         } catch (e) {
-                            entrarAlPanel(JSON.parse(selectedServer));
+                            console.error(e);
+                            loginBoxesWrapper.classList.remove('hidden');
+                            checkingStatus.classList.add('hidden');
+                            alert("Error validando el servidor activo con el backend. Intenta de nuevo.");
                         }
                     } else {
                         try {
@@ -1617,16 +1623,15 @@
 
                             if (data.exists && data.servers.length > 0) {
                                 sessionStorage.setItem('selectedServer', JSON.stringify(data.servers[0]));
-                                window.location.reload();
+                                entrarAlPanel(data.servers[0]);
                             } else {
-                                if (isCEO) {
-                                    window.location.href = '/crear.html';
-                                } else {
-                                    window.location.href = '/planes.html';
-                                }
+                                window.location.href = isCEO ? (forceUserMode ? '/crear.html' : '/admin.html') : '/planes.html';
                             }
                         } catch (e) {
-                            window.location.href = isCEO ? '/crear.html' : '/planes.html';
+                            console.error(e);
+                            loginBoxesWrapper.classList.remove('hidden');
+                            checkingStatus.classList.add('hidden');
+                            alert("Error de red o CORS al verificar servidores. Intenta de nuevo.");
                         }
                     }
                 } else {
@@ -1660,6 +1665,7 @@
                 const emailIngresado = f.email.value.trim();
                 const usernameIngresado = f.username.value.trim();
 
+                isRegistering = true;
                 try {
                     // 1. Firebase crea el usuario
                     const cred = await createUserWithEmailAndPassword(auth, emailIngresado, f.password.value);
@@ -1674,7 +1680,8 @@
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Authorization': 'Bearer ' + await cred.user.getIdToken()
                         },
                         body: JSON.stringify({
                             firebase_uid: cred.user.uid,
@@ -1690,12 +1697,15 @@
 
                     if (res.ok) {
                         console.log("Registrado exitosamente en SQL Server:", data);
+                        isRegistering = false;
                         window.location.reload();
+                        return;
                     } else {
                         throw new Error(data.message || "Error al guardar en la base de datos.");
                     }
 
                 } catch (err) {
+                    isRegistering = false;
                     loginBoxesWrapper.classList.remove('hidden');
                     checkingStatus.classList.add('hidden');
                     alert("Error al registrar: " + err.message);
@@ -1727,8 +1737,8 @@
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
-                            'Authorization': 'Bearer ' + await cred.user.getIdToken(),
-                            'X-CSRF-TOKEN': csrfToken
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Authorization': 'Bearer ' + await cred.user.getIdToken()
                         },
                         body: JSON.stringify({
                             firebase_uid: cred.user.uid
@@ -1738,13 +1748,13 @@
                     const data = await res.json();
 
                     if (!res.ok) {
-                        // Si Laravel dice que no existe (404), deslogueamos de Firebase y tiramos error
-                        await signOut(auth);
-                        throw new Error(data.message || "Cliente no registrado en la base de datos.");
+                        // Solo 404 (cliente inexistente) cierra sesión; 401/5xx no.
+                        if (res.status === 404) await signOut(auth);
+                        throw new Error(data.message || data.error || "Error " + res.status);
                     }
 
-                    // Si todo está OK, recargamos para entrar al panel
-                    window.location.reload();
+                    // Si todo está OK, la transición al panel la maneja onAuthStateChanged
+                    
 
                 } catch (err) {
                     loginBoxesWrapper.classList.remove('hidden');

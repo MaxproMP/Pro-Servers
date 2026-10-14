@@ -4,6 +4,8 @@
 
 ![Status](https://img.shields.io/badge/Status-Migración%20Híbrida-warning?style=for-the-badge)
 ![Version](https://img.shields.io/badge/Versión-v0.9.5_Beta-blue?style=for-the-badge)
+![Security](https://img.shields.io/badge/Auth-2FA%20%2B%20WebAuthn-8A2BE2?style=for-the-badge)
+![Database](https://img.shields.io/badge/DB-SQL%20Server%203FN%20%2B%20MongoDB-0078D4?style=for-the-badge)
 ![Target](https://img.shields.io/badge/Meta-v1.0_Production-success?style=for-the-badge)
 
 *Plataforma automatizada de despliegue, gestión y auditoría de servidores de alto rendimiento.*
@@ -21,6 +23,9 @@ El proyecto se encuentra en la **v0.9.5 Beta (El Punto de Inflexión Híbrido)**
 - **Dominio:** `https://www.professional-servers.com.ar` operativo con HTTPS.
 - **Despliegue:** creación de servidores, contenedores Minecraft/Playit, volúmenes persistentes y acciones de inicio, detención y reinicio implementadas.
 - **Seguridad:** APIs del daemon protegidas con Firebase; comunicación interna Laravel → Node protegida con `x-daemon-secret`; WebSocket con autenticación y control de propiedad.
+- **Autenticación Avanzada (2FA & WebAuthn):** verificación en dos pasos (2FA), soporte de llaves biométricas/Passkeys (`WebAuthn`), login social federado (Google, GitHub, Microsoft) y sincronización de sesión (`authStateReady`) anti-bucles.
+- **Integridad Contable 3FN y Reembolsos:** esquema relacional estricto en Tercera Forma Normal (`clientes -> suscripciones -> servidores`), gestión de reembolsos/reparaciones y borrado lógico (`Soft Deletes`).
+- **Ecosistema Discord:** integración con **Pro Server Bot** para notificaciones transaccionales, alertas operativas y gestión remota.
 - **Calidad:** suite Pest ejecutada correctamente, validaciones de sintaxis para PHP/Node/Python y configuración Docker verificada.
 - **Límite actual:** aún no se declara producción v1.0 hasta completar la rotación de credenciales, la verificación estricta de la CA de RDS y la habilitación de todas las pasarelas comerciales.
 
@@ -28,25 +33,29 @@ El proyecto se encuentra en la **v0.9.5 Beta (El Punto de Inflexión Híbrido)**
 
 ## 🛠️ Arquitectura Tecnológica (Monorepo v0.9.5)
 El sistema está diseñado bajo una arquitectura de microservicios robusta y separada por dominios de responsabilidad:
-*   🧠 **El Cerebro (API Core):** Laravel (PHP 8.4) + Nginx. Se encarga del enrutamiento de la API, la autenticación, modelos de negocio, integraciones de APIs externas (Groq, CurseForge), pasarelas de pago y soporte para pruebas automatizadas con Pest v5.
-*   ⚙️ **El Demonio (Infraestructura):** Node.js & Express + Socket.io. Un microservicio aislado y protegido que solo obedece a Laravel. Tiene el control absoluto de Dockerode, gestión de archivos masivos (I/O) y WebSockets para las consolas en vivo.
-*   🔒 **Seguridad y Bases de Datos:** 
+-   🧠 **El Cerebro (API Core):** Laravel (PHP 8.4) + Nginx. Se encarga del enrutamiento de la API, la autenticación, modelos de negocio, integraciones de APIs externas (Groq, CurseForge), pasarelas de pago y soporte para pruebas automatizadas con Pest v5.
+-   ⚙️ **El Demonio (Infraestructura):** Node.js & Express + Socket.io. Un microservicio aislado y protegido que solo obedece a Laravel. Tiene el control absoluto de Dockerode, gestión de archivos masivos (I/O) y WebSockets para las consolas en vivo.
+-   🔒 **Seguridad y Bases de Datos:** 
     *   **Microsoft SQL Server (AWS RDS):** Base de datos relacional estricta para Facturación, Membresías, Planes y Perfiles de Usuario.
     *   **MongoDB Atlas:** Almacenamiento rápido y flexible para logs, auditorías y estados de los nodos.
     *   **Firebase Auth:** Emisión de tokens JWT de identidad verificados en ambas capas.
-*   🌐 **Redes:** Playit.gg (Túneles TCP/UDP dinámicos) acoplados a cada nodo de Docker con reseteo de red automático.
-*   🤖 **Inteligencia Artificial:** API de Groq integrada nativamente para "Mine AI" (Análisis de logs y autodiagnóstico técnico en tiempo real).
+    *   **Verificación en Dos Pasos (2FA) y WebAuthn:** Capa adicional de blindaje de identidad con segundo factor, llaves de seguridad biométricas (Passkeys) y proveedores OAuth (Google, GitHub, Microsoft).
+    *   **Normalización 3FN y Auditoría Financiera:** Separación estricta de `pagos` y `reembolsos` vinculados por `id_suscripcion`, `ON DELETE RESTRICT` para historial contable y validaciones de dominio `CHECK`.
+-   🌐 **Redes:** Playit.gg (Túneles TCP/UDP dinámicos) acoplados a cada nodo de Docker con reseteo de red automático.
+-   🤖 **Inteligencia Artificial:** API de Groq integrada nativamente para "Mine AI" (Análisis de logs y autodiagnóstico técnico en tiempo real).
+-   💬 **Pro Server Bot (Discord Integration):** Servicio integrado al monorepo para envío de alertas de estado, avisos de facturación y control administrativo desde Discord.
+-   🎨 **Frontend (Dark UI / Glassmorphism):** Vistas desacopladas (`index.html`, `planes.html`, `checkout.html`, `perfil.html`, `admin.html`) con Tailwind CSS, Feather Icons, control de carrera de sesión y conmutación segura de Modo CEO/Usuario.
 
 ---
 
 ## 📜 Historia y Evolución (El Origen y el 🚫 de Copilot)
 El nacimiento de ProServers no fue corporativo, sino académico y lleno de anécdotas de trinchera que forjaron su arquitectura actual. Una verdadera historia de resiliencia de código:
 
-*   **v0.0 Pre-Alpha (2024) - "El Proyecto de Facultad":** Todo nació a las apuradas en el primer año del terciario. La idea original iba a ser física junto a un compañero, pero fracasó. Para salvar la nota, hubo una fusión obligada con otro grupo. Las primeras pruebas de despliegue fueron un caos de infraestructura: se intentó orquestar en AWS con Jenkins y falló estrepitosamente.
-*   **v0.1 a v0.4 Beta (2025/2026) - "El Camino Solo y la Presentación":** Ya en segundo año de la carrera de Técnico Superior Analista de Sistemas, me di de baja del grupo original y empecé a desarrollarlo por mi cuenta. Llegó el día de presentar el proyecto ante **todos los profesores de la carrera**. Para testear y levantar el primer servidor a las apuradas, se usó **Kubernetes**. El backend fue un éxito total (¡el server de Minecraft prendió!), pero la interfaz... era un desastre hermoso. De tantos cambios locos intentando integrar sugerencias de GitHub Copilot a último minuto, lo único que funcionaba era la consola y el gestor de archivos. No podías ni prender ni apagar el servidor desde el panel, porque el botón había quedado literalmente trabado con este ícono: 🚫. 
-*   **v0.5 a v0.8 Beta - "La Plataforma":** Dejando atrás K8s, se migró a una integración limpia y oficial con la API de Docker local. Creación del primer panel web interactivo real. Se sumaron el Gestor de Archivos estable, la consola RCON y las métricas.
-*   **v0.9 Beta - "El Imperio y la Independencia":** Reestructuración total y desarrollo 100% *in-house*. Se abandonó cualquier código de terceros. Se introdujo el Modo CEO, la *Zona de Hielo*, Mine AI, los permisos granulares de invitados y la clonación de nodos.
-*   **v0.9.5 Beta (Actual) - "El Punto de Inflexión Híbrido":** A un paso de la v1.0, el sistema exigía una profesionalización mayor. Se decidió que Node.js no podía manejar de forma segura la facturación de los clientes y el control de Docker al mismo tiempo. Se migró la plataforma a un Monorepo, introduciendo Laravel y Microsoft SQL Server como el "Cerebro" corporativo, delegando a Node.js la tarea exclusiva de "Demonio" de infraestructura.
+-   **v0.0 Pre-Alpha (2024) - "El Proyecto de Facultad":** Todo nació a las apuradas en el primer año del terciario. La idea original iba a ser física junto a un compañero, pero fracasó. Para salvar la nota, hubo una fusión obligada con otro grupo. Las primeras pruebas de despliegue fueron un caos de infraestructura: se intentó orquestar en AWS con Jenkins y falló estrepitosamente.
+-   **v0.1 a v0.4 Beta (2025/2026) - "El Camino Solo y la Presentación":** Ya en segundo año de la carrera de Técnico Superior Analista de Sistemas, me di de baja del grupo original y empecé a desarrollarlo por mi cuenta. Llegó el día de presentar el proyecto ante **todos los profesores de la carrera**. Para testear y levantar el primer servidor a las apuradas, se usó **Kubernetes**. El backend fue un éxito total (¡el server de Minecraft prendió!), pero la interfaz... era un desastre hermoso. De tantos cambios locos intentando integrar sugerencias de GitHub Copilot a último minuto, lo único que funcionaba era la consola y el gestor de archivos. No podías ni prender ni apagar el servidor desde el panel, porque el botón había quedado literalmente trabado con este ícono: 🚫. 
+-   **v0.5 a v0.8 Beta - "La Plataforma":** Dejando atrás K8s, se migró a una integración limpia y oficial con la API de Docker local. Creación del primer panel web interactivo real. Se sumaron el Gestor de Archivos estable, la consola RCON y las métricas.
+-   **v0.9 Beta - "El Imperio y la Independencia":** Reestructuración total y desarrollo 100% *in-house*. Se abandonó cualquier código de terceros. Se introdujo el Modo CEO, la *Zona de Hielo*, Mine AI, los permisos granulares de invitados y la clonación de nodos.
+-   **v0.9.5 Beta (Actual) - "El Punto de Inflexión Híbrido":** A un paso de la v1.0, el sistema exigía una profesionalización mayor. Se decidió que Node.js no podía manejar de forma segura la facturación de los clientes y el control de Docker al mismo tiempo. Se migró la plataforma a un Monorepo, introduciendo Laravel y Microsoft SQL Server como el "Cerebro" corporativo, delegando a Node.js la tarea exclusiva de "Demonio" de infraestructura. Sobre esta base se sumó la autenticación con verificación en dos pasos (2FA), soporte WebAuthn (Passkeys), gestión contable de reembolsos en 3FN, integración con Pro Server Bot y la estabilización del flujo de sesiones entre Firebase y Laravel.
 
 ---
 
@@ -80,6 +89,13 @@ El nacimiento de ProServers no fue corporativo, sino académico y lleno de anéc
 - [x] **Migración controlada de RDS:** Esquema v0.9.5 aplicado y verificado sobre Microsoft SQL Server RDS; planes comerciales cargados.
 - [x] **Identidad Firebase en Laravel:** Middleware Bearer, login, perfil, estado y checkout validan directamente tokens Firebase.
 - [x] **Auditoría persistente:** MongoDB Atlas conectado; Laravel persiste eventos y Node exporta deploys y diagnósticos Mine AI mediante endpoint firmado.
+- [x] **Verificación en Dos Pasos (2FA) y Campos Auth:** Ampliación del esquema de identidad con validación de segundo factor y controles de seguridad adicionales.
+- [x] **Autenticación Biométrica y Passkeys (WebAuthn):** Migraciones y soporte para inicio de sesión sin contraseña mediante llaves de seguridad y biometría.
+- [x] **Login Social Federado (OAuth):** Integración de acceso con Google, GitHub y Microsoft conectado al flujo de tokens de Firebase.
+- [x] **Sistema de Reembolsos y Reparaciones:** Migraciones y tablas dedicadas para trazabilidad contable de devoluciones, ajustes y compensaciones en 3FN.
+- [x] **Sincronización de Sesión Anti-Bucles (Frontend):** Implementación de espera asíncrona `authStateReady()` en `planes.html`, `perfil.html`, `checkout.html` y `admin.html`, corrección de redirecciones obsoletas (`/crear.html`) y prevención de cierres de sesión forzosos.
+- [x] **Integración de Pro Server Bot:** Incorporación del bot de Discord al monorepo para notificaciones transaccionales y monitoreo.
+- [ ] **Blindaje de Registro y Colisión de Usernames (Backend):** Separar excepciones SQL (500) de errores de token (401) en `FirebaseTokenMiddleware`, generar sufijos únicos para `username` en `clientes` y bloquear condiciones de carrera durante el alta en `index.html`.
 - [ ] **Retiro del legado `users`:** Eliminar completamente la entidad y migraciones heredadas después de validar compatibilidad histórica.
 - [ ] **Secretos de producción:** Rotar credenciales expuestas, centralizar el entorno operativo y revisar permisos de certificados.
 - [ ] **Frontend corporativo:** Desarrollar footer, términos, privacidad y accesos legales.
@@ -90,6 +106,8 @@ El nacimiento de ProServers no fue corporativo, sino académico y lleno de anéc
 ### FASE 4: Monetización, Publicidad y Lanzamiento (v1.0) 🎯
 - [ ] **Criterio de entrada v1.0:** Cerrar todos los pendientes críticos de la Fase 3 y aprobar una prueba de regresión completa.
 - [ ] **Estructura Legal y Derechos:** Agregar términos y condiciones, contratos y políticas de privacidad.
+- [ ] **Auditoría Pre-Lanzamiento Web (Checklist 20 Puntos):** Validar banner de cookies, consentimiento en formularios, metadatos OpenGraph, compresión de activos, carga menor a 3s, páginas de error útiles, `sitemap.xml` y analítica.
+- [ ] **Automatización de Testing E2E (Playwright):** Pruebas automatizadas de extremo a extremo para los flujos críticos de registro, login 2FA/WebAuthn, checkout y creación de servidores.
 - [ ] **Estrategia de Google Ads y Paid Media:** Campañas orientadas a palabras clave de alto tráfico para captación de clientes de hosting de juegos y servidores dedicados.
 - [ ] **Posicionamiento CEO y Redes Sociales:** Optimización técnica del sitio público para buscadores y campañas orgánicas en comunidades de gaming.
 - [ ] Lanzamiento oficial **ProServers v1.0** 🚀.

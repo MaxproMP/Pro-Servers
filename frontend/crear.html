@@ -685,6 +685,10 @@
 
             onAuthStateChanged(auth, async (user) => {
                 if (!user) {
+                    await auth.authStateReady();
+                    user = auth.currentUser;
+                }
+                if (!user) {
                     window.location.href = '/index.html';
                     return;
                 }

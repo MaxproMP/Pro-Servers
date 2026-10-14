@@ -1,63 +1,51 @@
 <?php
 
-namespace App\Http\Controllers\Api; // <-- Importante: Ahora está en la carpeta Api
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Cliente; // Usamos nuestro modelo Cliente, no el User genérico
+use App\Models\Cliente;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    // === MÉTODO DE REGISTRO (Sprint 7) ===
     public function register(Request $request)
     {
-        // 1. Validamos los datos. 
-        // Nota POO: Firebase ya validó la contraseña, acá solo validamos el perfil del objeto Cliente.
-        $request->validate([
-            'firebase_uid' => 'required|string|unique:clientes',
-            'email'        => 'required|string|email|max:255|unique:clientes',
-            'username'     => 'required|string|max:255|unique:clientes',
-            'nombre'       => 'required|string|max:255',
-            'apellido'     => 'nullable|string|max:255',
-        ]);
-
-        // 2. POO: Instanciamos un nuevo Cliente en la base de datos
-        $cliente = Cliente::create([
-            'firebase_uid' => $request->firebase_uid,
-            'email'        => $request->email,
-            'username'     => $request->username,
-            'nombre'       => $request->nombre,
-            'apellido'     => $request->apellido,
-            // 'plan_activo' y 'role' se asignan automáticamente por defecto gracias a la migración
-        ]);
-
-        // 3. Devolvemos el JSON de éxito al Frontend
-        return response()->json([
-            'status'  => 'success',
-            'message' => 'Cliente registrado correctamente en ProServers',
-            'cliente' => $cliente
-        ], 201);
-    }
-
-    // === MÉTODO DE LOGIN (Sprint 7) ===
-    public function login(Request $request)
-    {
-        $firebaseUid = (string) $request->attributes->get('firebase_uid');
-        $cliente = Cliente::where('firebase_uid', $firebaseUid)->first();
-
-        // 3. Si no existe, lo rebotamos
+        $cliente = Auth::user(); // Obtenido por el middleware FirebaseTokenMiddleware
+        
         if (!$cliente) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Cliente no encontrado en la base de datos. Debe registrarse primero.'
-            ], 404);
+            return response()->json(['message' => 'No autorizado'], 401);
         }
 
-        // 4. Devolvemos los datos del cliente para que el Frontend arme el panel
+        try {
+            $username = $request->input('username');
+            $cliente->update([
+                'username' => $username
+                    ? Cliente::usernameUnico((string) $username, $cliente->id)
+                    : $cliente->username,
+                'nombre'   => $request->input('nombre', $cliente->nombre),
+                'apellido' => $request->input('apellido', $cliente->apellido),
+                'phone'    => $request->input('phone', $cliente->phone),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+            return response()->json(['message' => 'Error de base de datos al completar el registro.'], 500);
+        }
+
+        return response()->json(['message' => 'Registro completado', 'user' => $cliente], 201);
+    }
+
+    public function login(Request $request)
+    {
+        $cliente = Auth::user();
+        
+        if (!$cliente) {
+            return response()->json(['message' => 'Cliente no registrado en la base de datos.'], 404);
+        }
+
         return response()->json([
-            'status'  => 'success',
             'message' => 'Login exitoso',
-            'cliente' => $cliente
+            'user'    => $cliente
         ], 200);
     }
 }

@@ -1,3 +1,4 @@
+
 <laravel-boost-guidelines>
 # Laravel Application
 
