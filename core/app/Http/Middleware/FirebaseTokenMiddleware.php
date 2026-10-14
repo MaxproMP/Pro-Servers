@@ -70,6 +70,14 @@ class FirebaseTokenMiddleware
             Auth::login($cliente);
         }
 
+        // Zona de Hielo: cuenta congelada, solo queda abierto el contacto con soporte.
+        if ($cliente->estado === 'congelado' && !$request->is('api/support/*')) {
+            return response()->json([
+                'error' => 'account_frozen',
+                'message' => 'Tu cuenta está en Zona de Hielo. Contacta a soporte para reactivarla.',
+            ], 403);
+        }
+
         // 2FA: la verificación queda ligada al inicio de sesión de Firebase (auth_time).
         $tiene2fa = !empty($cliente->google2fa_secret);
         $verificado = !$tiene2fa || Cache::has("2fa:{$cliente->id}:{$authTime}");

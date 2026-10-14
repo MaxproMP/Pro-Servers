@@ -33,6 +33,7 @@ class Cliente extends Authenticatable
         'discord_id',
         'plan_activo',
         'role',
+        'estado',
     ];
 
     /**

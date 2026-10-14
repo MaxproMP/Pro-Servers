@@ -193,26 +193,215 @@ app.get('/ping', (req, res) => {
     res.json({ status: '🟢 Demonio Node.js en línea, blindado y esperando órdenes.' });
 });
 
-// --- Admin: todos los servidores (solo CEO; Laravel ya valida el rol) ---
-const CEO_EMAIL = 'rodasmaximo51@gmail.com';
-app.get('/api/admin/all-servers', verificarTokenFirebase, async (req, res) => {
-    if (req.user.email !== CEO_EMAIL) return res.status(403).json({ error: 'Solo CEO' });
+// ============================================================
+// === ADMIN (solo Laravel, autenticado con x-daemon-secret) ===
+// Laravel valida el rol del staff; Node nunca queda expuesto al navegador.
+// ============================================================
+const os = require('os');
 
-    // Estado real desde Docker: nombre de contenedor -> estado (running, exited, paused...)
-    const estados = new Map();
+function ubicarServidor(serverId) {
+    const db = loadDB();
+    for (const [uid, d] of Object.entries(db)) {
+        const srv = (d.servers || []).find(x => x.id === serverId);
+        if (srv) return { uid, srv };
+    }
+    return null;
+}
+
+async function estadosDocker() {
+    const mapa = new Map();
     try {
-        const contenedores = await docker.listContainers({ all: true });
-        for (const c of contenedores) estados.set(c.Names[0].replace(/^\//, ''), c.State);
+        const lista = await docker.listContainers({ all: true });
+        for (const c of lista) mapa.set(c.Names[0].replace(/^\//, ''), c);
     } catch (e) {
         console.warn('[ADMIN] No se pudo consultar Docker:', e.message);
     }
+    return mapa;
+}
 
+app.get('/api/admin/all-servers', verificarCerebro, async (req, res) => {
+    const estados = await estadosDocker();
     const db = loadDB();
     const servers = Object.entries(db).flatMap(([uid, d]) => (d.servers || []).map(s => {
-        const estado = estados.get(`mc-${s.id}`) || 'missing';
+        const estado = estados.get(`mc-${s.id}`)?.State || 'missing';
         return { ...s, uid, containerStatus: estado, isRunning: estado === 'running' };
     }));
     res.json({ success: true, servers });
+});
+
+async function statsContenedor(info) {
+    const st = await Promise.race([
+        docker.getContainer(info.Id).stats({ stream: false }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000)),
+    ]);
+    const cpuDelta = st.cpu_stats.cpu_usage.total_usage - st.precpu_stats.cpu_usage.total_usage;
+    const sysDelta = st.cpu_stats.system_cpu_usage - st.precpu_stats.system_cpu_usage;
+    const ncpu = st.cpu_stats.online_cpus || st.cpu_stats.cpu_usage.percpu_usage?.length || 1;
+    const cpuPct = cpuDelta > 0 && sysDelta > 0 ? (cpuDelta / sysDelta) * ncpu * 100 : 0;
+    const cache = st.memory_stats.stats?.inactive_file ?? st.memory_stats.stats?.cache ?? 0;
+    return {
+        cpuPct: Math.round(cpuPct * 10) / 10,
+        ramMb: Math.round(((st.memory_stats.usage || 0) - cache) / 1048576),
+        ramLimitMb: Math.round((st.memory_stats.limit || 0) / 1048576),
+    };
+}
+
+app.get('/api/admin/telemetry', verificarCerebro, async (req, res) => {
+    const inicio = Date.now();
+    let dockerMs = null;
+    try { await docker.ping(); dockerMs = Date.now() - inicio; } catch (e) { /* docker caído */ }
+
+    const nucleos = os.cpus().length || 1;
+    const total = os.totalmem();
+    const libre = os.freemem();
+    const disco = fs.statfsSync('/');
+    const discoTotal = disco.blocks * disco.bsize;
+    const discoLibre = disco.bavail * disco.bsize;
+
+    const host = {
+        cores: nucleos,
+        load1: Math.round(os.loadavg()[0] * 100) / 100,
+        cpuPct: Math.min(100, Math.round((os.loadavg()[0] / nucleos) * 1000) / 10),
+        ramUsedMb: Math.round((total - libre) / 1048576),
+        ramTotalMb: Math.round(total / 1048576),
+        ramPct: Math.round(((total - libre) / total) * 1000) / 10,
+        diskUsedGb: Math.round(((discoTotal - discoLibre) / 1073741824) * 10) / 10,
+        diskTotalGb: Math.round((discoTotal / 1073741824) * 10) / 10,
+        diskPct: Math.round(((discoTotal - discoLibre) / discoTotal) * 1000) / 10,
+        uptimeSec: Math.round(os.uptime()),
+        dockerPingMs: dockerMs,
+    };
+
+    const estados = await estadosDocker();
+    const mc = [...estados.entries()].filter(([n]) => n.startsWith('mc-'));
+    const containers = await Promise.all(mc.map(async ([nombre, info]) => {
+        const base = { serverId: nombre.slice(3), name: nombre, state: info.State, cpuPct: 0, ramMb: 0, ramLimitMb: 0 };
+        if (info.State !== 'running') return base;
+        try { return { ...base, ...(await statsContenedor(info)) }; } catch (e) { return base; }
+    }));
+
+    res.json({ success: true, dockerUp: dockerMs !== null, host, containers });
+});
+
+app.post('/api/admin/server-action', verificarCerebro, async (req, res) => {
+    const { serverId, action } = req.body;
+    if (!serverId || !['start', 'stop', 'restart', 'delete'].includes(action)) {
+        return res.status(400).json({ error: 'serverId y action (start|stop|restart|delete) son obligatorios.' });
+    }
+    const ubicado = ubicarServidor(serverId);
+    if (ubicado?.srv.frozen && action !== 'stop' && action !== 'delete') {
+        return res.status(423).json({ error: 'account_frozen', message: 'La cuenta está en Zona de Hielo.' });
+    }
+
+    try {
+        const mc = docker.getContainer(`mc-${serverId}`);
+        const playit = docker.getContainer(`playit-${serverId}`);
+        const ignorar = async (fn) => { try { await fn(); } catch (e) { if (![304, 404].includes(e.statusCode)) throw e; } };
+
+        if (action === 'start') { await mc.start(); await ignorar(() => playit.start()); }
+        if (action === 'stop') { await ignorar(() => mc.stop()); await ignorar(() => playit.stop()); }
+        if (action === 'restart') { await mc.restart(); }
+        if (action === 'delete') {
+            await ignorar(() => mc.remove({ force: true }));
+            await ignorar(() => playit.remove({ force: true }));
+            fs.rmSync(path.join(SERVERS_DIR, serverId), { recursive: true, force: true });
+            if (ubicado) {
+                const db = loadDB();
+                db[ubicado.uid].servers = db[ubicado.uid].servers.filter(x => x.id !== serverId);
+                saveDB(db);
+            }
+        }
+        res.json({ success: true });
+    } catch (e) {
+        if (e.statusCode === 404) return res.status(404).json({ error: 'container_not_found', message: 'El contenedor no existe.' });
+        res.status(500).json({ error: 'Error en la acción: ' + e.message });
+    }
+});
+
+// Zona de Hielo: detiene los contenedores del cliente y bloquea su arranque.
+app.post('/api/admin/freeze', verificarCerebro, async (req, res) => {
+    const { uid, freeze } = req.body;
+    if (!uid || typeof freeze !== 'boolean') return res.status(400).json({ error: 'uid y freeze (boolean) son obligatorios.' });
+
+    const db = loadDB();
+    const servers = db[uid]?.servers || [];
+    const errores = [];
+    for (const s of servers) {
+        s.frozen = freeze;
+        for (const nombre of [`mc-${s.id}`, `playit-${s.id}`]) {
+            try {
+                const c = docker.getContainer(nombre);
+                if (freeze) await c.stop(); else await c.start();
+            } catch (e) { if (![304, 404].includes(e.statusCode)) errores.push(`${nombre}: ${e.message}`); }
+        }
+    }
+    saveDB(db);
+    res.json({ success: errores.length === 0, afectados: servers.length, errores });
+});
+
+// Purga segura: solo imágenes huérfanas. Nunca borra contenedores ni volúmenes de clientes.
+app.post('/api/admin/system-prune', verificarCerebro, async (req, res) => {
+    try {
+        const r = await docker.pruneImages({ filters: { dangling: ['true'] } });
+        res.json({
+            success: true,
+            imagenesEliminadas: (r.ImagesDeleted || []).length,
+            espacioLiberadoMb: Math.round((r.SpaceReclaimed || 0) / 1048576),
+        });
+    } catch (e) {
+        res.status(500).json({ error: 'No se pudo purgar Docker: ' + e.message });
+    }
+});
+
+app.post('/api/admin/global-broadcast', verificarCerebro, async (req, res) => {
+    const { message, level = 'info', author = 'ProServers' } = req.body;
+    if (typeof message !== 'string' || !message.trim() || message.length > 500) {
+        return res.status(400).json({ error: 'El mensaje es obligatorio (máx. 500 caracteres).' });
+    }
+    const payload = { message: message.trim(), level, author, at: new Date().toISOString() };
+    io.emit('global_broadcast', payload);
+
+    let discord = 'omitido';
+    try {
+        const r = await fetch('http://discord-bot:3001/api/bot/broadcast', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-daemon-secret': process.env.NODE_SECRET_KEY || '' },
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(5000),
+        });
+        discord = r.ok ? 'enviado' : `error ${r.status}`;
+    } catch (e) { discord = 'bot inaccesible'; }
+
+    res.json({ success: true, sockets: io.engine.clientsCount, discord });
+});
+
+// Diagnóstico Mine AI para soporte: devuelve el análisis y el extracto de log analizado.
+app.post('/api/admin/diagnose', verificarCerebro, async (req, res) => {
+    const { serverId } = req.body;
+    if (!serverId) return res.status(400).json({ error: 'Falta serverId' });
+    const groqKey = (process.env.GROQ_API_KEY || '').replace(/^"|"$/g, '').trim();
+    if (!groqKey) return res.status(503).json({ error: 'Mine AI no está configurada en el servidor.' });
+
+    try {
+        const buf = await docker.getContainer(`mc-${serverId}`).logs({ stdout: true, stderr: true, tail: 200 });
+        const logText = buf.toString('utf8').slice(-30000);
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+                messages: [{ role: 'user', content: `Analiza este log de Minecraft como ingeniero de infraestructura. Devuelve únicamente JSON válido con las claves mensaje, hay_que_borrar, archivo_a_borrar, paso_a_paso y mod_alternativo.\n\nLOG:\n${logText}` }],
+                temperature: 0.1,
+                response_format: { type: 'json_object' },
+            }),
+        });
+        const data = await r.json();
+        if (!r.ok) return res.status(502).json({ error: data.error?.message || 'Groq rechazó el diagnóstico.' });
+        res.json({ success: true, analysis: JSON.parse(data.choices?.[0]?.message?.content || '{}'), logExtract: logText.slice(-2500) });
+    } catch (e) {
+        if (e.statusCode === 404) return res.status(404).json({ error: 'container_not_found', message: 'El contenedor no existe.' });
+        res.status(500).json({ error: 'Error analizando el log: ' + e.message });
+    }
 });
 
 // --- Verificar servidores del usuario ---
@@ -539,6 +728,9 @@ app.get('/api/server/status', async (req, res) => {
 app.post('/api/server/start', async (req, res) => {
     const { serverId } = req.body;
     if (!serverId) return res.status(400).json({ error: 'Falta serverId' });
+    if (ubicarServidor(serverId)?.srv.frozen) {
+        return res.status(423).json({ error: 'Tu cuenta está en Zona de Hielo. Contacta a soporte.' });
+    }
 
     try {
         const minecraftContainer = docker.getContainer(`mc-${serverId}`);

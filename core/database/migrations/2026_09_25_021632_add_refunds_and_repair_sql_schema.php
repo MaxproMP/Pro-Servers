@@ -39,10 +39,13 @@ return new class extends Migration
                 $table->timestamps();
             });
 
-            DB::statement('ALTER TABLE auditoria_reembolsos ADD CONSTRAINT auditoria_reembolsos_pago_fk FOREIGN KEY (pago_id) REFERENCES pagos(id) ON DELETE NO ACTION');
-            DB::statement('ALTER TABLE auditoria_reembolsos ADD CONSTRAINT auditoria_reembolsos_cliente_fk FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE NO ACTION');
-            DB::statement('ALTER TABLE auditoria_reembolsos ADD CONSTRAINT auditoria_reembolsos_monto_check CHECK (monto_devuelto > 0)');
-            DB::statement("ALTER TABLE auditoria_reembolsos ADD CONSTRAINT auditoria_reembolsos_estado_check CHECK (estado_auditoria in ('solicitado', 'procesado', 'rechazado', 'fallido'))");
+            // Restricciones con sintaxis de SQL Server (SQLite, usado en pruebas, no admite ADD CONSTRAINT).
+            if (DB::getDriverName() !== 'sqlite') {
+                DB::statement('ALTER TABLE auditoria_reembolsos ADD CONSTRAINT auditoria_reembolsos_pago_fk FOREIGN KEY (pago_id) REFERENCES pagos(id) ON DELETE NO ACTION');
+                DB::statement('ALTER TABLE auditoria_reembolsos ADD CONSTRAINT auditoria_reembolsos_cliente_fk FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE NO ACTION');
+                DB::statement('ALTER TABLE auditoria_reembolsos ADD CONSTRAINT auditoria_reembolsos_monto_check CHECK (monto_devuelto > 0)');
+                DB::statement("ALTER TABLE auditoria_reembolsos ADD CONSTRAINT auditoria_reembolsos_estado_check CHECK (estado_auditoria in ('solicitado', 'procesado', 'rechazado', 'fallido'))");
+            }
         }
     }
 

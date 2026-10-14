@@ -1916,6 +1916,18 @@
                         if (clientSocket) clientSocket.disconnect();
                         clientSocket = io(API_URL, { query: { token: token, serverId: config.id } });
 
+                        clientSocket.on('global_broadcast', (d) => {
+                            const colores = { info: '#06B6D4', warn: '#F59E0B', danger: '#EF4444' };
+                            const b = document.createElement('div');
+                            b.setAttribute('role', 'alert');
+                            b.style.cssText = `position:fixed;top:0;left:0;right:0;z-index:99998;padding:12px 48px 12px 20px;background:#0B0D13;border-bottom:2px solid ${colores[d.level] || colores.info};color:#fff;font-size:14px`;
+                            b.textContent = (d.author ? d.author + ': ' : '') + d.message;
+                            const x = document.createElement('button');
+                            x.textContent = '×'; x.setAttribute('aria-label', 'Cerrar aviso');
+                            x.style.cssText = 'position:absolute;right:16px;top:8px;font-size:22px;color:#fff;background:none;border:0;cursor:pointer';
+                            x.onclick = () => b.remove(); b.append(x); document.body.append(b);
+                        });
+
                         clientSocket.on('support_reply', (data) => {
                             const chatBody = document.getElementById('support-chat-body');
                             chatBody.innerHTML += `<div class="chat-bubble chat-ai">${data.reply.replace(/</g, "&lt;")}</div>`;

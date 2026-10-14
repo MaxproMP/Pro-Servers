@@ -99,5 +99,19 @@ class TwoFactorController extends Controller
     private function marcarVerificado(int $clienteId, int $authTime): void
     {
         Cache::put("2fa:{$clienteId}:{$authTime}", true, now()->addDays(30));
+
+        $indice = array_slice((array) Cache::get("2fa:index:{$clienteId}", []), -50);
+        $indice[] = $authTime;
+        Cache::put("2fa:index:{$clienteId}", array_values(array_unique($indice)), now()->addDays(30));
+    }
+
+    /** Invalida todas las sesiones verificadas de un cliente (recovery de soporte). */
+    public static function olvidarSesiones(int $clienteId): void
+    {
+        foreach ((array) Cache::get("2fa:index:{$clienteId}", []) as $authTime) {
+            Cache::forget("2fa:{$clienteId}:{$authTime}");
+        }
+        Cache::forget("2fa:index:{$clienteId}");
+        Cache::forget("2fa:pending:{$clienteId}");
     }
 }

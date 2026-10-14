@@ -1,1324 +1,931 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProServers - Panel CEO Central</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProServers Overwatch</title>
+<link rel="icon" href="/img/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#050609; --sf:#0B0D13; --sf2:#10131b; --bd:rgba(255,255,255,.07); --bd2:rgba(255,255,255,.14);
+  --tx:#e6e8ee; --mu:#8b93a7; --ok:#10B981; --ceo:#8B5CF6; --cy:#06B6D4; --am:#F59E0B; --rd:#EF4444;
+  --r:12px; --side:208px; --top:58px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--tx);font:13px/1.5 'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.mono,.num,pre,code{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--cy);text-decoration:none}
+.mu{color:var(--mu)}
+.hidden{display:none!important}
 
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0b0c10;
-            color: #ffffff;
-            overflow-x: hidden;
-        }
+/* Chameleon por rol */
+body[data-role="soporte"] .only-admin, body[data-role="soporte"] .only-ceo,
+body[data-role="admin"] .only-ceo, body[data-role="usuario"] .only-admin{display:none!important}
 
-        .sidebar-item {
-            transition: all 0.2s ease;
-        }
+/* Gate */
+.gate{position:fixed;inset:0;z-index:9000;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:var(--mu);text-align:center;padding:24px}
+.gate b{color:var(--tx);font-size:20px}
 
-        .sidebar-active {
-            background-color: #9333ea;
-            color: #ffffff;
-            font-weight: 600;
-            box-shadow: 0 0 15px rgba(147, 51, 234, 0.4);
-        }
+/* Topbar */
+.topbar{position:fixed;inset:0 0 auto 0;height:var(--top);z-index:50;display:flex;align-items:center;gap:16px;padding:0 18px;background:rgba(11,13,19,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--bd)}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;white-space:nowrap}
+.brand img{width:26px;height:26px}
+.brand span{font-weight:800;font-size:15px}
+.brand b{font-weight:600;font-size:11px;color:var(--ceo);border:1px solid rgba(139,92,246,.4);border-radius:6px;padding:1px 7px}
+.pills{display:flex;gap:8px}
+.pill{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--mu);padding:4px 10px;border:1px solid var(--bd);border-radius:999px;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--mu)}
+.pill.up .dot{background:var(--ok);box-shadow:0 0 0 0 rgba(16,185,129,.6);animation:pulse 2s infinite}
+.pill.down .dot{background:var(--rd)}
+.pill.up{color:var(--tx)}
+@keyframes pulse{70%{box-shadow:0 0 0 7px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+.mini{display:flex;gap:12px}
+.meter{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--mu)}
+.meter i{display:block;width:64px;height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+.meter i u{display:block;height:100%;width:0;background:var(--ok);transition:width .6s,background .3s}
+.bc{display:flex;gap:6px;flex:1 1 200px;max-width:460px;min-width:200px}
+.bc input{flex:1;min-width:0}
+.actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid var(--bd2);white-space:nowrap}
+.badge.ceo{color:var(--ceo);border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.1)}
+.badge.admin{color:var(--cy);border-color:rgba(6,182,212,.5);background:rgba(6,182,212,.1)}
+.badge.soporte{color:var(--am);border-color:rgba(245,158,11,.5);background:rgba(245,158,11,.1)}
 
-        .card-bg {
-            background-color: #121419;
-            border: 1px solid #1f232b;
-        }
+/* Sidebar */
+.side{position:fixed;top:var(--top);bottom:0;left:0;width:var(--side);z-index:40;padding:14px 10px;display:flex;flex-direction:column;gap:4px;background:var(--sf);border-right:1px solid var(--bd)}
+.side button{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid transparent;border-radius:9px;background:none;cursor:pointer;color:var(--mu);font-weight:600;text-align:left}
+.side button svg{width:17px;height:17px;flex:none}
+.side button:hover{color:var(--tx);background:rgba(255,255,255,.04)}
+.side button.on{color:var(--tx);background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.35)}
+.side .sp{flex:1}
+.side .me{font-size:11px;color:var(--mu);padding:8px 12px;word-break:break-all}
 
-        .glow-green {
-            filter: drop-shadow(0 0 5px rgba(0, 255, 127, 0.6));
-        }
+/* Layout */
+main{margin:var(--top) 0 0 var(--side);padding:22px 24px 60px;min-height:calc(100vh - var(--top))}
+.mod{display:none}.mod.active{display:block}
+.mh{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.mh h1{font-size:20px;font-weight:800}
+.mh p{color:var(--mu);margin-top:2px}
 
-        .glow-red {
-            filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.6));
-        }
+/* Cards */
+.card{background:rgba(11,13,19,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:var(--r);padding:16px;transition:border-color .2s,box-shadow .2s;min-width:0}
+.card:hover{border-color:rgba(139,92,246,.4);box-shadow:0 0 0 1px rgba(139,92,246,.12),0 8px 30px rgba(0,0,0,.35)}
+.chd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.chd h2{font-size:13px;font-weight:700}
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.span4{grid-column:span 4}.span5{grid-column:span 5}.span6{grid-column:span 6}.span7{grid-column:span 7}.span8{grid-column:span 8}.span12{grid-column:span 12}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:14px}
+.kpi{position:relative;overflow:hidden}
+.kpi .l{font-size:12px;color:var(--mu);font-weight:600}
+.kpi .v{font-size:28px;font-weight:800;margin:4px 0 2px;line-height:1.1}
+.kpi .s{font-size:11px;color:var(--mu)}
+.kpi .sp{position:absolute;right:0;bottom:0;width:46%;height:44px;opacity:.9;pointer-events:none}
+.bar{height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin:3px 0 7px}
+.bar u{display:block;height:100%;background:var(--ok)}
+.chart-box{position:relative;height:230px}
+#core3d{position:relative;height:340px;border-radius:9px;background:radial-gradient(ellipse at center,rgba(139,92,246,.08),transparent 70%);cursor:grab}
+#core3d:active{cursor:grabbing}
+#tip{position:absolute;pointer-events:none;background:rgba(5,6,9,.92);border:1px solid var(--bd2);border-radius:8px;padding:6px 9px;font-size:11px;z-index:5;display:none;white-space:nowrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--mu)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
 
-        .glow-blue {
-            filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.6));
-        }
+/* Controles */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 13px;border-radius:8px;border:1px solid var(--bd2);background:rgba(255,255,255,.04);color:var(--tx);font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
+.btn:hover{background:rgba(255,255,255,.09)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pri{background:var(--ceo);border-color:var(--ceo);color:#fff}.btn.pri:hover{background:#9d74f7}
+.btn.ok{background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.5);color:var(--ok)}
+.btn.danger{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.5);color:#fca5a5}
+.btn.cy{background:rgba(6,182,212,.12);border-color:rgba(6,182,212,.45);color:var(--cy)}
+.btn.am{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.45);color:var(--am)}
+.btn.ghost{background:none}
+.btn.sm{padding:4px 9px;font-size:11px}
+input,select,textarea{background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;min-width:0;outline:none}
+input:focus,select:focus,textarea:focus{border-color:rgba(139,92,246,.6)}
+textarea{resize:vertical;width:100%}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--mu);font-weight:600}
+label.f input,label.f select{color:var(--tx);font-weight:400;font-size:13px}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:600;color:var(--mu);text-align:left;padding:8px 10px;border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--bd);vertical-align:middle}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+tr.click{cursor:pointer}
+td.r,th.r{text-align:right}
+.acts{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap}
+.b{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;border:1px solid var(--bd2);white-space:nowrap}
+.b.ok{color:var(--ok);border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.1)}
+.b.ceo{color:var(--ceo);border-color:rgba(139,92,246,.45);background:rgba(139,92,246,.1)}
+.b.cy{color:var(--cy);border-color:rgba(6,182,212,.45);background:rgba(6,182,212,.1)}
+.b.am{color:var(--am);border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.1)}
+.b.rd{color:#fca5a5;border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.1)}
+.b.mu{color:var(--mu)}
+.empty{color:var(--mu);text-align:center;padding:28px 12px}
+.sub{font-size:11px;color:var(--mu)}
 
-        .glow-purple {
-            filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.8));
-        }
+/* Drawer / modal / toast */
+#drawer{position:fixed;top:var(--top);right:0;bottom:0;width:min(520px,100vw);z-index:60;background:rgba(11,13,19,.96);backdrop-filter:blur(16px);border-left:1px solid var(--bd2);transform:translateX(102%);transition:transform .25s;overflow-y:auto}
+#drawer.open{transform:none}
+.dh{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:rgba(11,13,19,.97);border-bottom:1px solid var(--bd)}
+.dsec{padding:16px 18px;border-bottom:1px solid var(--bd)}
+.dsec h4{font-size:12px;font-weight:700;margin-bottom:10px}
+.chain{display:flex;flex-direction:column;gap:6px}
+.chain div{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:var(--sf2);border-radius:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ov{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px}
+.dlg{background:var(--sf);border:1px solid var(--bd2);border-radius:14px;padding:20px;width:min(440px,100%);max-height:90vh;overflow-y:auto}
+.dlg.wide{width:min(720px,100%)}
+.dlg h3{font-size:15px;margin-bottom:12px}
+.dbody{display:flex;flex-direction:column;gap:10px;color:var(--tx)}
+.dact{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+#toasts{position:fixed;right:16px;bottom:16px;z-index:200;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--sf);border:1px solid var(--bd2);border-left:3px solid var(--cy);border-radius:8px;padding:10px 14px;max-width:360px;animation:in .2s}
+.toast.ok{border-left-color:var(--ok)}.toast.rd{border-left-color:var(--rd)}.toast.am{border-left-color:var(--am)}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.switch input{width:36px;height:20px;appearance:none;background:rgba(255,255,255,.12);border-radius:999px;position:relative;cursor:pointer;border:0;padding:0}
+.switch input::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.switch input:checked{background:var(--cy)}.switch input:checked::after{left:18px}
 
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
+/* Soporte */
+.desk{display:grid;grid-template-columns:290px 1fr 320px;gap:14px;height:calc(100vh - var(--top) - 150px);min-height:480px}
+.desk .card{display:flex;flex-direction:column;overflow:hidden;padding:0}
+.desk .ph{padding:12px 14px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.desk .pb{flex:1;overflow-y:auto;padding:12px 14px}
+.tk{padding:10px 12px;border:1px solid var(--bd);border-radius:9px;margin-bottom:8px;cursor:pointer}
+.tk:hover{border-color:var(--bd2)}.tk.on{border-color:rgba(139,92,246,.6);background:rgba(139,92,246,.07)}
+.msg{max-width:84%;padding:8px 11px;border-radius:10px;margin-bottom:9px;border:1px solid var(--bd);white-space:pre-wrap;word-break:break-word}
+.msg.user{background:var(--sf2)}
+.msg.admin{margin-left:auto;background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.35)}
+.msg.ai{background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.4)}
+.msg small{display:block;color:var(--mu);font-size:10px;margin-bottom:2px}
+pre.log{background:#000;border:1px solid var(--bd);border-radius:8px;padding:8px;font-size:10.5px;max-height:180px;overflow:auto;white-space:pre-wrap;color:#9be7c4;margin-top:6px}
+.term{background:#000;border:1px solid var(--bd);border-radius:9px;padding:10px;height:300px;overflow-y:auto;font-size:11.5px;line-height:1.7}
+.term .t{color:var(--mu)}.term .e{color:var(--cy)}.term .a{color:var(--ceo)}
 
-        ::-webkit-scrollbar-track {
-            background: #0b0c10;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #1f232b;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #2a2f3a;
-        }
-
-        /* Estilos extras para el chat del panel */
-        .chat-admin-bubble {
-            max-width: 85%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 13px;
-            line-height: 1.4;
-            word-wrap: break-word;
-        }
-
-        .chat-ai {
-            align-self: flex-start;
-            background-color: #1a1d24;
-            border-left: 3px solid #9333ea;
-            color: #e4e4e7;
-            border-bottom-left-radius: 4px;
-        }
-
-        .chat-user {
-            align-self: flex-start;
-            background-color: #1f232b;
-            border-left: 3px solid #3b82f6;
-            color: #e4e4e7;
-            border-bottom-left-radius: 4px;
-        }
-
-        .chat-ceo {
-            align-self: flex-end;
-            background-color: #9333ea;
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-    </style>
+@media (max-width:1700px){.mini{display:none}}
+@media (max-width:1380px){.pills{display:none}}
+@media (max-width:1200px){.kpis{grid-template-columns:repeat(3,1fr)}.pills,.mini{display:none}.span7,.span5,.span6,.span8,.span4{grid-column:span 12}.desk{grid-template-columns:1fr;height:auto}.desk .card{min-height:360px}}
+@media (max-width:900px){
+  :root{--side:0px}
+  .side{top:auto;bottom:0;left:0;right:0;width:100%;height:58px;flex-direction:row;overflow-x:auto;padding:6px;border-right:0;border-top:1px solid var(--bd)}
+  .side button{flex:1;justify-content:center;padding:8px;flex-direction:column;gap:2px;font-size:10px;min-width:64px}
+  .side .sp,.side .me{display:none}
+  main{margin-left:0;padding:16px 14px 80px}
+  .bc{display:none}.kpis{grid-template-columns:1fr 1fr}.actions .btn.ghost{display:none}
+}
+@media (max-width:560px){.kpis{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.brand b{display:none}}
+</style>
 </head>
+<body data-role="">
 
-<body class="flex h-screen overflow-hidden">
+<div class="gate" id="gate"><b>ProServers Overwatch</b><span id="gate-msg">Verificando credenciales…</span></div>
 
-    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
-        <defs>
-            <linearGradient id="g-green" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#00ff7f" stop-opacity="0.2" />
-                <stop offset="100%" stop-color="#00ff7f" stop-opacity="0" />
-            </linearGradient>
-            <linearGradient id="g-red" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#ef4444" stop-opacity="0.2" />
-                <stop offset="100%" stop-color="#ef4444" stop-opacity="0" />
-            </linearGradient>
-            <linearGradient id="g-blue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2" />
-                <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
-            </linearGradient>
-        </defs>
-    </svg>
+<header class="topbar">
+  <div class="brand" id="brand-btn" title="Ir a crear un servidor"><img src="/img/favicon.ico" alt=""><span>ProServers</span><b>Overwatch</b></div>
+  <div class="pills">
+    <span class="pill" id="pill-docker"><i class="dot"></i>Docker Engine</span>
+    <span class="pill" id="pill-sql"><i class="dot"></i>SQL Server 3FN</span>
+    <span class="pill" id="pill-mongo"><i class="dot"></i>MongoDB Atlas</span>
+  </div>
+  <div class="mini">
+    <span class="meter">CPU <i><u id="tb-cpu"></u></i><span class="num" id="tb-cpu-n">–</span></span>
+    <span class="meter">RAM <i><u id="tb-ram"></u></i><span class="num" id="tb-ram-n">–</span></span>
+  </div>
+  <form class="bc only-admin" id="bc-form">
+    <input id="bc-msg" maxlength="500" placeholder="Megáfono global: mensaje para todos los clientes" aria-label="Mensaje global">
+    <select id="bc-level" aria-label="Nivel"><option value="info">Aviso</option><option value="warn">Alerta</option><option value="danger">Crítico</option></select>
+    <button class="btn am" type="submit">Emitir</button>
+  </form>
+  <div class="actions">
+    <button class="btn ghost only-ceo" id="btn-sync">Sync Mongo / Purgar</button>
+    <a class="btn pri" href="/crear.html" id="btn-deploy">Desplegar nodo</a>
+    <button class="btn ghost" id="btn-usermode">Modo usuario</button>
+    <span class="badge" id="role-badge">–</span>
+  </div>
+</header>
 
-    <!-- BARRA LATERAL -->
-    <aside class="w-64 border-r border-[#1f232b] flex flex-col justify-between hidden md:flex bg-[#0b0c10]">
-        <div class="p-6">
-            <div class="flex items-center gap-3 mb-1 cursor-pointer transition-transform hover:scale-105"
-                onclick="sessionStorage.setItem('forceUserMode', 'true'); window.location.href='/crear.html'">
-                <img src="/img/favicon.ico" alt="Logo" class="w-8 h-8 drop-shadow-[0_0_10px_rgba(147,51,234,0.5)]">
-                <span class="text-xl font-bold tracking-wide">ProServers</span>
-            </div>
-            <div class="text-[11px] text-gray-500 font-semibold mt-1" id="sidebar-role-title">Centro de Comando Global
-            </div>
+<nav class="side" id="side">
+  <button data-mod="m1" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>Comando</button>
+  <button data-mod="m2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6M17 11a3 3 0 100-6M22 20c0-3-2-5-5-5"/></svg>Cuentas</button>
+  <button data-mod="m3" class="only-admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>Contabilidad</button>
+  <button data-mod="m4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z"/></svg>Soporte</button>
+  <button data-mod="m5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Catálogo y sistema</button>
+  <div class="sp"></div>
+  <div class="me" id="me"></div>
+</nav>
+
+<main>
+  <!-- MÓDULO 1 -->
+  <section class="mod active" id="m1">
+    <div class="mh"><div><h1>Centro de comando</h1><p>Telemetría real del host, Docker y SQL Server.</p></div></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="bento">
+      <div class="card span7">
+        <div class="chd"><h2>Núcleo de flota</h2><span class="sub" id="core-sub"></span></div>
+        <div id="core3d"><div id="tip"></div></div>
+        <div class="legend">
+          <span><i style="background:#10B981"></i>En línea</span><span><i style="background:#F59E0B"></i>Carga alta</span>
+          <span><i style="background:#EF4444"></i>Detenido</span><span><i style="background:#06B6D4"></i>Zona de Hielo</span>
+          <span class="mu">Arrastra para girar, rueda para acercar, clic en un nodo para inspeccionar.</span>
         </div>
-
-        <nav class="flex-1 px-4 space-y-2 mt-2 overflow-y-auto">
-            <button onclick="window.switchTab('tab-nodos', this)"
-                class="tab-btn sidebar-active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left">
-                <i class="fas fa-server w-5"></i> Flota de Nodos
-            </button>
-            <button onclick="window.switchTab('tab-usuarios', this)"
-                class="tab-btn sidebar-item text-gray-400 hover:text-white hover:bg-[#121419] w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left">
-                <i class="fas fa-users w-5"></i> Clientes (DB)
-            </button>
-            <button id="btn-tab-contabilidad" onclick="window.switchTab('tab-contabilidad', this)"
-                class="tab-btn sidebar-item text-gray-400 hover:text-white hover:bg-[#121419] w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left">
-                <i class="fas fa-file-invoice-dollar w-5"></i> Contabilidad SQL
-            </button>
-
-            <button onclick="window.switchTab('tab-soporte', this)"
-                class="tab-btn sidebar-item text-gray-400 hover:text-white hover:bg-[#121419] w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left relative">
-                <i class="fas fa-headset w-5"></i> Soporte & Tickets
-                <span id="soporte-badge"
-                    class="hidden absolute right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]">!</span>
-            </button>
-
-            <!-- PESTAÑA MINE VOICE (FUTURA) -->
-            <button id="btn-tab-minevoice" onclick="window.switchTab('tab-minevoice', this)"
-                class="tab-btn sidebar-item text-gray-400 hover:text-white hover:bg-[#121419] w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left relative">
-                <i class="fas fa-microphone-alt w-5"></i> Mine Voice
-                <span
-                    class="absolute right-3 bg-indigo-500/20 text-indigo-400 text-[8px] font-bold px-1.5 py-0.5 rounded uppercase border border-indigo-500/30">Próximamente</span>
-            </button>
-
-            <!-- PESTAÑA STAFF -->
-            <button id="btn-staff-sidebar" onclick="window.switchTab('tab-staff', this)"
-                class="tab-btn sidebar-item text-gray-400 hover:text-white hover:bg-[#121419] w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left">
-                <i class="fas fa-user-shield w-5"></i> Staff (0.9)
-            </button>
-
-            <button id="btn-tab-seguridad" onclick="window.switchTab('tab-seguridad', this)"
-                class="tab-btn sidebar-item text-gray-400 hover:text-white hover:bg-[#121419] w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left">
-                <i class="fas fa-shield-alt w-5"></i> Auditoría & Logs
-            </button>
-
-            <div class="border-t border-[#1f232b] my-4"></div>
-            <p class="text-[10px] text-gray-600 uppercase font-bold px-4 mb-2 tracking-widest">Mantenimiento</p>
-
-            <button id="btn-perfil-sidebar" onclick="window.switchTab('tab-perfil', this)"
-                class="tab-btn sidebar-item text-gray-400 hover:text-white hover:bg-[#121419] w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left mb-2">
-                <i class="fas fa-user-cog w-5"></i> Mi Perfil
-            </button>
-
-            <button id="btn-limpiar-vps" onclick="window.limpiarVPS()"
-                class="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-white hover:bg-red-900/20 rounded-lg transition text-sm text-left">
-                <i class="fas fa-broom w-5"></i> Limpiar Caché VPS
-            </button>
-        </nav>
-
-        <!-- FOOTER: PERFIL DEL ADMINISTRADOR -->
-        <div class="p-5 flex items-center gap-3 border-t border-[#1f232b] cursor-pointer hover:bg-[#121419] transition"
-            onclick="window.switchTab('tab-perfil', document.getElementById('btn-perfil-sidebar'))">
-            <img src="/img/default-avatar.png" id="sidebar-admin-avatar"
-                class="w-10 h-10 rounded-full object-cover shadow-[0_0_10px_rgba(147,51,234,0.5)] border-2 border-[#9333ea]">
-            <div class="overflow-hidden">
-                <p class="text-xs font-semibold text-white truncate" id="sidebar-admin-name">Cargando...</p>
-                <p class="text-[10px] text-green-400 font-bold tracking-wider uppercase" id="sidebar-admin-badge">MODO
-                    ADMIN ACTIVO</p>
-            </div>
-        </div>
-    </aside>
-
-    <!-- CONTENEDOR PRINCIPAL -->
-    <main class="flex-1 overflow-y-auto bg-[#0b0c10] p-6 md:p-10 relative">
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-            <div>
-                <h1 id="tab-header-title" class="text-2xl font-bold mb-1 tracking-wide">Flota de Servidores</h1>
-                <p id="tab-header-subtitle" class="text-xs text-gray-500 font-medium">Panel Principal / Gestión de Nodos
-                    de Clientes</p>
-            </div>
-            <button onclick="window.cargarTodo()" id="btn-refresh"
-                class="bg-[#1f232b] hover:bg-[#2a2f3a] text-white text-xs font-bold px-4 py-2.5 rounded-md transition border border-[#333] flex items-center gap-2">
-                <i class="fas fa-sync-alt"></i> Sincronizar Red
-            </button>
-        </header>
-
-        <!-- TARJETAS DE MÉTRICAS GLOBALES -->
-        <div id="metrics-cards" class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 border-b border-[#1f232b] pb-8">
-            <div class="bg-[#121419] p-4 rounded-lg border border-[#1f232b]">
-                <p class="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-widest">Nodos Totales</p>
-                <p class="text-3xl font-bold text-[#00ff7f]" id="stat-servers">0</p>
-            </div>
-            <div class="bg-[#121419] p-4 rounded-lg border border-[#1f232b]" id="metric-dinero">
-                <p class="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-widest">Facturación SQL</p>
-                <p class="text-3xl font-bold text-[#b026ff]" id="stat-dinero">$0</p>
-            </div>
-            <div class="bg-[#121419] p-4 rounded-lg border border-[#1f232b]">
-                <p class="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-widest">Clientes (Mongo)</p>
-                <p class="text-3xl font-bold text-[#ffd700]" id="stat-usuarios">0</p>
-            </div>
-            <div class="bg-[#121419] p-4 rounded-lg border border-[#1f232b] relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-16 h-16 bg-green-500/10 rounded-full blur-xl"></div>
-                <p class="text-[10px] font-bold text-green-500 mb-1 uppercase tracking-widest">Salud del Sistema</p>
-                <p class="text-xl font-bold text-white mt-2">DOCKER ONLINE</p>
-            </div>
-        </div>
-
-        <!-- ==================== PESTAÑA 1: NODOS ==================== -->
-        <section id="tab-nodos" class="tab-content block">
-            <div id="alert-control-container"
-                class="bg-[#121419] border border-[#9333ea] rounded-xl p-4 mb-8 flex items-center gap-4 shadow-[0_0_15px_rgba(147,51,234,0.1)]">
-                <i class="fas fa-satellite-dish text-[#9333ea] text-2xl ml-2 animate-pulse"></i>
-                <div class="flex-1">
-                    <p class="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-1">Alerta Global
-                        (Overlay Visual a todas las pantallas)</p>
-                    <div class="flex gap-2">
-                        <input type="text" id="global-cmd"
-                            class="flex-1 bg-[#0b0c10] border border-[#333] rounded-lg px-4 py-2 text-sm text-white outline-none focus:border-[#9333ea] transition"
-                            placeholder="Escribe la alerta gigante que aparecerá en todas las pantallas...">
-                        <button onclick="window.enviarBroadcast()"
-                            class="bg-[#9333ea] hover:bg-[#a855f7] text-white font-bold px-6 rounded-lg text-sm transition">Alertar</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="admin-servers-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
-                <div class="col-span-full text-center py-20">
-                    <i class="fas fa-circle-notch fa-spin text-4xl text-[#9333ea] mb-4"></i>
-                    <p class="text-gray-400 font-medium tracking-wide">Leyendo base de datos y Docker Daemon...</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==================== PESTAÑA 2: USUARIOS ==================== -->
-        <section id="tab-usuarios" class="tab-content hidden pb-20">
-            <div class="card-bg p-6 rounded-xl">
-                <div
-                    class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-[#1f232b] pb-4">
-                    <div>
-                        <h3 class="text-lg font-bold text-white">Directorio de Cuentas</h3>
-                        <p class="text-xs text-gray-500">Administración de usuarios registrados en la base de datos</p>
-                    </div>
-                    <input type="text" id="user-search-input" onkeyup="window.filtrarUsuarios()"
-                        placeholder="Buscar por UID, Email o Plan..."
-                        class="bg-[#0b0c10] border border-[#333] px-4 py-2 rounded-lg text-xs text-white outline-none focus:border-indigo-500 w-full md:w-64">
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="text-gray-500 uppercase border-b border-[#1f232b] text-[10px] tracking-wider">
-                            <tr>
-                                <th class="pb-3">Usuario / UID</th>
-                                <th class="pb-3">Plan Activo</th>
-                                <th class="pb-3">Servidores</th>
-                                <th class="pb-3">Estado</th>
-                                <th class="pb-3 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="users-table-body" class="divide-y divide-[#1f232b]">
-                            <tr>
-                                <td colspan="5" class="py-8 text-center text-gray-500">Cargando directorio de
-                                    usuarios...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==================== PESTAÑA 3: CONTABILIDAD ==================== -->
-        <section id="tab-contabilidad" class="tab-content hidden pb-20">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="card-bg p-5 rounded-xl border-l-4 border-purple-500">
-                    <p class="text-[10px] text-gray-500 font-bold uppercase">Total Facturado</p>
-                    <p class="text-2xl font-bold text-white mt-1" id="contab-total">$0</p>
-                    <p class="text-[10px] text-green-400 mt-2"><i class="fas fa-check-circle mr-1"></i> Auditoría SQL
-                        conectada</p>
-                </div>
-                <div class="card-bg p-5 rounded-xl border-l-4 border-blue-500">
-                    <p class="text-[10px] text-gray-500 font-bold uppercase">Suscripciones Registradas</p>
-                    <p class="text-2xl font-bold text-white mt-1" id="contab-suscripciones">0</p>
-                    <p class="text-[10px] text-gray-400 mt-2">Planes con estado ACTIVO</p>
-                </div>
-                <div class="card-bg p-5 rounded-xl border-l-4 border-yellow-500">
-                    <p class="text-[10px] text-gray-500 font-bold uppercase">Tarifa Promedio Estimada</p>
-                    <p class="text-2xl font-bold text-white mt-1" id="contab-promedio">$0</p>
-                    <p class="text-[10px] text-gray-400 mt-2">Ingresos / Total Clientes</p>
-                </div>
-            </div>
-
-            <div class="card-bg p-6 rounded-xl">
-                <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-wider">Historial de Transacciones (SQL
-                    Server)</h3>
-                <div class="bg-[#0b0c10] p-4 rounded-lg border border-[#1f232b] text-xs font-mono text-gray-400">
-                    <p class="text-green-400 mb-2">> SELECT * FROM Pagos INNER JOIN Suscripciones ON Pagos.firebase_uid
-                        = Suscripciones.firebase_uid;</p>
-                    <p class="text-gray-500 italic">Sincronización en vivo con el pool de base de datos SQL.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==================== PESTAÑA 4: SOPORTE & TICKETS ==================== -->
-        <section id="tab-soporte" class="tab-content hidden h-[calc(100vh-280px)] pb-10">
-            <div class="flex h-full gap-6">
-
-                <!-- Bandeja de Entrada (Izquierda) -->
-                <div class="w-1/3 card-bg rounded-xl flex flex-col overflow-hidden">
-                    <div class="p-4 border-b border-[#1f232b] bg-[#161920]">
-                        <h3 class="font-bold text-white uppercase tracking-wider text-sm flex items-center gap-2">
-                            <i class="fas fa-inbox text-purple-400"></i> Bandeja de Entrada
-                        </h3>
-                    </div>
-                    <div id="tickets-list" class="flex-1 overflow-y-auto p-2 space-y-1 bg-[#0b0c10]">
-                        <p class="text-center text-gray-500 text-xs py-8">Cargando chats activos...</p>
-                    </div>
-                </div>
-
-                <!-- Chat Principal (Derecha) -->
-                <div class="flex-1 card-bg rounded-xl flex flex-col overflow-hidden relative">
-                    <div id="active-chat-header"
-                        class="p-4 border-b border-[#1f232b] bg-[#161920] flex justify-between items-center hidden">
-                        <div>
-                            <h3 class="font-bold text-white text-sm" id="chat-user-email">Cargando...</h3>
-                            <p class="text-[10px] text-gray-400 font-mono mt-0.5" id="chat-user-uid">---</p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span
-                                class="bg-green-900/30 text-green-400 border border-green-800/50 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider animate-pulse">En
-                                Línea</span>
-                            <button onclick="window.cerrarTicket()"
-                                class="bg-[#1f232b] hover:bg-red-900/30 text-red-500 border border-red-500/30 hover:border-red-500 px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-colors"
-                                title="Cerrar Ticket">
-                                <i class="fas fa-lock mr-1"></i> Cerrar
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Mensaje por defecto cuando no hay chat seleccionado -->
-                    <div id="chat-default-msg"
-                        class="h-full flex flex-col items-center justify-center text-gray-600 bg-[#0b0c10]">
-                        <i class="fas fa-comments text-5xl mb-4 opacity-30"></i>
-                        <p class="text-sm font-bold tracking-wide">Selecciona un cliente de la bandeja de entrada</p>
-                    </div>
-
-                    <!-- Contenedor de mensajes -->
-                    <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4 bg-[#0b0c10] hidden">
-                        <!-- Se insertan aquí -->
-                    </div>
-
-                    <!-- Input de respuesta -->
-                    <div id="chat-input-area" class="p-4 border-t border-[#1f232b] bg-[#161920] hidden">
-                        <div class="flex gap-3">
-                            <input type="text" id="admin-reply-input"
-                                class="flex-1 bg-[#0b0c10] border border-[#333] text-white px-4 py-3 rounded-xl text-sm outline-none focus:border-purple-500 transition-colors"
-                                placeholder="Escribe tu respuesta al cliente aquí..."
-                                onkeypress="if(event.key === 'Enter') window.enviarRespuesta()">
-                            <button onclick="window.enviarRespuesta()"
-                                class="bg-purple-600 hover:bg-purple-500 text-white px-6 rounded-xl font-bold transition-colors shadow-lg shadow-purple-900/30"><i
-                                    class="fas fa-paper-plane text-lg"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- ==================== PESTAÑA MINE VOICE ==================== -->
-        <section id="tab-minevoice" class="tab-content hidden pb-20 h-[calc(100vh-200px)]">
-            <div
-                class="card-bg p-10 rounded-xl flex flex-col items-center justify-center text-center h-full border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.1)] relative overflow-hidden">
-                <div
-                    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none">
-                </div>
-
-                <div
-                    class="w-20 h-20 rounded-2xl bg-indigo-900/30 flex items-center justify-center border border-indigo-500/50 mb-6 z-10 animate-pulse">
-                    <i class="fas fa-microphone-alt text-indigo-400 text-4xl"></i>
-                </div>
-                <h3 class="text-3xl font-bold text-white font-['Cinzel'] tracking-wider mb-2 z-10">Mine Voice</h3>
-                <p class="text-indigo-400 font-bold tracking-widest uppercase text-xs mb-6 z-10">Módulo de Voz Nativo
-                    (En Desarrollo)</p>
-                <p class="text-sm text-gray-400 max-w-lg mb-8 z-10">
-                    La infraestructura para el sistema de chat de voz de proximidad sin mods está en construcción.
-                    Próximamente podrás gestionar canales, asignar puertos UDP de voz a los nodos y monitorear la
-                    latencia de audio de los jugadores en tiempo real desde este panel.
-                </p>
-                <button disabled
-                    class="bg-[#1f232b] text-gray-500 font-bold px-8 py-3 rounded-lg uppercase tracking-wider text-xs border border-[#333] cursor-not-allowed z-10">
-                    Desplegar Servidor de Voz (Próximamente)
-                </button>
-            </div>
-        </section>
-
-        <!-- ==================== PESTAÑA 5: SEGURIDAD ==================== -->
-        <section id="tab-seguridad" class="tab-content hidden pb-20">
-            <div class="card-bg p-6 rounded-xl mb-6">
-                <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fas fa-shield-alt text-green-400"></i> Estado de Infraestructura y Firewall
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    <div class="bg-[#0b0c10] p-4 rounded-lg border border-[#1f232b]">
-                        <p class="text-gray-400">Daemon de Docker:</p>
-                        <p class="text-white font-bold font-mono mt-1">unix:///var/run/docker.sock (Activo)</p>
-                    </div>
-                    <div class="bg-[#0b0c10] p-4 rounded-lg border border-[#1f232b]">
-                        <p class="text-gray-400">Autenticación de Nodos:</p>
-                        <p class="text-white font-bold font-mono mt-1">Firebase Admin SDK (Certificado Cargado)</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-bg p-6 rounded-xl">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                        <i class="fas fa-clipboard-list text-purple-400"></i> Log de Auditoría Global (Sesión)
-                    </h3>
-                    <button onclick="window.limpiarLogsAuditoria()"
-                        class="text-[10px] text-gray-500 hover:text-white uppercase font-bold">Limpiar Vista</button>
-                </div>
-                <div id="audit-log-container"
-                    class="bg-[#0b0c10] p-4 rounded-lg border border-[#1f232b] h-64 overflow-y-auto font-mono text-[11px] space-y-2">
-                    <p class="text-gray-500">[INFO] Centro de comando inicializado. Registrando acciones del
-                        Administrador...</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==================== PESTAÑA 6: STAFF ==================== -->
-        <section id="tab-staff" class="tab-content hidden pb-20">
-            <div class="card-bg p-6 rounded-xl">
-                <div class="flex items-center gap-3 mb-6">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-blue-900/30 flex items-center justify-center border border-blue-500/50">
-                        <i class="fas fa-users-cog text-blue-400 text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-white">Gestión de Staff y Soporte</h3>
-                        <p class="text-xs text-blue-400 font-bold uppercase tracking-wider">ROADMAP V0.9 FINALIZADO</p>
-                    </div>
-                </div>
-
-                <div id="add-staff-container" class="bg-[#0b0c10] p-6 rounded-lg border border-[#1f232b] mb-6">
-                    <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-wider">Añadir Trabajador</h4>
-                    <p class="text-xs text-gray-400 mb-4">Ingresa el correo del usuario al que deseas darle el rol de
-                        "soporte". Podrán responder tickets y moderar consolas de clientes, pero no tendrán acceso a
-                        facturación ni borrado de nodos.</p>
-                    <div class="flex flex-col md:flex-row gap-3">
-                        <input type="email" id="staff-email-input"
-                            class="flex-1 bg-[#121419] border border-[#333] rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-500 transition"
-                            placeholder="soporte@ejemplo.com">
-                        <button onclick="window.addStaff()" id="btn-add-staff"
-                            class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-lg transition-colors uppercase text-xs tracking-wider shadow-[0_0_15px_rgba(37,99,235,0.4)]">Dar
-                            Rol Soporte</button>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto border border-[#1f232b] rounded-lg">
-                    <table class="w-full text-left text-xs">
-                        <thead
-                            class="text-gray-500 uppercase bg-[#0b0c10] border-b border-[#1f232b] text-[10px] tracking-wider">
-                            <tr>
-                                <th class="p-4">Usuario (Correo)</th>
-                                <th class="p-4">Rol Asignado</th>
-                                <th class="p-4 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="staff-table-body" class="divide-y divide-[#1f232b]">
-                            <tr class="hover:bg-[#0b0c10] transition">
-                                <td class="p-4">
-                                    <p class="font-bold text-white" id="staff-ceo-email">rodasmaximo51@gmail.com</p>
-                                </td>
-                                <td class="p-4"><span
-                                        class="bg-purple-900/30 text-purple-400 border border-purple-800 px-2 py-1 rounded text-[9px] font-bold uppercase">ADMIN
-                                        / FUNDADOR</span></td>
-                                <td class="p-4 text-right"><span class="text-gray-600 italic">Intocable</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==================== PESTAÑA 7: MI PERFIL ==================== -->
-        <section id="tab-perfil" class="tab-content hidden pb-20">
-            <div class="card-bg p-6 rounded-xl max-w-2xl mx-auto">
-                <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2"><i
-                        class="fas fa-user-shield text-[#9333ea]"></i> Perfil de Administrador / Soporte</h3>
-                <form id="admin-profile-form" class="space-y-6">
-                    <div class="flex flex-col md:flex-row items-center gap-6 mb-6 pb-6 border-b border-[#1f232b]">
-                        <div class="relative">
-                            <img src="/img/default-avatar.png" id="preview-admin-avatar"
-                                class="w-24 h-24 rounded-full border-4 border-[#9333ea] object-cover shadow-[0_0_15px_rgba(147,51,234,0.3)]">
-                        </div>
-                        <div class="flex-1 w-full">
-                            <label class="text-xs text-gray-500 uppercase font-bold block mb-2">Avatar URL
-                                (Imagen)</label>
-                            <input type="url" id="admin-profile-avatar"
-                                class="w-full bg-[#0b0c10] border border-[#333] rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-[#9333ea] transition"
-                                placeholder="https://..."
-                                oninput="document.getElementById('preview-admin-avatar').src = this.value || '/img/default-avatar.png'">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-xs text-gray-500 uppercase font-bold">Nombre a mostrar</label>
-                            <input type="text" id="admin-profile-name"
-                                class="w-full bg-[#0b0c10] border border-[#333] rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-[#9333ea] transition">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-xs text-gray-500 uppercase font-bold">Correo Electrónico (Solo
-                                Lectura)</label>
-                            <input type="email" id="admin-profile-email"
-                                class="w-full bg-[#0b0c10] border border-[#333] rounded-lg px-4 py-3 text-sm text-gray-500 outline-none cursor-not-allowed"
-                                disabled>
-                        </div>
-                    </div>
-                    <div class="pt-4 border-t border-[#1f232b]">
-                        <button type="submit"
-                            class="w-full bg-[#9333ea] hover:bg-[#a855f7] text-white font-bold py-3 px-6 rounded-lg transition-colors uppercase tracking-wider text-sm shadow-[0_0_15px_rgba(147,51,234,0.4)]">Guardar
-                            Cambios</button>
-                    </div>
-                </form>
-            </div>
-        </section>
-
-    </main>
-
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-
-    <script type="module">
-
-        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAg-wvhB7iaHOF5UOSsOOOz6le1ZutVmMM",
-            authDomain: "proffesional-server.firebaseapp.com",
-            projectId: "proffesional-server",
-            storageBucket: "proffesional-server.firebasestorage.app",
-            messagingSenderId: "833822850667",
-            appId: "1:833822850667:web:3c03219c6822116edbfb2e",
-            measurementId: "G-8SZ528Y5NZ"
-        };
-
-        const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-        const auth = getAuth(app);
-
-        let globalToken = null;
-        let listaGlobalServidores = [];
-        let isCEO = false;
-
-        // Variables globales para el Chat Soporte
-        let socketAdmin = null;
-        let supportMessages = [];
-        let currentChatUid = null;
-
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                await auth.authStateReady();
-                user = auth.currentUser;
-            }
-            if (!user) {
-                window.location.href = "/index.html";
-                return;
-            }
-
-            globalToken = await user.getIdToken();
-
-            // Verificamos en el backend qué rol tiene este usuario
-            try {
-                const checkRes = await fetch(`/api/user/status?uid=${user.uid}`, {
-                    headers: { 'Authorization': `Bearer ${globalToken}` }
-                });
-
-                if (!checkRes.ok) {
-                    throw new Error(`El backend devolvió código HTTP ${checkRes.status}`);
-                }
-
-                const checkData = await checkRes.json();
-
-                // Si es el CEO hardcodeado O si tiene el rol soporte en DB, lo dejamos pasar.
-                if (user.email === 'rodasmaximo51@gmail.com' || checkData.role === 'soporte') {
-                    isCEO = user.email === 'rodasmaximo51@gmail.com';
-
-                    // Actualizar UI según el rol
-                    const displayName = user.displayName || user.email.split('@')[0];
-                    const photoURL = user.photoURL || '/img/default-avatar.png';
-
-                    document.getElementById('sidebar-admin-name').innerText = displayName;
-                    document.getElementById('sidebar-admin-avatar').src = photoURL;
-                    document.getElementById('staff-ceo-email').innerText = 'rodasmaximo51@gmail.com';
-
-                    document.getElementById('admin-profile-name').value = displayName;
-                    document.getElementById('admin-profile-email').value = user.email;
-                    document.getElementById('admin-profile-avatar').value = user.photoURL || '';
-                    document.getElementById('preview-admin-avatar').src = photoURL;
-
-                    if (!isCEO) {
-                        // Es Soporte: le ocultamos cosas sensibles
-                        document.getElementById('sidebar-role-title').innerText = 'Centro de Soporte Técnico';
-                        document.getElementById('sidebar-admin-badge').innerText = 'MODO SOPORTE ACTIVO';
-                        document.getElementById('sidebar-admin-badge').className = 'text-[10px] text-blue-400 font-bold tracking-wider uppercase';
-
-                        document.getElementById('btn-tab-contabilidad').classList.add('hidden');
-                        document.getElementById('btn-tab-seguridad').classList.add('hidden');
-                        document.getElementById('btn-limpiar-vps').classList.add('hidden');
-                        document.getElementById('alert-control-container').classList.add('hidden');
-                        document.getElementById('add-staff-container').classList.add('hidden'); // Soporte no puede añadir staff
-                        document.getElementById('metric-dinero').classList.add('hidden');
-
-                        // Que su panel por defecto sea el de soporte
-                        window.switchTab('tab-soporte', document.querySelector('button[onclick="window.switchTab(\'tab-soporte\', this)"]'));
-                    }
-
-                    window.cargarTodo();
-                    window.iniciarSocketAdmin();
-                } else {
-                    // Cortamos el LOOP sin redirigir al index para evitar rebotes
-                    console.error("Rol denegado por base de datos:", checkData.role);
-                    alert("Acceso denegado: Tu cuenta no tiene permisos de CEO ni de Soporte en la red ProServers.");
-                    document.getElementById('admin-servers-grid').innerHTML = '<div class="col-span-full py-10 text-center text-red-500 font-bold">ACCESO NO AUTORIZADO</div>';
-                }
-            } catch (e) {
-                // Captura fallos de fetch (como errores 502/404) sin causar el loop
-                console.error("Error verificando permisos con Node.js:", e);
-                alert("Fallo de Conexión: El panel no pudo comunicarse con el backend de Node.js. Revisa la consola (F12) para ver el código de error exacto.");
-                document.getElementById('admin-servers-grid').innerHTML = '<div class="col-span-full py-10 text-center text-red-500 font-bold">ERROR DE COMUNICACIÓN CON LA API</div>';
-            }
-        });
-
-        document.getElementById('admin-profile-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-            btn.disabled = true;
-
-            const newName = document.getElementById('admin-profile-name').value.trim();
-            const newAvatar = document.getElementById('admin-profile-avatar').value.trim();
-
-            try {
-                await updateProfile(auth.currentUser, {
-                    displayName: newName || null,
-                    photoURL: newAvatar || null
-                });
-                alert("✅ Perfil actualizado correctamente.");
-                window.location.reload();
-            } catch (err) {
-                alert("❌ Error al actualizar el perfil: " + err.message);
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        };
-
-        // GESTIÓN REAL DE STAFF (V0.9)
-        window.addStaff = async () => {
-            if (!isCEO) return alert("No tienes permisos para realizar esta acción.");
-
-            const emailInput = document.getElementById('staff-email-input');
-            const email = emailInput.value.trim();
-            if (!email) return alert("Por favor, ingresa un correo válido.");
-
-            const btn = document.getElementById('btn-add-staff');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Asignando...';
-            btn.disabled = true;
-
-            try {
-                const res = await fetch('/api/admin/staff/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${globalToken}` },
-                    body: JSON.stringify({ emailToStaff: email })
-                });
-
-                if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.error || "No se pudo añadir al staff");
-                }
-
-                alert(`✅ Se le ha otorgado el rol "Soporte" a ${email}.`);
-                emailInput.value = '';
-                window.cargarTodo(); // Recargar la tabla
-            } catch (e) {
-                alert("Error: " + e.message);
-            } finally {
-                btn.innerHTML = 'Dar Rol Soporte';
-                btn.disabled = false;
-            }
-        };
-
-        window.removeStaff = async (email) => {
-            if (!isCEO) return alert("No tienes permisos para realizar esta acción.");
-            if (!confirm(`¿Estás seguro de que quieres revocarle el acceso de Soporte a ${email}?`)) return;
-
-            try {
-                const res = await fetch('/api/admin/staff/remove', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${globalToken}` },
-                    body: JSON.stringify({ emailToRemove: email })
-                });
-
-                if (!res.ok) throw new Error("No se pudo remover al staff");
-
-                alert(`✅ El rol ha sido revocado. ${email} vuelve a ser un usuario normal.`);
-                window.cargarTodo();
-            } catch (e) {
-                alert("Error: " + e.message);
-            }
-        };
-
-        // =====================================
-        // SOPORTE EN VIVO Y SOCKETS
-        // =====================================
-        window.iniciarSocketAdmin = async () => {
-            try {
-                const res = await fetch('/api/admin/support-tickets', { headers: { 'Authorization': `Bearer ${globalToken}` } });
-                const data = await res.json();
-                if (data.success && data.tickets) {
-                    supportMessages = data.tickets;
-                    window.renderTicketsList();
-                }
-            } catch (e) { console.error("Error trayendo tickets", e); }
-
-            // Sondeo cada 15s: los mensajes nuevos llegan por la API, no por socket.
-            if (!window.ticketsPoll) {
-                window.ticketsPoll = setInterval(async () => {
-                    try {
-                        const tk = await auth.currentUser.getIdToken();
-                        const r = await fetch('/api/admin/support-tickets', { headers: { 'Authorization': `Bearer ${tk}` } });
-                        const d = await r.json();
-                        if (d.success && d.tickets) {
-                            supportMessages = d.tickets;
-                            window.renderTicketsList();
-                            if (currentChatUid) window.renderChatWindow(currentChatUid);
-                        }
-                    } catch (e) { /* reintenta en el siguiente ciclo */ }
-                }, 15000);
-            }
-
-            socketAdmin = io('/', { query: { token: globalToken, serverId: 'admin' } });
-
-            socketAdmin.on('new_support_msg', (msg) => {
-                supportMessages.push(msg);
-                window.renderTicketsList();
-
-                if (currentChatUid === msg.uid) {
-                    window.renderChatWindow(msg.uid);
-                } else {
-                    document.getElementById('soporte-badge').classList.remove('hidden');
-                }
-            });
-        };
-
-        window.renderTicketsList = () => {
-            const list = document.getElementById('tickets-list');
-            const grouped = {};
-            supportMessages.forEach(m => {
-                if (!grouped[m.uid]) grouped[m.uid] = [];
-                grouped[m.uid].push(m);
-            });
-
-            if (Object.keys(grouped).length === 0) {
-                list.innerHTML = `<p class="text-center text-gray-500 text-xs py-8">No hay chats activos.</p>`;
-                return;
-            }
-
-            list.innerHTML = '';
-            const sortedUids = Object.keys(grouped).sort((a, b) => {
-                const lastA = new Date(grouped[a][grouped[a].length - 1].timestamp);
-                const lastB = new Date(grouped[b][grouped[b].length - 1].timestamp);
-                return lastB - lastA;
-            });
-
-            sortedUids.forEach(uid => {
-                const msgs = grouped[uid];
-                const lastMsg = msgs[msgs.length - 1];
-                const userEmail = msgs.find(m => m.sender === 'user')?.email || 'Cliente';
-                const timeStr = new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                const isSelected = currentChatUid === uid ? 'bg-[#1f232b] border-purple-500/50' : 'bg-[#121419] border-[#1f232b] hover:bg-[#1a1d24]';
-
-                list.innerHTML += `
-                    <div onclick="window.abrirTicket('${uid}', '${userEmail}')" class="p-3 border rounded-lg cursor-pointer transition-colors flex flex-col gap-1 ${isSelected}">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-white truncate max-w-[120px]">${userEmail}</span>
-                            <span class="text-[9px] text-gray-500">${timeStr}</span>
-                        </div>
-                        <p class="text-[10px] text-gray-400 truncate w-full">${lastMsg.sender === 'user' ? 'Cliente: ' : (lastMsg.sender === 'ai' ? 'Mine AI: ' : 'Tú: ')}${lastMsg.message}</p>
-                    </div>
-                `;
-            });
-        };
-
-        window.abrirTicket = (uid, email) => {
-            currentChatUid = uid;
-            document.getElementById('soporte-badge').classList.add('hidden');
-            window.renderTicketsList();
-
-            document.getElementById('chat-default-msg').classList.add('hidden');
-            document.getElementById('active-chat-header').classList.remove('hidden');
-            document.getElementById('chat-input-area').classList.remove('hidden');
-            const chatBox = document.getElementById('chat-messages');
-            chatBox.classList.remove('hidden');
-
-            document.getElementById('chat-user-email').innerText = email;
-            document.getElementById('chat-user-uid').innerText = uid;
-
-            window.renderChatWindow(uid);
-            setTimeout(() => document.getElementById('admin-reply-input').focus(), 100);
-        };
-
-        window.renderChatWindow = (uid) => {
-            const chatBox = document.getElementById('chat-messages');
-            chatBox.innerHTML = '';
-            const userMsgs = supportMessages.filter(m => m.uid === uid);
-
-            userMsgs.forEach(m => {
-                if (m.sender === 'user') {
-                    chatBox.innerHTML += `<div class="chat-admin-bubble chat-user"><p class="text-[9px] text-blue-300 font-bold mb-0.5">Cliente</p>${m.message.replace(/</g, "&lt;")}</div>`;
-                } else if (m.sender === 'ai') {
-                    chatBox.innerHTML += `<div class="chat-admin-bubble chat-ai"><p class="text-[9px] text-purple-300 font-bold mb-0.5"><i class="fas fa-robot mr-1"></i> Mine AI</p>${m.message.replace(/</g, "&lt;")}</div>`;
-                } else {
-                    chatBox.innerHTML += `<div class="chat-admin-bubble chat-ceo"><p class="text-[9px] text-gray-200 font-bold mb-0.5 text-right"><i class="fas fa-headset mr-1"></i> Tú</p>${m.message.replace(/</g, "&lt;")}</div>`;
-                }
-            });
-
-            chatBox.scrollTop = chatBox.scrollHeight;
-        };
-
-        window.enviarRespuesta = async () => {
-            const input = document.getElementById('admin-reply-input');
-            const reply = input.value.trim();
-            if (!reply || !currentChatUid) return;
-
-            const chatBox = document.getElementById('chat-messages');
-            input.value = '';
-
-            chatBox.innerHTML += `<div class="chat-admin-bubble chat-ceo opacity-50"><p class="text-[9px] text-gray-200 font-bold mb-0.5 text-right"><i class="fas fa-headset mr-1"></i> Tú</p>${reply.replace(/</g, "&lt;")}</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            try {
-                const res = await fetch('/api/admin/support-reply', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${globalToken}` },
-                    body: JSON.stringify({ uid: currentChatUid, reply: reply })
-                });
-                if (res.ok) {
-                    const newEntry = { id: Date.now(), uid: currentChatUid, email: 'Soporte', message: reply, timestamp: new Date(), sender: 'admin' };
-                    supportMessages.push(newEntry);
-                    window.renderChatWindow(currentChatUid);
-                    window.renderTicketsList();
-                }
-            } catch (e) { alert("Error al enviar el mensaje."); }
-        };
-
-        window.cerrarTicket = async () => {
-            if (!currentChatUid) return;
-            if (!confirm("¿Seguro que quieres cerrar este ticket? Se eliminará de la bandeja activa y se avisará al cliente.")) return;
-
-            try {
-                await fetch('/api/admin/close-ticket', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${globalToken}` },
-                    body: JSON.stringify({ uid: currentChatUid })
-                });
-
-                supportMessages = supportMessages.filter(m => m.uid !== currentChatUid);
-                currentChatUid = null;
-
-                document.getElementById('active-chat-header').classList.add('hidden');
-                document.getElementById('chat-input-area').classList.add('hidden');
-                document.getElementById('chat-messages').classList.add('hidden');
-                document.getElementById('chat-default-msg').classList.remove('hidden');
-
-                window.renderTicketsList();
-                window.logAuditoria("Ticket de soporte cerrado y resuelto por el administrador.", "SUCCESS");
-            } catch (e) {
-                alert("Error al cerrar el ticket.");
-            }
-        };
-
-        // =====================================
-        // CAMBIO DE PESTAÑAS
-        // =====================================
-        window.switchTab = (tabId, btn) => {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('sidebar-active');
-                el.classList.add('text-gray-400', 'sidebar-item');
-            });
-
-            const metricsCards = document.getElementById('metrics-cards');
-            if (metricsCards) {
-                if (tabId === 'tab-nodos') metricsCards.classList.remove('hidden');
-                else metricsCards.classList.add('hidden');
-            }
-
-            document.getElementById(tabId)?.classList.remove('hidden');
-            btn.classList.add('sidebar-active');
-            btn.classList.remove('text-gray-400', 'sidebar-item');
-
-            const title = document.getElementById('tab-header-title');
-            const subtitle = document.getElementById('tab-header-subtitle');
-
-            if (tabId === 'tab-nodos') {
-                title.innerText = 'Flota de Servidores';
-                subtitle.innerText = 'Panel Principal / Gestión de Nodos de Clientes';
-            } else if (tabId === 'tab-usuarios') {
-                title.innerText = 'Directorio de Usuarios';
-                subtitle.innerText = 'Base de Datos de Clientes / Control de Membresías';
-            } else if (tabId === 'tab-contabilidad') {
-                title.innerText = 'Contabilidad & Facturación';
-                subtitle.innerText = 'Registros Transaccionales de SQL Server';
-            } else if (tabId === 'tab-soporte') {
-                title.innerText = 'Centro de Soporte en Vivo';
-                subtitle.innerText = 'Asistencia en tiempo real a clientes y monitoreo de Mine AI';
-                document.getElementById('soporte-badge').classList.add('hidden');
-                window.renderTicketsList();
-            } else if (tabId === 'tab-minevoice') {
-                title.innerText = 'Mine Voice (Beta)';
-                subtitle.innerText = 'Servidor de Voz de Proximidad UDP / Enrutamiento de Audio';
-            } else if (tabId === 'tab-staff') {
-                title.innerText = 'Gestión de Equipo';
-                subtitle.innerText = 'Asignación de roles de Soporte a empleados.';
-            } else if (tabId === 'tab-perfil') {
-                title.innerText = 'Perfil de Administrador';
-                subtitle.innerText = 'Ajustes de cuenta y personalización de identidad';
-            } else if (tabId === 'tab-seguridad') {
-                title.innerText = 'Seguridad & Auditoría';
-                subtitle.innerText = 'Monitoreo de Infraestructura y Logs de Acción';
-            }
-        };
-
-        window.cargarTodo = async () => {
-            if (!globalToken) return;
-            const btnRefresh = document.getElementById('btn-refresh');
-            if (btnRefresh) {
-                btnRefresh.disabled = true;
-                btnRefresh.innerHTML = '<i class="fas fa-sync-alt fa-spin mr-2"></i> Actualizando...';
-            }
-
-            try {
-                // Métricas
-                const resStats = await fetch('/api/admin/dashboard-stats', { headers: { 'Authorization': `Bearer ${globalToken}` } });
-                const stats = await resStats.json();
-                document.getElementById('stat-servers').innerText = stats.totalServidores || "0";
-                document.getElementById('stat-usuarios').innerText = stats.totalUsuariosMongo || "0";
-                document.getElementById('stat-dinero').innerText = "$" + (stats.dineroTotal || "0");
-
-                document.getElementById('contab-total').innerText = "$" + (stats.dineroTotal || "0");
-                document.getElementById('contab-suscripciones').innerText = stats.totalClientes || "0";
-                const prom = stats.totalClientes > 0 ? (stats.dineroTotal / stats.totalClientes).toFixed(2) : 0;
-                document.getElementById('contab-promedio').innerText = "$" + prom;
-
-                // Nodos
-                const resServers = await fetch('/api/admin/all-servers', { headers: { 'Authorization': `Bearer ${globalToken}` } });
-                const dataServers = await resServers.json();
-                listaGlobalServidores = dataServers.servers || [];
-
-                const grid = document.getElementById('admin-servers-grid');
-                grid.innerHTML = '';
-
-                if (listaGlobalServidores.length === 0) {
-                    grid.innerHTML = `<div class="col-span-full text-center py-20 bg-[#121419] border border-[#1f232b] rounded-xl"><p class="text-gray-400">No hay servidores creados en la red todavía.</p></div>`;
-                } else {
-                    listaGlobalServidores.forEach(server => {
-                        const isOnline = server.isRunning === true;
-                        const isPaused = server.isPaused === true;
-                        const isBanned = server.ownerPlan === 'banned';
-
-                        let statusColor = '#ef4444'; let statusText = 'OFFLINE'; let glowClass = 'glow-red'; let gradientId = 'g-red';
-                        if (isOnline && !isPaused) { statusColor = '#00ff7f'; statusText = 'ONLINE'; glowClass = 'glow-green'; gradientId = 'g-green'; }
-                        if (isPaused) { statusColor = '#3b82f6'; statusText = 'CONGELADO'; glowClass = 'glow-blue'; gradientId = 'g-blue'; }
-                        if (isBanned) { statusColor = '#ef4444'; statusText = 'BANEADO'; glowClass = 'glow-red'; gradientId = 'g-red'; }
-
-                        const cpuNum = parseFloat(server.cpuUsage) || 0;
-                        const ramNum = parseFloat(server.ramUsage) || 0;
-
-                        // Restringir botones si NO es CEO
-                        let botonBorrar = '';
-                        let botonBanear = '';
-                        if (isCEO) {
-                            botonBanear = `<button onclick="window.banearCliente('${server.ownerUid}')" class="bg-[#1f232b] border ${isBanned ? 'border-gray-600 text-gray-600 cursor-not-allowed' : 'border-red-500/30 text-red-500 hover:bg-red-900/30'} text-[10px] font-bold py-2 rounded uppercase tracking-wider flex items-center justify-center gap-1" title="Banear al dueño"><i class="fas fa-gavel"></i> Banear</button>`;
-                            botonBorrar = `<button onclick="window.borrarServerAdmin('${server.id}', '${server.ownerUid}', '${server.projectName}')" class="bg-[#1f232b] border border-red-900/50 text-red-700 hover:bg-red-900/50 text-[10px] font-bold py-2 rounded uppercase tracking-wider flex items-center justify-center gap-1" title="Destruir Contenedor"><i class="fas fa-bomb"></i> Destruir</button>`;
-                        }
-
-                        grid.innerHTML += `
-                            <div class="card-bg rounded-xl p-5 flex flex-col relative overflow-hidden transition shadow-lg border-t-2 ${isBanned ? 'opacity-50 grayscale' : ''}" style="border-top-color: ${statusColor}">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-lg font-bold text-white truncate pr-2">${server.projectName || 'Sin Nombre'}</h3>
-                                    <div class="flex items-center gap-1.5 text-[10px] font-bold tracking-wider" style="color: ${statusColor}">
-                                        <div class="w-1.5 h-1.5 rounded-full ${glowClass}" style="background-color: ${statusColor}"></div> ${statusText}
-                                    </div>
-                                </div>
-                                
-                                <p class="text-[10px] text-gray-400 mb-5 bg-[#0b0c10] p-2 rounded border border-[#1f232b] flex justify-between items-center">
-                                    <span class="uppercase font-bold">${server.software} • ${server.version}</span>
-                                    <span class="text-indigo-400 font-mono">IP: ${server.publicIp || 'Ninguna'}</span>
-                                </p>
-
-                                <div class="h-14 w-full mb-5 relative">
-                                    <svg class="absolute bottom-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 30">
-                                        <path d="M0,20 C20,10 40,25 60,15 C80,5 100,18 100,18 L100,30 L0,30 Z" fill="url(#${gradientId})" />
-                                        <path d="M0,20 C20,10 40,25 60,15 C80,5 100,18 100,18" fill="none" stroke="${statusColor}" stroke-width="1" class="${glowClass}"/>
-                                    </svg>
-                                </div>
-
-                                <div class="space-y-3 mb-5 ${!isOnline ? 'opacity-30' : ''}">
-                                    <div class="flex items-center text-[10px]">
-                                        <span class="w-8 text-gray-500 font-bold">CPU</span>
-                                        <div class="flex-1 h-1 bg-[#1a1d24] rounded-full mx-2"><div class="h-full rounded-full" style="width: ${Math.min(cpuNum, 100)}%; background-color: ${statusColor}"></div></div>
-                                        <span class="w-10 text-right font-bold text-gray-300">${server.cpuUsage}</span>
-                                    </div>
-                                    <div class="flex items-center text-[10px]">
-                                        <span class="w-8 text-gray-500 font-bold">RAM</span>
-                                        <div class="flex-1 h-1 bg-[#1a1d24] rounded-full mx-2"><div class="h-full bg-[#00b8ff] rounded-full" style="width: ${Math.min((ramNum / 8192) * 100, 100)}%"></div></div>
-                                        <span class="w-16 text-right font-bold text-gray-300">${server.ramUsage}</span>
-                                    </div>
-                                </div>
-
-                                <div class="flex justify-between items-center text-[10px] text-gray-500 mb-5 border-t border-[#1f232b] pt-3">
-                                    <div><p>Dueño UID:</p><p class="text-white font-mono" title="${server.ownerEmail}">${server.ownerUid ? server.ownerUid.substring(0, 8) : 'N/A'}...</p></div>
-                                    <div class="text-right">
-                                        <p>Plan Actual:</p>
-                                        <p class="text-white uppercase font-bold ${isCEO ? 'cursor-pointer hover:text-indigo-400' : ''} transition" ${isCEO ? `onclick="window.cambiarPlan('${server.ownerUid}', '${server.ownerPlan}')"` : ''} title="${isCEO ? 'Clic para cambiar plan' : ''}">${server.ownerPlan} ${isCEO ? '<i class="fas fa-pencil-alt ml-1 text-gray-600"></i>' : ''}</p>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-4 gap-2 mt-auto">
-                                    <button onclick="window.ingresarComoAdmin('${encodeURIComponent(JSON.stringify(server))}')" class="col-span-2 bg-[#9333ea] hover:bg-[#a855f7] text-white text-[11px] font-bold py-2 rounded shadow-[0_0_10px_rgba(147,51,234,0.3)] flex items-center justify-center gap-2" title="Entrar al panel del cliente sin contraseña">
-                                        <i class="fas fa-eye"></i> Espiar
-                                    </button>
-                                    <button onclick="window.accionServer('${server.id}', '${isPaused ? 'unpause' : 'pause'}')" class="bg-[#1f232b] border border-blue-500/30 text-blue-400 hover:bg-[#2a2f3a] text-[11px] font-bold py-2 rounded flex items-center justify-center" title="${isPaused ? 'Descongelar Contenedor' : 'Congelar Servidor (Pausar RAM/CPU)'}">
-                                        <i class="fas ${isPaused ? 'fa-play' : 'fa-pause'}"></i>
-                                    </button>
-                                    <button onclick="window.accionServer('${server.id}', 'wipe')" class="bg-[#1f232b] border border-yellow-500/30 text-yellow-500 hover:bg-[#2a2f3a] text-[11px] font-bold py-2 rounded flex items-center justify-center" title="Wipe (Borrar carpeta World)">
-                                        <i class="fas fa-globe"></i>
-                                    </button>
-                                </div>
-                                <div class="grid grid-cols-2 gap-2 mt-2">
-                                    ${botonBanear}
-                                    ${botonBorrar}
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
-
-                window.renderTablaUsuarios();
-                window.renderTablaStaff();
-
-            } catch (error) {
-                console.error("Error sincronizando:", error);
-                window.logAuditoria("Error al sincronizar datos del panel.", "DANGER");
-            }
-            if (btnRefresh) {
-                btnRefresh.disabled = false;
-                btnRefresh.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizar Red';
-            }
-        };
-
-        window.logAuditoria = (mensaje, tipo = 'INFO') => {
-            const container = document.getElementById('audit-log-container');
-            if (!container) return;
-            const hora = new Date().toLocaleTimeString();
-            let color = 'text-gray-300';
-            if (tipo === 'WARN') color = 'text-yellow-400';
-            if (tipo === 'DANGER') color = 'text-red-400';
-            if (tipo === 'SUCCESS') color = 'text-green-400';
-            container.innerHTML += `<p class="${color}">[${hora}] [${tipo}] ${mensaje}</p>`;
-            container.scrollTop = container.scrollHeight;
-        };
-
-        window.limpiarLogsAuditoria = () => {
-            const container = document.getElementById('audit-log-container');
-            if (container) container.innerHTML = `<p class="text-gray-500">[INFO] Log reseteado.</p>`;
-        };
-
-        window.renderTablaUsuarios = () => {
-            const tbody = document.getElementById('users-table-body');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            const usersMap = {};
-            listaGlobalServidores.forEach(s => {
-                if (!usersMap[s.ownerUid]) {
-                    usersMap[s.ownerUid] = {
-                        uid: s.ownerUid,
-                        email: s.ownerEmail || 'Sin email registrado',
-                        plan: s.ownerPlan || 'redstone',
-                        serversCount: 0,
-                        isBanned: s.ownerPlan === 'banned'
-                    };
-                }
-                usersMap[s.ownerUid].serversCount++;
-            });
-            const usersList = Object.values(usersMap);
-            if (usersList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-gray-500">No hay usuarios con instancias registradas.</td></tr>`;
-                return;
-            }
-            usersList.forEach(u => {
-                const planColor = u.plan === 'ceo' ? 'text-purple-400' : 'text-indigo-400';
-                const statusBadge = u.isBanned
-                    ? `<span class="bg-red-900/30 text-red-400 border border-red-800 px-2 py-0.5 rounded text-[9px] font-bold uppercase">Baneado</span>`
-                    : `<span class="bg-green-900/30 text-green-400 border border-green-800 px-2 py-0.5 rounded text-[9px] font-bold uppercase">Activo</span>`;
-
-                let botonesAccion = '';
-                if (isCEO) {
-                    botonesAccion = `
-                        <button onclick="window.cambiarPlan('${u.uid}', '${u.plan}')" class="bg-[#1f232b] hover:bg-[#2a2f3a] text-yellow-400 px-2.5 py-1.5 rounded font-bold transition" title="Cambiar Plan"><i class="fas fa-edit"></i></button>
-                        <button onclick="window.banearCliente('${u.uid}')" class="bg-[#1f232b] hover:bg-red-900/30 text-red-500 px-2.5 py-1.5 rounded font-bold transition" title="Banear Usuario"><i class="fas fa-gavel"></i></button>
-                    `;
-                } else {
-                    botonesAccion = `<span class="text-[10px] text-gray-600 italic">Sin permisos</span>`;
-                }
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-[#121419] transition">
-                        <td class="py-3">
-                            <p class="font-bold text-white">${u.email}</p>
-                            <p class="font-mono text-[10px] text-gray-500">${u.uid}</p>
-                        </td>
-                        <td class="py-3">
-                            <span class="font-bold uppercase ${planColor}">${u.plan}</span>
-                        </td>
-                        <td class="py-3 font-mono text-gray-300">
-                            ${u.serversCount} Instancia(s)
-                        </td>
-                        <td class="py-3">
-                            ${statusBadge}
-                        </td>
-                        <td class="py-3 text-right space-x-2">
-                            ${botonesAccion}
-                        </td>
-                    </tr>
-                `;
-            });
-        };
-
-        window.renderTablaStaff = async () => {
-            const tbody = document.getElementById('staff-table-body');
-            if (!tbody) return;
-
-            try {
-                const res = await fetch('/api/admin/staff/list', { headers: { 'Authorization': `Bearer ${globalToken}` } });
-                if (!res.ok) return;
-                const data = await res.json();
-
-                tbody.innerHTML = `
-                    <tr class="hover:bg-[#0b0c10] transition">
-                        <td class="p-4">
-                            <p class="font-bold text-white">rodasmaximo51@gmail.com</p>
-                        </td>
-                        <td class="p-4"><span class="bg-purple-900/30 text-purple-400 border border-purple-800 px-2 py-1 rounded text-[9px] font-bold uppercase">ADMIN / FUNDADOR</span></td>
-                        <td class="p-4 text-right"><span class="text-gray-600 italic">Intocable</span></td>
-                    </tr>
-                `;
-
-                if (data.staff && data.staff.length > 0) {
-                    data.staff.forEach(s => {
-                        let btnBorrar = isCEO ? `<button onclick="window.removeStaff('${s.email}')" class="text-red-500 hover:text-red-400 bg-red-900/20 p-2 rounded transition-colors" title="Revocar Rol"><i class="fas fa-user-minus"></i></button>` : '';
-                        tbody.innerHTML += `
-                            <tr class="hover:bg-[#0b0c10] transition">
-                                <td class="p-4"><p class="font-bold text-white">${s.email}</p></td>
-                                <td class="p-4"><span class="bg-blue-900/30 text-blue-400 border border-blue-800 px-2 py-1 rounded text-[9px] font-bold uppercase">SOPORTE</span></td>
-                                <td class="p-4 text-right">${btnBorrar}</td>
-                            </tr>
-                        `;
-                    });
-                }
-            } catch (e) { }
-        };
-
-        window.filtrarUsuarios = () => {
-            const query = document.getElementById('user-search-input').value.toLowerCase();
-            const rows = document.querySelectorAll('#users-table-body tr');
-            rows.forEach(r => {
-                const text = r.innerText.toLowerCase();
-                r.style.display = text.includes(query) ? '' : 'none';
-            });
-        };
-
-        window.ingresarComoAdmin = (serverJsonEncoded) => {
-            const serverData = JSON.parse(decodeURIComponent(serverJsonEncoded));
-            sessionStorage.setItem('selectedServer', JSON.stringify(serverData));
-            window.logAuditoria(`Ingreso en Modo Espía al servidor ${serverData.id} (${serverData.projectName}).`, "WARN");
-            window.location.href = '/index.html';
-        };
-
-        window.accionServer = async (serverId, action) => {
-            if (action === 'wipe' && !confirm("¿Seguro que quieres BORRAR EL MUNDO de este cliente? Es irreversible.")) return;
-            try {
-                await fetch('/api/admin/server-action', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${globalToken}` },
-                    body: JSON.stringify({ serverId, action })
-                });
-                window.logAuditoria(`Acción '${action}' ejecutada en servidor ${serverId}.`, "WARN");
-                window.cargarTodo();
-            } catch (e) {
-                alert("Error al ejecutar acción.");
-                window.logAuditoria(`Fallo al ejecutar '${action}' en ${serverId}.`, "DANGER");
-            }
-        };
-
-        window.banearCliente = async (uid) => {
-            if (!isCEO) return;
-            if (!confirm(`⚠️ ATENCIÓN: Vas a BANEAR a este usuario.\nSe apagarán todos sus servidores y su cuenta quedará congelada.\n¿Proceder?`)) return;
-            try {
-                await fetch('/api/admin/ban-user', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${globalToken}` },
-                    body: JSON.stringify({ targetUid: uid })
-                });
-                alert("Usuario baneado con éxito. Sus nodos han sido apagados.");
-                window.logAuditoria(`Usuario ${uid} baneado permanentemente.`, "DANGER");
-                window.cargarTodo();
-            } catch (e) {
-                window.logAuditoria(`Error al intentar banear al usuario ${uid}.`, "DANGER");
-            }
-        };
-
-        window.cambiarPlan = async (uid, currentPlan) => {
-            if (!isCEO) return;
-            const newPlan = prompt(`Cambiar plan al usuario. Plan actual: ${currentPlan}\nEscribí el nuevo plan (redstone, cobre, hierro, oro, diamante, netherite, enterprise, ceo):`);
-            if (!newPlan || newPlan.trim() === '') return;
-            try {
-                await fetch('/api/admin/set-plan', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${globalToken}` },
-                    body: JSON.stringify({ targetUid: uid, newPlan: newPlan.toLowerCase().trim() })
-                });
-                window.logAuditoria(`Plan de ${uid} modificado de ${currentPlan} a ${newPlan}.`, "SUCCESS");
-                window.cargarTodo();
-            } catch (e) {
-                alert("Error al cambiar plan.");
-            }
-        };
-
-        window.borrarServerAdmin = async (serverId, ownerUid, name) => {
-            if (!isCEO) return;
-            if (!confirm(`⚠️ Vas a DESTRUIR el servidor "${name}".\nSe borrará el contenedor y sus archivos.\n¿Proceder?`)) return;
-            try {
-                await fetch('/api/project/delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${globalToken}` },
-                    body: JSON.stringify({ serverId: serverId })
-                });
-                window.logAuditoria(`Servidor ${serverId} (${name}) destruido completamente.`, "DANGER");
-                window.cargarTodo();
-            } catch (error) {
-                window.logAuditoria(`Fallo al destruir servidor ${serverId}.`, "DANGER");
-            }
-        };
-
-        window.limpiarVPS = async () => {
-            if (!isCEO) return alert("No tienes permisos para purgar el sistema.");
-            if (!confirm("⚠️ Esto ejecutará un 'Docker System Prune'.\nVa a liberar espacio en el disco borrando imágenes, redes y contenedores en desuso.\n¿Proceder?")) return;
-            try {
-                const res = await fetch('/api/admin/system-prune', { method: 'POST', headers: { 'Authorization': `Bearer ${globalToken}` } });
-                const data = await res.json();
-                alert(data.message || "VPS Limpiado.");
-                window.logAuditoria("Limpieza de caché y recursos Docker completada con éxito.", "SUCCESS");
-            } catch (e) {
-                window.logAuditoria("Error al ejecutar limpieza del VPS.", "DANGER");
-            }
-        };
-
-        window.enviarBroadcast = async () => {
-            if (!isCEO) return alert("No tienes rango suficiente para enviar alertas globales.");
-            const cmdInput = document.getElementById('global-cmd');
-            const message = cmdInput.value.trim();
-            if (!message) return;
-
-            try {
-                const res = await fetch('/api/admin/global-broadcast', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${globalToken}` },
-                    body: JSON.stringify({ message })
-                });
-
-                if (!res.ok) throw new Error("Fallo interno");
-
-                const data = await res.json();
-                alert(data.message || "Alerta global enviada a todas las pantallas.");
-                window.logAuditoria(`Alerta Global enviada: "${message}"`, "WARN");
-                cmdInput.value = '';
-            } catch (e) {
-                alert("Error de conexión con Node.js");
-            }
-        };
-
-    </script>
+      </div>
+      <div class="card span5">
+        <div class="chd"><h2>Consumo del clúster</h2><span class="sub">últimos 5 minutos</span></div>
+        <div class="chart-box"><canvas id="chart-live"></canvas></div>
+        <div id="host-bars" style="margin-top:12px"></div>
+      </div>
+      <div class="card span6 only-admin"><div class="chd"><h2>Ingresos, últimos 6 meses</h2><span class="sub">pagos completados</span></div><div class="chart-box"><canvas id="chart-rev"></canvas></div></div>
+      <div class="card span6 only-admin"><div class="chd"><h2>Suscripciones por plan</h2><span class="sub">SQL Server</span></div><div class="chart-box"><canvas id="chart-plans"></canvas></div></div>
+      <div class="card span12">
+        <div class="chd"><h2>Flota de nodos</h2>
+          <div class="tools"><input id="f-q" placeholder="Buscar nodo, dueño o plan" aria-label="Buscar nodo">
+            <select id="f-state" aria-label="Estado"><option value="">Todos</option><option value="running">En línea</option><option value="stopped">Detenidos</option><option value="frozen">Zona de Hielo</option><option value="missing">Sin contenedor</option></select></div></div>
+        <div class="tw"><table><thead><tr><th>Nodo</th><th>Dueño</th><th>Plan</th><th>Estado</th><th>CPU</th><th>RAM</th><th>Puerto</th><th class="r">Acciones</th></tr></thead><tbody id="fleet-body"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MÓDULO 2 -->
+  <section class="mod" id="m2">
+    <div class="mh"><div><h1>Directorio de cuentas</h1><p>Todos los clientes de SQL Server, tengan o no plan o servidor.</p></div>
+      <div class="tools"><input id="c-q" placeholder="Usuario, correo o UID" aria-label="Buscar cliente">
+        <select id="c-rol" aria-label="Rol"><option value="">Todos los roles</option><option>ceo</option><option>admin</option><option>soporte</option><option>usuario</option></select>
+        <select id="c-estado" aria-label="Estado"><option value="">Todo estado</option><option value="activo">Activo</option><option value="congelado">Zona de Hielo</option><option value="eliminado">Eliminado</option></select>
+        <select id="c-seg" aria-label="Seguridad"><option value="">Toda seguridad</option><option value="2fa">2FA activo</option><option value="no2fa">Sin 2FA</option></select>
+        <select id="c-plan" aria-label="Plan"><option value="">Todo plan</option><option value="__none">Sin plan</option></select></div></div>
+    <div class="card"><div class="tw"><table><thead><tr><th>Cuenta</th><th>Rol</th><th>Estado</th><th>Plan</th><th>Servidor</th><th class="r">Pagos</th><th class="r">Tickets</th><th>Seguridad</th><th>Alta</th></tr></thead><tbody id="clients-body"></tbody></table></div><div class="sub" id="clients-count" style="margin-top:10px"></div></div>
+  </section>
+
+  <!-- MÓDULO 3 -->
+  <section class="mod" id="m3">
+    <div class="mh"><div><h1>Contabilidad</h1><p>Libro mayor de pagos y reembolsos, cruzado por suscripción, cliente y plan.</p></div>
+      <div class="tools"><button class="btn pri" id="btn-pay">Registrar pago manual</button></div></div>
+    <div class="kpis" id="acct-kpis" style="grid-template-columns:repeat(6,1fr)"></div>
+    <div class="bento">
+      <div class="card span12"><div class="chd"><h2>Libro mayor de pagos</h2><input id="a-q" placeholder="Buscar cliente, plan, pasarela o transacción" style="min-width:260px" aria-label="Buscar pago"></div>
+        <div class="tw"><table><thead><tr><th>N°</th><th>Fecha</th><th>Cliente</th><th>Plan</th><th>Pasarela</th><th>Medio</th><th>Estado</th><th class="r">Monto</th><th class="r">Acciones</th></tr></thead><tbody id="pagos-body"></tbody></table></div></div>
+      <div class="card span12"><div class="chd"><h2>Reembolsos</h2></div>
+        <div class="tw"><table><thead><tr><th>N°</th><th>Pago</th><th>Cliente</th><th>Motivo</th><th>Estado</th><th>Fecha</th><th class="r">Monto</th></tr></thead><tbody id="refunds-body"></tbody></table></div></div>
+    </div>
+  </section>
+
+  <!-- MÓDULO 4 -->
+  <section class="mod" id="m4">
+    <div class="mh"><div><h1>Mesa de soporte</h1><p>Tickets, chat con el cliente y diagnóstico de Mine AI.</p></div></div>
+    <div class="desk">
+      <div class="card"><div class="ph"><b>Tickets</b><select id="t-estado" aria-label="Estado del ticket"><option value="abierto">Abiertos</option><option value="cerrado">Cerrados</option></select></div><div class="pb" id="tk-list"></div></div>
+      <div class="card"><div class="ph" id="chat-head"><b>Selecciona un ticket</b></div><div class="pb" id="chat-body"></div>
+        <form id="reply-form" class="ph hidden" style="border-top:1px solid var(--bd);border-bottom:0;align-items:flex-end"><textarea id="reply-text" rows="2" maxlength="2000" placeholder="Escribe una respuesta" aria-label="Respuesta"></textarea><button class="btn pri" type="submit">Enviar</button></form></div>
+      <div class="card"><div class="ph"><b>Mine AI y ficha del cliente</b></div><div class="pb" id="copilot"><div class="empty">Abre un ticket para ver el diagnóstico y la ficha.</div></div></div>
+    </div>
+  </section>
+
+  <!-- MÓDULO 5 -->
+  <section class="mod" id="m5">
+    <div class="mh"><div><h1>Catálogo, staff y sistema</h1><p>Oferta comercial en vivo, roles, auditoría y mantenimiento.</p></div></div>
+    <div class="bento">
+      <div class="card span12 only-admin"><div class="chd"><h2>Planes (SQL Server)</h2><span class="sub">Los cambios se aplican al guardar cada fila.</span></div>
+        <div class="tw"><table><thead><tr><th>Plan</th><th>Precio USD/mes</th><th>RAM MB</th><th>CPU</th><th>Disco GB</th><th>Visible</th><th class="r"></th></tr></thead><tbody id="plans-body"></tbody></table></div></div>
+      <div class="card span5"><div class="chd"><h2>Staff</h2></div>
+        <form class="row only-ceo" id="staff-form" style="margin-bottom:12px"><label class="f" style="flex:1">Correo<input id="staff-email" type="email" required placeholder="persona@correo.com"></label>
+          <label class="f">Rol<select id="staff-role"><option value="soporte">Soporte</option><option value="admin">Admin</option></select></label><button class="btn pri" type="submit">Asignar</button></form>
+        <div class="tw"><table><tbody id="staff-body"></tbody></table></div></div>
+      <div class="card span7"><div class="chd"><h2>Auditoría en vivo (MongoDB)</h2><span class="sub" id="audit-sub"></span></div><div class="term mono" id="audit-term"></div></div>
+      <div class="card span12 only-admin"><div class="chd"><h2>Mantenimiento</h2></div>
+        <div class="row"><button class="btn am" id="btn-prune">Purgar imágenes huérfanas de Docker</button>
+          <button class="btn danger only-ceo" id="btn-seed">Datos de prueba en SQL Server</button>
+          <button class="btn danger only-ceo" id="btn-mongo">Eventos huérfanos en MongoDB</button></div>
+        <p class="sub" style="margin-top:10px">La purga solo elimina imágenes sin etiqueta y nunca toca contenedores ni volúmenes de clientes.</p></div>
+    </div>
+  </section>
+</main>
+
+<aside id="drawer"><div class="dh"><b id="drawer-title"></b><button class="btn ghost sm" id="drawer-x">Cerrar</button></div><div id="drawer-body"></div></aside>
+<div id="toasts"></div>
+
+<script type="module">
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAg-wvhB7iaHOF5UOSsOOOz6le1ZutVmMM",
+  authDomain: "proffesional-server.firebaseapp.com",
+  projectId: "proffesional-server",
+  storageBucket: "proffesional-server.firebasestorage.app",
+  messagingSenderId: "833822850667",
+  appId: "1:833822850667:web:3c03219c6822116edbfb2e",
+  measurementId: "G-8SZ528Y5NZ"
+};
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app);
+const CEO_EMAIL = 'rodasmaximo51@gmail.com';
+
+/* ---------- utilidades ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = (n, d = 0) => Number(n || 0).toLocaleString('es-AR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const money = (n) => 'USD ' + num(n, 2);
+const fdate = (iso) => iso ? new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+const fday = (iso) => iso ? new Date(iso).toLocaleDateString('es-AR') : '—';
+const uptime = (s) => { const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60); return (d ? d + 'd ' : '') + h + 'h ' + m + 'm'; };
+const S = { role: '', mod: 'm1', live: null, stats: null, clients: [], plans: [], acct: null, tickets: [], ticket: null, hist: { t: [], cpu: [], ram: [], nodes: [] }, charts: {}, timers: {}, fleet: { q: '', state: '' } };
+const isAdmin = () => ['ceo', 'admin'].includes(S.role);
+const isCeo = () => S.role === 'ceo';
+
+function toast(msg, kind = '') {
+  const t = document.createElement('div'); t.className = 'toast ' + kind; t.textContent = msg;
+  $('#toasts').append(t); setTimeout(() => t.remove(), 5200);
+}
+function modal({ title, body, actions = [], wide = false }) {
+  const el = document.createElement('div'); el.className = 'ov';
+  el.innerHTML = `<div class="dlg ${wide ? 'wide' : ''}" role="dialog" aria-modal="true"><h3>${esc(title)}</h3><div class="dbody">${body}</div><div class="dact"></div></div>`;
+  actions.forEach(a => {
+    const b = document.createElement('button'); b.className = 'btn ' + (a.kind || 'ghost'); b.textContent = a.label;
+    b.onclick = async () => {
+      if (!a.onClick) return el.remove();
+      b.disabled = true;
+      try { if (await a.onClick(el) !== false) el.remove(); } catch (e) { toast(e.message, 'rd'); }
+      b.disabled = false;
+    };
+    $('.dact', el).append(b);
+  });
+  el.addEventListener('mousedown', e => { if (e.target === el) el.remove(); });
+  document.body.append(el);
+  return el;
+}
+const ask = (title, text, label = 'Confirmar', kind = 'danger') => new Promise(res => modal({
+  title, body: `<p>${esc(text)}</p>`,
+  actions: [{ label: 'Cancelar', onClick: () => { res(false); } }, { label, kind, onClick: () => { res(true); } }]
+}));
+function drawer(title, html) { $('#drawer-title').textContent = title; $('#drawer-body').innerHTML = html; $('#drawer').classList.add('open'); }
+const closeDrawer = () => $('#drawer').classList.remove('open');
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDrawer(); $$('.ov').forEach(o => o.remove()); } });
+$('#drawer-x').onclick = closeDrawer;
+
+async function http(method, url, body) {
+  const t = await auth.currentUser.getIdToken();
+  const r = await fetch(url, { method, headers: { Authorization: 'Bearer ' + t, Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined });
+  const data = (r.headers.get('content-type') || '').includes('json') ? await r.json().catch(() => ({})) : {};
+  if (!r.ok) throw Object.assign(new Error(data.error || data.message || ('HTTP ' + r.status)), { status: r.status, data });
+  return data;
+}
+const api = (m, p, b) => http(m, '/api/admin' + p, b);
+async function downloadPdf(path, name) {
+  const t = await auth.currentUser.getIdToken();
+  const r = await fetch('/api/admin' + path, { headers: { Authorization: 'Bearer ' + t } });
+  if (!r.ok) throw new Error('No se pudo generar el PDF (HTTP ' + r.status + ')');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(await r.blob()); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+}
+
+/* ---------- gráficos ---------- */
+if (window.Chart) { Chart.defaults.color = '#8b93a7'; Chart.defaults.font.family = "'Plus Jakarta Sans',sans-serif"; Chart.defaults.borderColor = 'rgba(255,255,255,.06)'; }
+function mkChart(id, cfg) {
+  const c = document.getElementById(id); if (!c || !window.Chart) return null;
+  S.charts[id]?.destroy(); return S.charts[id] = new Chart(c, cfg);
+}
+const spark = (id, color) => mkChart(id, { type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: color, borderWidth: 1.5, pointRadius: 0, tension: .35, fill: true, backgroundColor: color + '22' }] },
+  options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false, min: 0 } } } });
+function setSpark(id, arr) { const c = S.charts[id]; if (!c) return; c.data.labels = arr.map((_, i) => i); c.data.datasets[0].data = arr; c.update('none'); }
+
+/* ---------- estado de nodos ---------- */
+const nodeState = (s) => (s.frozen || s.owner?.estado === 'congelado') ? 'frozen' : s.containerStatus === 'missing' ? 'missing' : s.isRunning ? 'running' : 'stopped';
+const heavy = (s) => s.isRunning && (s.cpuPct > 80 || (s.ramLimitMb && s.ramMb / s.ramLimitMb > .85));
+const STATE = { running: ['En línea', 'ok', '#10B981'], stopped: ['Detenido', 'rd', '#EF4444'], frozen: ['Zona de Hielo', 'cy', '#06B6D4'], missing: ['Sin contenedor', 'mu', '#8b93a7'] };
+const colorOf = (s) => heavy(s) ? '#F59E0B' : STATE[nodeState(s)][2];
+
+/* ---------- núcleo orbital 3D ---------- */
+const Fleet3D = {
+  ok: false, nodes: new Map(), running: false, rotY: .6, rotX: .35, dist: 15, drag: null,
+  init(el, onPick) {
+    if (!window.THREE) { el.insertAdjacentHTML('afterbegin', '<div class="empty">No se pudo cargar Three.js.</div>'); return; }
+    try { this.ren = new THREE.WebGLRenderer({ antialias: true, alpha: true }); }
+    catch (e) { el.insertAdjacentHTML('afterbegin', '<div class="empty">WebGL no está disponible en este navegador.</div>'); return; }
+    this.el = el; this.onPick = onPick; this.tip = $('#tip');
+    this.ren.setPixelRatio(Math.min(devicePixelRatio, 2)); el.prepend(this.ren.domElement);
+    this.scene = new THREE.Scene(); this.cam = new THREE.PerspectiveCamera(50, 1, .1, 100);
+    this.root = new THREE.Group(); this.scene.add(this.root);
+    this.core = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 1), new THREE.MeshBasicMaterial({ color: 0x8B5CF6, wireframe: true }));
+    this.inner = new THREE.Mesh(new THREE.SphereGeometry(.55, 24, 24), new THREE.MeshBasicMaterial({ color: 0x06B6D4, transparent: true, opacity: .85 }));
+    this.root.add(this.core, this.inner);
+    this.ray = new THREE.Raycaster(); this.ptr = new THREE.Vector2();
+    const cv = this.ren.domElement;
+    cv.addEventListener('pointerdown', e => { this.drag = { x: e.clientX, y: e.clientY, moved: 0 }; cv.setPointerCapture(e.pointerId); });
+    cv.addEventListener('pointermove', e => {
+      if (this.drag) { const dx = e.clientX - this.drag.x, dy = e.clientY - this.drag.y; this.drag.moved += Math.abs(dx) + Math.abs(dy); this.drag.x = e.clientX; this.drag.y = e.clientY; this.rotY -= dx * .008; this.rotX = Math.max(-1.2, Math.min(1.2, this.rotX + dy * .008)); }
+      else this.hover(e);
+    });
+    cv.addEventListener('pointerup', e => { const d = this.drag; this.drag = null; if (d && d.moved < 5) { const n = this.pick(e); if (n) this.onPick(n.data.id); } });
+    cv.addEventListener('pointerleave', () => { this.tip.style.display = 'none'; });
+    cv.addEventListener('wheel', e => { e.preventDefault(); this.dist = Math.max(7, Math.min(28, this.dist + e.deltaY * .01)); }, { passive: false });
+    new ResizeObserver(() => this.resize()).observe(el); this.resize();
+    this.loop = this.loop.bind(this); this.ok = true;
+  },
+  resize() { if (!this.ok && !this.ren) return; const w = this.el.clientWidth, h = this.el.clientHeight; if (!w || !h) return; this.ren.setSize(w, h); this.cam.aspect = w / h; this.cam.updateProjectionMatrix(); },
+  pick(e) {
+    const r = this.ren.domElement.getBoundingClientRect();
+    this.ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    this.ray.setFromCamera(this.ptr, this.cam);
+    const hit = this.ray.intersectObjects([...this.nodes.values()].map(n => n.mesh))[0];
+    return hit ? [...this.nodes.values()].find(n => n.mesh === hit.object) : null;
+  },
+  hover(e) {
+    const n = this.pick(e), cv = this.ren.domElement;
+    cv.style.cursor = n ? 'pointer' : '';
+    if (!n) { this.tip.style.display = 'none'; return; }
+    const r = this.el.getBoundingClientRect(), s = n.data;
+    this.tip.innerHTML = `<b>${esc(s.name || s.id)}</b><br>${STATE[nodeState(s)][0]} · CPU ${num(s.cpuPct, 1)}% · ${num(s.ramMb)} MB`;
+    this.tip.style.display = 'block'; this.tip.style.left = (e.clientX - r.left + 14) + 'px'; this.tip.style.top = (e.clientY - r.top + 10) + 'px';
+  },
+  make(s, i) {
+    let h = 0; for (const c of s.id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    const radius = 3 + (i % 4) * 1.1 + Math.floor(i / 4) * .4, pivot = new THREE.Group();
+    pivot.rotation.x = ((h % 70) - 35) * Math.PI / 180; pivot.rotation.z = ((h >> 5) % 40 - 20) * Math.PI / 180;
+    const pts = []; for (let k = 0; k <= 96; k++) pts.push(new THREE.Vector3(Math.cos(k / 96 * Math.PI * 2) * radius, 0, Math.sin(k / 96 * Math.PI * 2) * radius));
+    const ring = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ transparent: true, opacity: .22 }));
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(.25, 16, 16), new THREE.MeshBasicMaterial());
+    pivot.add(ring, mesh); this.root.add(pivot);
+    return { pivot, ring, mesh, radius, angle: (h % 628) / 100, speed: .25 + (h % 50) / 160, data: s };
+  },
+  set(list) {
+    if (!this.ok) return;
+    const ids = new Set(list.map(s => s.id));
+    for (const [id, n] of this.nodes) if (!ids.has(id)) { this.root.remove(n.pivot); this.nodes.delete(id); }
+    list.forEach((s, i) => {
+      let n = this.nodes.get(s.id); if (!n) { n = this.make(s, i); this.nodes.set(s.id, n); }
+      n.data = s; const c = new THREE.Color(colorOf(s));
+      n.mesh.material.color.copy(c); n.ring.material.color.copy(c);
+      n.mesh.scale.setScalar((.18 + Math.min(s.ramLimitMb || 1024, 8192) / 8192 * .22) / .25);
+    });
+  },
+  run(on) { this.running = on; if (on && this.ok && !this.raf) { this.last = performance.now(); this.resize(); this.raf = requestAnimationFrame(this.loop); } },
+  loop(t) {
+    if (!this.running) { this.raf = null; return; }
+    const dt = Math.min(.05, (t - this.last) / 1000); this.last = t;
+    if (!this.drag) this.rotY += dt * .06;
+    this.core.rotation.y += dt * .25; this.core.rotation.x += dt * .1;
+    this.inner.scale.setScalar(1 + Math.sin(t / 600) * .06);
+    for (const n of this.nodes.values()) {
+      n.angle += n.speed * dt; n.mesh.position.set(Math.cos(n.angle) * n.radius, 0, Math.sin(n.angle) * n.radius);
+      if (heavy(n.data)) n.mesh.scale.setScalar(n.mesh.scale.x * (1 + Math.sin(t / 150) * .004));
+    }
+    const { rotX, rotY, dist } = this;
+    this.cam.position.set(dist * Math.sin(rotY) * Math.cos(rotX), dist * Math.sin(rotX), dist * Math.cos(rotY) * Math.cos(rotX)); this.cam.lookAt(0, 0, 0);
+    this.ren.render(this.scene, this.cam);
+    this.raf = requestAnimationFrame(this.loop);
+  }
+};
+
+/* ---------- Módulo 1: comando y flota ---------- */
+function buildKpis() {
+  const t = (key, label, sp) => `<div class="card kpi" id="k-${key}"><div class="l">${label}</div><div class="v num" data-v>–</div><div class="s" data-s>&nbsp;</div>${sp ? `<div class="sp"><canvas id="sp-${key}"></canvas></div>` : ''}</div>`;
+  $('#kpis').innerHTML = t('clients', 'Clientes registrados (SQL)') + t('subs', 'Suscripciones activas')
+    + (isAdmin() ? t('mrr', 'MRR mensual', true) : t('tk', 'Tickets abiertos')) + t('nodes', 'Nodos en línea', true) + t('host', 'Host: CPU', true);
+  if (isAdmin()) spark('sp-mrr', '#8B5CF6'); spark('sp-nodes', '#10B981'); spark('sp-host', '#06B6D4');
+  mkChart('chart-live', { type: 'line', data: { labels: [], datasets: [
+    { label: 'CPU %', data: [], borderColor: '#06B6D4', backgroundColor: '#06B6D422', fill: true, tension: .3, pointRadius: 0, borderWidth: 1.5 },
+    { label: 'RAM %', data: [], borderColor: '#8B5CF6', backgroundColor: '#8B5CF622', fill: true, tension: .3, pointRadius: 0, borderWidth: 1.5 }] },
+    options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 }, x: { display: false } }, plugins: { legend: { labels: { boxWidth: 10 } } } } });
+}
+const setK = (key, v, s) => { const el = $('#k-' + key); if (!el) return; $('[data-v]', el).textContent = v; $('[data-s]', el).textContent = s; };
+const meterColor = (p) => p > 85 ? '#EF4444' : p > 65 ? '#F59E0B' : '#10B981';
+
+async function loadStats() {
+  try { S.stats = await api('GET', '/stats'); S.sqlOk = true; } catch (e) { S.sqlOk = false; S.stats = null; }
+  paintStats(); paintTop();
+}
+function paintStats() {
+  const d = S.stats; if (!d) return;
+  const c = d.clientes;
+  setK('clients', num(c.total), `${c.con_plan} con plan · ${c.sin_plan} sin plan · ${c.zona_hielo} en hielo`);
+  setK('subs', num(d.suscripciones_activas), `${num(d.conversion_pct, 1)}% de conversión`);
+  setK('tk', num(d.tickets.abiertos), `${d.tickets.cerrados} cerrados`);
+  const f = d.financiero; if (!f) return;
+  setK('mrr', money(f.mrr), `Facturado este mes: ${money(f.facturado_mes)}`);
+  setSpark('sp-mrr', f.serie_6m.map(x => x.monto));
+  mkChart('chart-rev', { type: 'bar', data: { labels: f.serie_6m.map(x => x.mes), datasets: [{ data: f.serie_6m.map(x => x.monto), backgroundColor: '#8B5CF6', borderRadius: 5 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+  mkChart('chart-plans', { type: 'doughnut', data: { labels: f.planes.map(p => p.plan), datasets: [{ data: f.planes.map(p => p.clientes), backgroundColor: ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#a78bfa', '#67e8f9'], borderWidth: 0 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '64%', plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } } } });
+}
+
+async function loadLive() {
+  if (document.hidden) return;
+  try { S.live = await api('GET', '/telemetry'); S.liveErr = null; } catch (e) { S.live = null; S.liveErr = e.message; }
+  const h = S.live?.host;
+  if (h) {
+    const H = S.hist; H.t.push(new Date().toLocaleTimeString('es-AR')); H.cpu.push(h.cpuPct); H.ram.push(h.ramPct);
+    H.nodes.push(S.live.servers.filter(s => s.isRunning).length);
+    for (const k of ['t', 'cpu', 'ram', 'nodes']) if (H[k].length > 60) H[k].shift();
+  }
+  paintTop();
+  if (S.mod === 'm1') paintLive();
+}
+function paintTop() {
+  const up = (sel, ok) => { const p = $(sel); p.classList.toggle('up', ok === true); p.classList.toggle('down', ok === false); };
+  up('#pill-docker', S.live ? S.live.dockerUp : (S.liveErr ? false : null));
+  up('#pill-sql', S.sqlOk ?? null);
+  up('#pill-mongo', S.stats ? S.stats.auditoria_24h !== null : null);
+  const h = S.live?.host;
+  for (const [id, p] of [['cpu', h?.cpuPct], ['ram', h?.ramPct]]) {
+    const bar = $('#tb-' + id); bar.style.width = (p ?? 0) + '%'; bar.style.background = meterColor(p ?? 0);
+    $('#tb-' + id + '-n').textContent = p === undefined ? '–' : num(p, 0) + '%';
+  }
+}
+function paintLive() {
+  const d = S.live, H = S.hist;
+  if (!d) { $('#fleet-body').innerHTML = `<tr><td colspan="8" class="empty">Telemetría no disponible: ${esc(S.liveErr || 'sin datos')}</td></tr>`; return; }
+  const h = d.host, run = d.servers.filter(s => s.isRunning).length;
+  setK('nodes', `${run} / ${d.servers.length}`, `${d.servers.filter(s => nodeState(s) === 'frozen').length} en Zona de Hielo`);
+  setSpark('sp-nodes', H.nodes);
+  setK('host', num(h.cpuPct, 1) + '%', `RAM ${num(h.ramUsedMb / 1024, 1)} / ${num(h.ramTotalMb / 1024, 1)} GB · Disco ${num(h.diskPct, 0)}%`);
+  setSpark('sp-host', H.cpu);
+  const c = S.charts['chart-live']; if (c) { c.data.labels = H.t; c.data.datasets[0].data = H.cpu; c.data.datasets[1].data = H.ram; c.update('none'); }
+  const row = (l, p, t) => `<div class="sub" style="display:flex;justify-content:space-between"><span>${l}</span><span class="num">${t}</span></div><div class="bar"><u style="width:${Math.min(100, p)}%;background:${meterColor(p)}"></u></div>`;
+  $('#host-bars').innerHTML = row('CPU (carga / núcleos)', h.cpuPct, `${num(h.load1, 2)} / ${h.cores} · ${num(h.cpuPct, 1)}%`)
+    + row('RAM', h.ramPct, `${num(h.ramUsedMb)} / ${num(h.ramTotalMb)} MB`)
+    + row('Disco /', h.diskPct, `${num(h.diskUsedGb, 1)} / ${num(h.diskTotalGb, 1)} GB`)
+    + `<div class="sub" style="display:flex;justify-content:space-between"><span>Uptime del host</span><span class="num">${uptime(h.uptimeSec)}</span></div>`
+    + `<div class="sub" style="display:flex;justify-content:space-between;margin-top:3px"><span>Latencia Docker</span><span class="num">${h.dockerPingMs ?? '–'} ms</span></div>`;
+  $('#core-sub').textContent = `${d.servers.length} nodos · ${run} en línea`;
+  Fleet3D.set(d.servers); paintFleet();
+}
+function nodeButtons(s) {
+  const st = nodeState(s), b = (act, label, kind = '') => `<button class="btn sm ${kind}" data-act="${act}" data-id="${esc(s.id)}">${label}</button>`;
+  let h = '';
+  if (st !== 'missing' && st !== 'frozen') h += st === 'running' ? b('restart', 'Reiniciar', 'cy') : b('start', 'Iniciar', 'ok');
+  if (isAdmin()) {
+    if (st === 'running') h += b('stop', 'Detener', 'am');
+    if (st !== 'missing') h += b('spy', 'Espiar RCON');
+    if (s.owner) h += b('freeze', st === 'frozen' ? 'Descongelar' : 'Zona de Hielo', 'cy');
+    h += b('delete', 'Eliminar', 'danger');
+  }
+  return h;
+}
+function paintFleet() {
+  const q = S.fleet.q.toLowerCase(), f = S.fleet.state;
+  const list = (S.live?.servers || []).filter(s => (!f || nodeState(s) === f)
+    && (!q || [s.name, s.id, s.owner?.username, s.owner?.email, s.owner?.plan].some(v => String(v || '').toLowerCase().includes(q))));
+  $('#fleet-body').innerHTML = list.length ? list.map(s => {
+    const st = nodeState(s), pct = s.ramLimitMb ? Math.round(s.ramMb / s.ramLimitMb * 100) : 0;
+    return `<tr><td><b>${esc(s.name || s.id)}</b><div class="sub mono">${esc(s.id)}</div></td>
+      <td>${s.owner ? `${esc(s.owner.username)}<div class="sub">${esc(s.owner.email)}</div>` : '<span class="mu">sin dueño en SQL</span>'}</td>
+      <td>${esc(s.owner?.plan || '—')}</td>
+      <td><span class="b ${STATE[st][1]}">${STATE[st][0]}</span>${heavy(s) ? ' <span class="b am">Carga alta</span>' : ''}</td>
+      <td class="num">${num(s.cpuPct, 1)}%</td>
+      <td class="num">${num(s.ramMb)} / ${num(s.ramLimitMb)} MB<div class="bar"><u style="width:${pct}%;background:${meterColor(pct)}"></u></div></td>
+      <td class="num">${esc(s.port ?? '—')}</td><td class="r"><div class="acts">${nodeButtons(s)}</div></td></tr>`;
+  }).join('') : `<tr><td colspan="8" class="empty">${S.live?.servers.length ? 'Ningún nodo coincide con el filtro.' : 'No hay nodos desplegados.'}</td></tr>`;
+}
+async function nodeAction(id, act) {
+  const s = S.live?.servers.find(x => x.id === id); if (!s) return;
+  if (act === 'spy') { sessionStorage.setItem('selectedServer', JSON.stringify(s)); sessionStorage.setItem('forceUserMode', 'true'); location.href = '/index.html'; return; }
+  if (act === 'freeze') {
+    if (!s.owner) return;
+    const on = nodeState(s) !== 'frozen';
+    if (!await ask(on ? 'Zona de Hielo' : 'Descongelar cuenta', `${on ? 'Se bloqueará la cuenta y se detendrán los contenedores de' : 'Se reactivará la cuenta de'} ${s.owner.username}.`, on ? 'Congelar' : 'Descongelar', 'cy')) return;
+    await api('POST', `/clients/${s.owner.id}/freeze`, { freeze: on }); toast(on ? 'Cuenta congelada.' : 'Cuenta descongelada.', 'ok');
+  } else {
+    if (['stop', 'delete'].includes(act) && !await ask(act === 'delete' ? 'Eliminar nodo' : 'Detener nodo', act === 'delete' ? `Se eliminarán los contenedores y los datos de ${s.name || s.id}. No se puede deshacer.` : `Se detendrá ${s.name || s.id}.`, act === 'delete' ? 'Eliminar' : 'Detener', act === 'delete' ? 'danger' : 'am')) return;
+    await api('POST', '/server-action', { serverId: id, action: act }); toast('Acción aplicada: ' + act, 'ok');
+  }
+  closeDrawer(); loadLive();
+}
+function openNode(id) {
+  const s = S.live?.servers.find(x => x.id === id); if (!s) return;
+  const st = nodeState(s), row = (k, v) => `<div><span class="mu">${k}</span><span class="num">${v}</span></div>`;
+  drawer(s.name || s.id, `<div class="dsec"><span class="b ${STATE[st][1]}">${STATE[st][0]}</span>${heavy(s) ? ' <span class="b am">Carga alta</span>' : ''}
+    <div class="chain" style="margin-top:12px">${row('ID', esc(s.id))}${row('Contenedor', esc('mc-' + s.id))}${row('Dueño', s.owner ? esc(s.owner.email) : '—')}${row('Plan', esc(s.owner?.plan || '—'))}
+    ${row('Edición', esc(s.edition || '—'))}${row('Software', esc((s.software || '—') + ' ' + (s.version || '')))}${row('Puerto', esc(s.port ?? '—'))}
+    ${row('CPU', num(s.cpuPct, 1) + '%')}${row('RAM', num(s.ramMb) + ' / ' + num(s.ramLimitMb) + ' MB')}${row('Creado', fdate(s.createdAt))}</div></div>
+    <div class="dsec"><div class="acts" style="justify-content:flex-start">${nodeButtons(s)}</div></div>`);
+}
+
+/* ---------- Módulo 2: cuentas ---------- */
+const ROLE_B = { ceo: 'ceo', admin: 'cy', soporte: 'am', usuario: 'mu' };
+const EST_B = { activo: ['Activo', 'ok'], congelado: ['Zona de Hielo', 'cy'], eliminado: ['Eliminado', 'rd'] };
+async function loadClients() {
+  S.clients = (await api('GET', '/clients')).clients;
+  const sel = $('#c-plan'), prev = sel.value, names = [...new Set(S.clients.map(c => c.plan?.nombre).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Todo plan</option><option value="__none">Sin plan</option>' + names.map(n => `<option>${esc(n)}</option>`).join('');
+  sel.value = names.includes(prev) || prev === '__none' ? prev : '';
+  paintClients();
+}
+function paintClients() {
+  const q = $('#c-q').value.toLowerCase(), rol = $('#c-rol').value, est = $('#c-estado').value, seg = $('#c-seg').value, plan = $('#c-plan').value;
+  const list = S.clients.filter(c => (!rol || c.rol === rol) && (!est || c.estado === est)
+    && (!seg || (seg === '2fa' ? c.has_2fa : !c.has_2fa)) && (!plan || (plan === '__none' ? !c.plan : c.plan?.nombre === plan))
+    && (!q || [c.username, c.email, c.firebase_uid].some(v => String(v || '').toLowerCase().includes(q))));
+  $('#clients-body').innerHTML = list.length ? list.map(c => `<tr class="click" data-id="${c.id}">
+    <td><b>${esc(c.username)}</b><div class="sub mono">${esc(c.email)}</div></td>
+    <td><span class="b ${ROLE_B[c.rol] || 'mu'}">${esc(c.rol)}</span></td>
+    <td><span class="b ${(EST_B[c.estado] || EST_B.activo)[1]}">${(EST_B[c.estado] || EST_B.activo)[0]}</span></td>
+    <td>${c.plan ? esc(c.plan.nombre) : '<span class="mu">sin plan</span>'}</td>
+    <td>${c.server ? `<span class="mono">#${c.server.id}</span> <span class="sub">${esc(c.server.status)}</span>` : '<span class="mu">sin servidor</span>'}</td>
+    <td class="r num">${c.pagos_count}</td><td class="r num">${c.tickets_abiertos ? `<b style="color:var(--am)">${c.tickets_abiertos}</b>/` : ''}${c.tickets_count}</td>
+    <td>${c.has_2fa ? '<span class="b ok">2FA</span>' : '<span class="b mu">sin 2FA</span>'} ${c.has_webauthn ? '<span class="b cy">passkey</span>' : ''}</td>
+    <td class="sub">${fday(c.created_at)}</td></tr>`).join('') : '<tr><td colspan="9" class="empty">Ninguna cuenta coincide con los filtros.</td></tr>';
+  $('#clients-count').textContent = `${list.length} de ${S.clients.length} cuentas en SQL Server`;
+}
+async function ensurePlans() { if (!S.plans.length && isAdmin()) S.plans = (await api('GET', '/plans')).planes; }
+
+async function openClient(id) {
+  const d = await api('GET', '/clients/' + id); await ensurePlans().catch(() => {});
+  const c = d.client, sub = c.suscripcion, adm = isAdmin() && !(c.rol === 'ceo' && !isCeo());
+  const ch = (k, v) => `<div><span class="mu">${k}</span><span class="num">${v}</span></div>`;
+  drawer(c.username, `
+    <div class="dsec"><span class="b ${ROLE_B[c.rol] || 'mu'}">${esc(c.rol)}</span> <span class="b ${(EST_B[c.estado] || EST_B.activo)[1]}">${(EST_B[c.estado] || EST_B.activo)[0]}</span>
+      <div style="margin-top:8px">${esc(c.email)}</div><div class="sub mono">${esc(c.firebase_uid || 'sin UID')}</div><div class="sub">Alta: ${fdate(c.created_at)}</div></div>
+    <div class="dsec"><h4>Cadena relacional</h4><div class="chain">
+      ${ch('Cliente', '#' + c.id)}${ch('Suscripción', sub ? `#${sub.id} · ${esc(sub.estado)} · vence ${fday(sub.fecha_vencimiento)}` : 'sin suscripción activa')}
+      ${ch('Plan', esc(c.plan?.nombre || '—'))}${ch('Servidor', c.server ? `#${c.server.id} · ${esc(c.server.status)} · puerto ${esc(c.server.port ?? '—')}` : 'sin servidor')}
+      ${ch('Pagos', c.pagos_count)}${ch('Tickets', `${c.tickets_count} (${c.tickets_abiertos} abiertos)`)}</div></div>
+    <div class="dsec"><h4>Seguridad y recuperación</h4>
+      <div style="margin-bottom:10px">${c.has_2fa ? '<span class="b ok">2FA activo</span>' : '<span class="b mu">sin 2FA</span>'} ${c.has_webauthn ? '<span class="b cy">passkeys registradas</span>' : '<span class="b mu">sin passkeys</span>'}</div>
+      <div class="row"><button class="btn am" data-act="recovery" data-mode="reset_2fa">Desactivar 2FA y passkeys</button>
+        <button class="btn cy" data-act="recovery" data-mode="reset_password">Enviar email de recovery</button>
+        <button class="btn pri" data-act="recovery" data-mode="full_recovery">Recovery completo</button></div>
+      <p class="sub" style="margin-top:8px">Cada acción avisa al cliente por correo y queda registrada en la auditoría.</p></div>
+    ${adm ? `<div class="dsec"><h4>Cuenta</h4><div class="grid2">
+        <label class="f">Usuario<input id="e-user" value="${esc(c.username)}"></label>
+        <label class="f">Correo<input id="e-mail" type="email" value="${esc(c.email)}"></label>
+        <label class="f">Rol<select id="e-rol" ${!isCeo() || c.rol === 'ceo' ? 'disabled' : ''}>${['usuario', 'soporte', 'admin'].map(r => `<option ${c.rol === r ? 'selected' : ''}>${r}</option>`).join('')}${c.rol === 'ceo' ? '<option selected>ceo</option>' : ''}</select></label>
+        <div style="display:flex;align-items:flex-end"><button class="btn pri" data-act="save">Guardar cambios</button></div></div></div>
+      <div class="dsec"><h4>Plan y compensación</h4><div class="row">
+        <label class="f" style="flex:1">Plan<select id="e-plan">${S.plans.map(p => `<option value="${p.id}" ${c.plan?.id === p.id ? 'selected' : ''}>${esc(p.nombre)} · ${money(p.precio_mensual)}</option>`).join('')}</select></label>
+        <button class="btn pri" data-act="plan">Asignar plan</button></div>
+        <div class="row" style="margin-top:10px"><label class="f">Horas<input id="e-horas" type="number" min="1" max="8760" value="24" style="width:90px"></label>
+        <button class="btn ok" data-act="compensate" ${sub ? '' : 'disabled title="Sin suscripción activa"'}>+24h Compensación</button></div></div>
+      <div class="dsec"><h4>Zona de Hielo</h4><label class="switch"><input type="checkbox" id="e-freeze" ${c.estado === 'congelado' ? 'checked' : ''} ${c.rol === 'ceo' ? 'disabled' : ''}>
+        <span>Cryo-Lock: bloquea la cuenta y detiene sus contenedores</span></label></div>
+      <div class="dsec"><h4>Eliminar cuenta</h4>
+        <p class="sub" style="margin-bottom:10px">${c.pagos_count ? 'Tiene historial de pagos: solo se permite el borrado lógico para conservar la contabilidad.' : 'Sin pagos: puede eliminarse físicamente (solo CEO).'}</p>
+        <div class="row"><button class="btn danger" data-act="del" ${c.rol === 'ceo' ? 'disabled' : ''}>Eliminación lógica</button>
+        ${isCeo() && !c.pagos_count && c.rol !== 'ceo' ? '<button class="btn danger" data-act="hard">Borrado físico total</button>' : ''}</div></div>` : ''}`);
+
+  const refresh = async () => { await loadClients(); await openClient(id); };
+  const body = $('#drawer-body');
+  body.onchange = async (e) => {
+    if (e.target.id !== 'e-freeze') return;
+    try { await api('POST', `/clients/${id}/freeze`, { freeze: e.target.checked }); toast(e.target.checked ? 'Cuenta congelada.' : 'Cuenta descongelada.', 'ok'); await refresh(); }
+    catch (er) { e.target.checked = !e.target.checked; toast(er.message, 'rd'); }
+  };
+  body.onclick = async (e) => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    try {
+      const act = b.dataset.act;
+      if (act === 'recovery') {
+        const mode = b.dataset.mode, t = { reset_2fa: 'Se eliminará el 2FA y las passkeys del cliente.', reset_password: 'Se generará un enlace de restablecimiento y se enviará por correo.', full_recovery: 'Se eliminará el 2FA y las passkeys, y se enviará el enlace de acceso por correo.' }[mode];
+        if (!await ask('Recovery de cuenta', t + ' Se notificará a ' + c.email + '.', 'Ejecutar', 'pri')) return;
+        const r = await api('POST', `/clients/${id}/recovery`, { mode });
+        toast([r['2fa_reseteado'] ? '2FA eliminado' : '', r.passkeys_eliminadas ? r.passkeys_eliminadas + ' passkeys eliminadas' : '', r.enlace_generado ? 'enlace generado' : '', r.correo_enviado ? 'correo enviado' : 'el correo NO se envió'].filter(Boolean).join(' · '), r.success ? 'ok' : 'am');
+        await refresh();
+      }
+      if (act === 'save') {
+        const patch = { username: $('#e-user').value.trim(), email: $('#e-mail').value.trim() };
+        if (!$('#e-rol').disabled && $('#e-rol').value !== c.rol) patch.role = $('#e-rol').value;
+        await api('PATCH', '/clients/' + id, patch); toast('Cuenta actualizada.', 'ok'); await refresh();
+      }
+      if (act === 'plan') { await api('POST', `/clients/${id}/plan`, { plan_id: +$('#e-plan').value }); toast('Plan asignado.', 'ok'); await refresh(); }
+      if (act === 'compensate') { const h = +$('#e-horas').value || 24; await api('POST', `/clients/${id}/compensate`, { horas: h }); toast(`+${h} h aplicadas a la suscripción.`, 'ok'); await refresh(); }
+      if (act === 'del' || act === 'hard') {
+        const hard = act === 'hard';
+        if (!await ask(hard ? 'Borrado físico' : 'Eliminar cuenta', hard ? 'Se borrará al cliente de SQL Server, MongoDB y Firebase. No se puede deshacer.' : 'La cuenta se desactiva y se detiene su infraestructura.', 'Eliminar', 'danger')) return;
+        const r = await api('DELETE', `/clients/${id}${hard ? '?hard=1' : ''}`); toast(r.motivo || 'Cuenta eliminada (' + r.tipo + ').', 'ok'); closeDrawer(); await loadClients();
+      }
+    } catch (er) { toast(er.message, 'rd'); }
+  };
+}
+
+/* ---------- Módulo 3: contabilidad ---------- */
+const PAGO_B = { completado: 'ok', pendiente: 'am', reembolsado: 'cy', fallido: 'rd' };
+async function loadAcct() {
+  S.acct = await api('GET', '/accounting'); const k = S.acct.kpis;
+  const t = (l, v, s = '') => `<div class="card kpi"><div class="l">${l}</div><div class="v num" style="font-size:22px">${v}</div><div class="s">${s}</div></div>`;
+  $('#acct-kpis').innerHTML = t('Ingresos totales', money(k.ingresos_totales)) + t('MRR', money(k.mrr), 'suscripciones activas') + t('Facturado este mes', money(k.facturado_mes))
+    + t('Total reembolsado', money(k.total_reembolsado)) + t('Ticket promedio', money(k.ticket_promedio)) + t('Suscripciones activas', num(k.suscripciones_activas));
+  paintPagos();
+  $('#refunds-body').innerHTML = S.acct.reembolsos.length ? S.acct.reembolsos.map(r => `<tr><td class="num">#${r.id}</td><td class="num">#${r.pago_id}</td><td class="num">#${r.cliente_id}</td><td>${esc(r.motivo)}</td>
+    <td><span class="b ${r.estado === 'procesado' ? 'ok' : r.estado === 'rechazado' || r.estado === 'fallido' ? 'rd' : 'am'}">${esc(r.estado)}</span></td><td class="sub">${fdate(r.fecha)}</td><td class="r num">${money(r.monto)}</td></tr>`).join('')
+    : '<tr><td colspan="7" class="empty">Sin reembolsos registrados.</td></tr>';
+}
+function paintPagos() {
+  const q = $('#a-q').value.toLowerCase();
+  const list = S.acct.pagos.filter(p => !q || [p.cliente?.username, p.cliente?.email, p.plan, p.pasarela_pago, p.transaccion_id, p.estado].some(v => String(v || '').toLowerCase().includes(q)));
+  $('#pagos-body').innerHTML = list.length ? list.map(p => `<tr><td class="num">#${String(p.id).padStart(6, '0')}</td><td class="sub">${fdate(p.fecha)}</td>
+    <td>${p.cliente ? `${esc(p.cliente.username)}<div class="sub">${esc(p.cliente.email)}</div>` : '—'}</td><td>${esc(p.plan || '—')}</td><td>${esc(p.pasarela_pago)}</td><td>${esc(p.medio_pago)}</td>
+    <td><span class="b ${PAGO_B[p.estado] || 'mu'}">${esc(p.estado)}</span></td><td class="r num">${money(p.monto)}</td>
+    <td class="r"><div class="acts"><button class="btn sm" data-act="pdf" data-id="${p.id}">Descargar factura PDF</button>${p.estado === 'completado' ? `<button class="btn sm danger" data-act="refund" data-id="${p.id}" data-monto="${p.monto}">Reembolsar</button>` : ''}</div></td></tr>`).join('')
+    : '<tr><td colspan="9" class="empty">No hay pagos que coincidan.</td></tr>';
+}
+async function payDialog() {
+  if (!S.clients.length) await loadClients();
+  const subs = S.clients.filter(c => c.suscripcion && c.estado !== 'eliminado');
+  if (!subs.length) return toast('No hay clientes con suscripción activa.', 'am');
+  modal({ title: 'Registrar pago manual', body: `
+    <label class="f">Cliente<select id="p-sub">${subs.map(c => `<option value="${c.suscripcion.id}">${esc(c.username)} · ${esc(c.plan?.nombre || '')}</option>`).join('')}</select></label>
+    <div class="grid2"><label class="f">Monto (USD)<input id="p-monto" type="number" min="0.01" step="0.01" required></label>
+    <label class="f">Medio<select id="p-medio"><option>transferencia</option><option>tarjeta</option><option>saldo</option><option>efectivo</option></select></label></div>
+    <label class="f">Nota (opcional)<input id="p-nota" maxlength="200"></label>`,
+    actions: [{ label: 'Cancelar' }, { label: 'Registrar pago', kind: 'pri', onClick: async () => {
+      const monto = +$('#p-monto').value; if (!(monto > 0)) throw new Error('Ingresa un monto mayor a cero.');
+      await api('POST', '/accounting/payment', { suscripcion_id: +$('#p-sub').value, monto, medio_pago: $('#p-medio').value, nota: $('#p-nota').value }); toast('Pago registrado.', 'ok'); loadAcct();
+    } }] });
+}
+function refundDialog(id, max) {
+  modal({ title: `Reembolsar pago #${String(id).padStart(6, '0')}`, body: `
+    <label class="f">Motivo<textarea id="r-motivo" rows="3" maxlength="500" required></textarea></label>
+    <label class="f">Monto a devolver (máx. ${num(max, 2)})<input id="r-monto" type="number" step="0.01" min="0.01" max="${max}" value="${max}"></label>
+    <p class="sub">El reembolso se registra en SQL Server. La devolución en la pasarela se hace desde su consola.</p>`,
+    actions: [{ label: 'Cancelar' }, { label: 'Reembolsar', kind: 'danger', onClick: async () => {
+      const motivo = $('#r-motivo').value.trim(); if (motivo.length < 5) throw new Error('Describe el motivo (mínimo 5 caracteres).');
+      const r = await api('POST', '/accounting/refund', { pago_id: id, motivo, monto: +$('#r-monto').value }); toast(r.aviso || 'Reembolso registrado.', 'ok'); loadAcct();
+    } }] });
+}
+
+/* ---------- Módulo 4: soporte ---------- */
+const WHO = { user: 'Cliente', admin: 'Staff', ai: 'Mine AI' };
+async function loadTickets() {
+  S.tickets = (await api('GET', '/tickets?estado=' + $('#t-estado').value)).tickets;
+  $('#tk-list').innerHTML = S.tickets.length ? S.tickets.map(t => `<div class="tk ${S.ticket?.ticket.id === t.id ? 'on' : ''}" data-id="${t.id}">
+    <div style="display:flex;justify-content:space-between"><b>${esc(t.cliente.username)}</b><span class="sub">#${t.id}</span></div>
+    <div class="sub" style="margin:2px 0">${esc(t.asunto)}</div>
+    <div class="sub">${t.ultimo ? `${WHO[t.ultimo.remitente] || ''} · ${fdate(t.ultimo.at)}` : ''} · ${t.mensajes} msg</div></div>`).join('')
+    : '<div class="empty">No hay tickets en esta bandeja.</div>';
+  if (S.ticket) { const open = S.tickets.some(t => t.id === S.ticket.ticket.id) || $('#t-estado').value !== 'abierto'; if (open) await openTicket(S.ticket.ticket.id, true); }
+}
+async function openTicket(id, silent = false) {
+  const d = await api('GET', '/tickets/' + id), box = $('#chat-body'), pin = silent && box.scrollHeight - box.scrollTop - box.clientHeight > 60;
+  S.ticket = d; const t = d.ticket, c = d.cliente;
+  $('#chat-head').innerHTML = `<div><b>${esc(c.username)}</b> <span class="sub">ticket #${t.id} · ${esc(c.email)}</span></div>
+    <div class="acts"><button class="btn sm" data-act="tk-pdf">Exportar PDF</button>${t.estado === 'abierto' ? '<button class="btn sm danger" data-act="tk-close">Cerrar ticket</button>' : '<span class="b mu">cerrado</span>'}</div>`;
+  box.innerHTML = d.mensajes.map(m => `<div class="msg ${esc(m.remitente)}"><small>${WHO[m.remitente] || esc(m.remitente)} · ${fdate(m.at)}</small>${esc(m.mensaje)}</div>`).join('') || '<div class="empty">Sin mensajes.</div>';
+  if (!pin) box.scrollTop = box.scrollHeight;
+  $('#reply-form').classList.toggle('hidden', t.estado !== 'abierto');
+  $$('#tk-list .tk').forEach(e => e.classList.toggle('on', +e.dataset.id === t.id));
+  const nodos = (S.live?.servers || []).filter(s => s.uid === c.firebase_uid), ia = d.mensajes.filter(m => m.remitente === 'ai' && m.log_analizado);
+  $('#copilot').innerHTML = `
+    <div class="dsec" style="padding:0 0 14px"><h4>Cliente</h4><div>${esc(c.username)}</div><div class="sub">${esc(c.email)}</div>
+      <div style="margin:8px 0">${c.has_2fa ? '<span class="b ok">2FA activo</span>' : '<span class="b mu">sin 2FA</span>'}</div>
+      <div class="acts" style="justify-content:flex-start"><button class="btn sm am" data-act="tk-2fa" data-id="${c.id}">Resetear 2FA</button><button class="btn sm" data-act="tk-open" data-id="${c.id}">Abrir ficha</button></div></div>
+    <div class="dsec" style="padding:14px 0"><h4>Nodos del cliente</h4>${nodos.length ? nodos.map(s => `<div style="margin-bottom:8px"><b>${esc(s.name || s.id)}</b> <span class="b ${STATE[nodeState(s)][1]}">${STATE[nodeState(s)][0]}</span>
+      <div class="acts" style="justify-content:flex-start;margin-top:5px"><button class="btn sm cy" data-act="tk-restart" data-id="${esc(s.id)}">Reiniciar</button>${t.estado === 'abierto' ? `<button class="btn sm pri" data-act="tk-diag" data-id="${esc(s.id)}">Diagnosticar con Mine AI</button>` : ''}</div></div>`).join('') : '<div class="sub">El cliente no tiene nodos desplegados.</div>'}</div>
+    <div class="dsec" style="padding:14px 0;border:0"><h4>Diagnóstico de Mine AI</h4>${ia.length ? ia.map(m => `<div style="margin-bottom:12px"><div class="sub">${fdate(m.at)}</div><div style="white-space:pre-wrap">${esc(m.mensaje)}</div><pre class="log">${esc(m.log_analizado)}</pre></div>`).join('') : '<div class="sub">Sin diagnósticos todavía.</div>'}</div>`;
+}
+
+/* ---------- Módulo 5: catálogo, staff, auditoría ---------- */
+async function loadPlans() {
+  if (!isAdmin()) return; S.plans = (await api('GET', '/plans')).planes;
+  $('#plans-body').innerHTML = S.plans.map(p => `<tr data-id="${p.id}"><td><b>${esc(p.nombre)}</b></td>
+    <td><input class="num" data-f="precio_mensual" type="number" min="0" step="0.01" value="${p.precio_mensual}" style="width:96px"></td>
+    <td><input class="num" data-f="memoria_mb" type="number" min="1" value="${p.memoria_mb}" style="width:100px"></td>
+    <td><input class="num" data-f="cpu_cores" type="number" min="1" value="${p.cpu_cores}" style="width:70px"></td>
+    <td><input class="num" data-f="almacenamiento_gb" type="number" min="1" value="${p.almacenamiento_gb}" style="width:84px"></td>
+    <td><label class="switch"><input type="checkbox" data-f="visible" ${p.visible ? 'checked' : ''}></label></td>
+    <td class="r"><button class="btn sm pri" data-act="save-plan">Guardar</button></td></tr>`).join('');
+}
+async function loadStaff() {
+  const d = await api('GET', '/staff/list');
+  $('#staff-body').innerHTML = `<tr><td>${CEO_EMAIL}</td><td><span class="b ceo">ceo</span></td><td></td></tr>` + d.staff.map(s => `<tr><td>${esc(s.email)}</td><td><span class="b ${ROLE_B[s.role]}">${esc(s.role)}</span></td>
+    <td class="r">${isCeo() ? `<button class="btn sm danger" data-act="rm-staff" data-email="${esc(s.email)}">Revocar</button>` : ''}</td></tr>`).join('');
+}
+async function loadAudit() {
+  const term = $('#audit-term');
+  try {
+    const d = await api('GET', '/audit'), pin = term.scrollHeight - term.scrollTop - term.clientHeight < 40;
+    term.innerHTML = d.events.slice().reverse().map(e => `<div><span class="t">${esc(fdate(e.created_at))}</span> <span class="e">${esc(e.event)}</span> <span class="a">${esc(e.actor_type)}${e.actor_id ? ':' + esc(e.actor_id) : ''}</span>${e.server_id ? ' ' + esc(e.server_id) : ''} <span class="t">${esc(JSON.stringify(e.payload || {}).slice(0, 140))}</span></div>`).join('') || '<div class="t">Sin eventos registrados.</div>';
+    if (pin) term.scrollTop = term.scrollHeight;
+    $('#audit-sub').textContent = `${d.events.length} ${d.events.length === 1 ? "evento reciente" : "eventos recientes"}`;
+  } catch (e) { term.innerHTML = `<div class="t">MongoDB no disponible: ${esc(e.message)}</div>`; }
+}
+const CLEAN = {
+  seed: { path: '/system/purge-seed', title: 'Datos de prueba en SQL Server', note: 'Clientes sembrados (Faker y admin falso) sin pagos. Borrado lógico, reversible.', items: r => r.clientes.map(c => `${c.email} (${c.username})`) },
+  mongo: { path: '/system/sync-mongo', title: 'Eventos huérfanos en MongoDB', note: 'Eventos de pruebas o de clientes y servidores que ya no existen. Eliminación definitiva.', items: r => r.candidatos.map(c => `${c.event} — ${c.motivo}`) }
+};
+async function openCleanup(kinds) {
+  const el = modal({ title: 'Sincronización y purga', wide: true, body: '<div class="empty">Analizando…</div>', actions: [{ label: 'Cerrar' }] }), body = $('.dbody', el);
+  body.innerHTML = '';
+  for (const k of kinds) {
+    const d = CLEAN[k], box = document.createElement('div'); body.append(box);
+    try {
+      const r = await api('POST', d.path, { apply: false }), items = d.items(r);
+      box.innerHTML = `<h4>${d.title}</h4><p class="sub">${d.note}</p>` + (items.length
+        ? `<ul class="mono" style="margin:8px 0 10px 16px;font-size:11px">${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul><button class="btn danger" data-go>Aplicar (${items.length})</button>`
+        : '<p style="margin-top:8px"><span class="b ok">Nada que limpiar</span></p>');
+      $('[data-go]', box)?.addEventListener('click', async (ev) => {
+        if (!await ask(d.title, `Se aplicarán ${items.length} cambios. ${k === 'mongo' ? 'No se pueden deshacer.' : ''}`, 'Aplicar')) return;
+        try { await api('POST', d.path, { apply: true }); toast(d.title + ': limpieza aplicada.', 'ok'); ev.target.remove(); loadStats(); loadClients().catch(() => {}); }
+        catch (er) { toast(er.message, 'rd'); }
+      });
+    } catch (e) { box.innerHTML = `<h4>${d.title}</h4><p class="mu">${esc(e.message)}</p>`; }
+  }
+}
+
+/* ---------- navegación y arranque ---------- */
+const safe = (fn) => async (...a) => { try { await fn(...a); } catch (e) { toast(e.message, 'rd'); } };
+function go(mod) {
+  S.mod = mod; Fleet3D.run(false); Object.values(S.timers).forEach(clearInterval); S.timers = {};
+  $$('.mod').forEach(m => m.classList.toggle('active', m.id === mod)); $$('#side button').forEach(b => b.classList.toggle('on', b.dataset.mod === mod));
+  closeDrawer(); scrollTo(0, 0);
+  if (mod === 'm1') { Fleet3D.run(true); paintLive(); loadStats(); }
+  if (mod === 'm2') safe(loadClients)();
+  if (mod === 'm3') safe(async () => { if (!S.clients.length) await loadClients(); await loadAcct(); })();
+  if (mod === 'm4') { safe(loadTickets)(); S.timers.tk = setInterval(safe(loadTickets), 15000); }
+  if (mod === 'm5') { safe(loadPlans)(); safe(loadStaff)(); safe(loadAudit)(); S.timers.audit = setInterval(safe(loadAudit), 10000); }
+}
+function bind() {
+  $$('#side button').forEach(b => b.onclick = () => go(b.dataset.mod));
+  $('#brand-btn').onclick = () => { sessionStorage.setItem('forceUserMode', 'true'); location.href = '/crear.html'; };
+  $('#btn-deploy').onclick = () => sessionStorage.setItem('forceUserMode', 'true');
+  $('#btn-usermode').onclick = () => { sessionStorage.setItem('forceUserMode', 'true'); location.href = '/index.html'; };
+  $('#btn-sync').onclick = () => openCleanup(['seed', 'mongo']);
+  $('#bc-form').onsubmit = safe(async (e) => {
+    e.preventDefault(); const message = $('#bc-msg').value.trim(); if (!message) return;
+    if (!await ask('Megáfono global', `Se enviará a todos los clientes conectados y al canal de Discord: «${message}»`, 'Emitir', 'am')) return;
+    const r = await api('POST', '/global-broadcast', { message, level: $('#bc-level').value });
+    toast(`Emitido a ${r.sockets} conexiones · Discord: ${r.discord}`, r.discord === 'enviado' ? 'ok' : 'am'); $('#bc-msg').value = '';
+  });
+  $('#f-q').oninput = (e) => { S.fleet.q = e.target.value; paintFleet(); };
+  $('#f-state').onchange = (e) => { S.fleet.state = e.target.value; paintFleet(); };
+  $('#fleet-body').onclick = safe(async (e) => { const b = e.target.closest('[data-act]'); if (b) await nodeAction(b.dataset.id, b.dataset.act); });
+  Fleet3D.init($('#core3d'), openNode);
+  $('#drawer-body').addEventListener('click', safe(async (e) => { const b = e.target.closest('[data-act]'); if (b && S.live?.servers.some(s => s.id === b.dataset.id)) await nodeAction(b.dataset.id, b.dataset.act); }));
+  ['c-q', 'c-rol', 'c-estado', 'c-seg', 'c-plan'].forEach(id => $('#' + id).addEventListener('input', paintClients));
+  $('#clients-body').onclick = safe(async (e) => { const r = e.target.closest('tr[data-id]'); if (r) await openClient(+r.dataset.id); });
+  $('#btn-pay').onclick = safe(payDialog); $('#a-q').oninput = () => S.acct && paintPagos();
+  $('#pagos-body').onclick = safe(async (e) => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    if (b.dataset.act === 'pdf') { b.disabled = true; try { await downloadPdf(`/payments/${b.dataset.id}/pdf`, `factura-${b.dataset.id}.pdf`); } finally { b.disabled = false; } }
+    if (b.dataset.act === 'refund') refundDialog(+b.dataset.id, +b.dataset.monto);
+  });
+  $('#t-estado').onchange = safe(() => { S.ticket = null; $('#chat-body').innerHTML = ''; $('#chat-head').innerHTML = '<b>Selecciona un ticket</b>'; $('#reply-form').classList.add('hidden'); return loadTickets(); });
+  $('#tk-list').onclick = safe(async (e) => { const t = e.target.closest('.tk'); if (t) await openTicket(+t.dataset.id); });
+  $('#chat-head').onclick = safe(async (e) => {
+    const b = e.target.closest('[data-act]'); if (!b || !S.ticket) return; const id = S.ticket.ticket.id;
+    if (b.dataset.act === 'tk-pdf') await downloadPdf(`/tickets/${id}/pdf`, `ticket-${id}.pdf`);
+    if (b.dataset.act === 'tk-close' && await ask('Cerrar ticket', 'El ticket pasará a la bandeja de cerrados.', 'Cerrar', 'danger')) { await api('POST', `/tickets/${id}/close`); S.ticket = null; $('#chat-body').innerHTML = ''; $('#chat-head').innerHTML = '<b>Selecciona un ticket</b>'; $('#reply-form').classList.add('hidden'); $('#copilot').innerHTML = ''; await loadTickets(); }
+  });
+  $('#reply-form').onsubmit = safe(async (e) => {
+    e.preventDefault(); const message = $('#reply-text').value.trim(); if (!message || !S.ticket) return;
+    await api('POST', `/tickets/${S.ticket.ticket.id}/reply`, { message }); $('#reply-text').value = ''; await openTicket(S.ticket.ticket.id);
+  });
+  $('#copilot').onclick = safe(async (e) => {
+    const b = e.target.closest('[data-act]'); if (!b) return; const a = b.dataset.act;
+    if (a === 'tk-open') return openClient(+b.dataset.id);
+    if (a === 'tk-2fa' && await ask('Resetear 2FA', 'Se eliminará el 2FA y las passkeys del cliente y se le avisará por correo.', 'Resetear', 'pri')) {
+      const r = await api('POST', `/clients/${b.dataset.id}/recovery`, { mode: 'reset_2fa' }); toast(r.success ? '2FA reseteado y cliente notificado.' : '2FA reseteado, pero el correo no se envió.', r.success ? 'ok' : 'am'); await openTicket(S.ticket.ticket.id);
+    }
+    if (a === 'tk-restart') { await api('POST', '/server-action', { serverId: b.dataset.id, action: 'restart' }); toast('Nodo reiniciado.', 'ok'); loadLive(); }
+    if (a === 'tk-diag') { b.disabled = true; toast('Analizando el log con Mine AI…'); try { await api('POST', `/tickets/${S.ticket.ticket.id}/diagnose`, { serverId: b.dataset.id }); toast('Diagnóstico agregado al ticket.', 'ok'); await openTicket(S.ticket.ticket.id); } finally { b.disabled = false; } }
+  });
+  $('#plans-body').onclick = safe(async (e) => {
+    const b = e.target.closest('[data-act="save-plan"]'); if (!b) return; const tr = b.closest('tr'), data = {};
+    $$('[data-f]', tr).forEach(i => data[i.dataset.f] = i.type === 'checkbox' ? i.checked : +i.value);
+    await api('PATCH', '/plans/' + tr.dataset.id, data); toast('Plan actualizado.', 'ok'); S.plans = [];
+  });
+  $('#staff-form').onsubmit = safe(async (e) => {
+    e.preventDefault(); await api('POST', '/staff/add', { emailToStaff: $('#staff-email').value.trim(), role: $('#staff-role').value });
+    toast('Rol asignado.', 'ok'); $('#staff-email').value = ''; loadStaff();
+  });
+  $('#staff-body').onclick = safe(async (e) => {
+    const b = e.target.closest('[data-act="rm-staff"]'); if (!b || !await ask('Revocar rol', `${b.dataset.email} volverá a ser usuario común.`, 'Revocar')) return;
+    await api('POST', '/staff/remove', { emailToRemove: b.dataset.email }); toast('Rol revocado.', 'ok'); loadStaff();
+  });
+  $('#btn-prune').onclick = safe(async () => {
+    if (!await ask('Purgar Docker', 'Se eliminarán imágenes sin etiqueta. No se tocan contenedores ni volúmenes.', 'Purgar', 'am')) return;
+    const r = await api('POST', '/system-prune'); toast(`Purga completa: ${r.imagenesEliminadas} imágenes, ${num(r.espacioLiberadoMb)} MB liberados.`, 'ok');
+  });
+  $('#btn-seed').onclick = () => openCleanup(['seed']); $('#btn-mongo').onclick = () => openCleanup(['mongo']);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) loadLive(); });
+}
+function deny(msg) { $('#gate-msg').innerHTML = esc(msg) + '<br><br><a class="btn" href="/index.html">Volver al panel de usuario</a>'; }
+let booted = false;
+onAuthStateChanged(auth, async (u) => {
+  if (!u) { await auth.authStateReady(); u = auth.currentUser; }
+  if (!u) { location.href = '/index.html'; return; }
+  if (booted) return; booted = true;
+  try { S.role = (await http('GET', '/api/user/status')).role; }
+  catch (e) { return deny(e.data?.error === '2fa_required' ? 'Verifica tu código 2FA iniciando sesión de nuevo.' : e.data?.error === 'account_frozen' ? e.message : 'No se pudo validar tu sesión: ' + e.message); }
+  if (!['ceo', 'admin', 'soporte'].includes(S.role)) return deny(u.email === CEO_EMAIL ? 'Tu correo no figura como verificado en Firebase, por eso no se te asignó el rol CEO.' : 'Tu cuenta no tiene permisos de staff.');
+  document.body.dataset.role = S.role;
+  $('#role-badge').textContent = S.role.toUpperCase(); $('#role-badge').classList.add(S.role);
+  $('#me').textContent = u.email;
+  buildKpis(); bind();
+  $('#gate').remove();
+  loadStats(); loadLive(); go('m1');
+  setInterval(loadLive, 5000); setInterval(loadStats, 30000);
+});
+</script>
 </body>
-
 </html>

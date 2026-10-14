@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Models\AuditEvent;
 
-final class AuditLogService
+class AuditLogService
 {
     public function record(
         string $event,

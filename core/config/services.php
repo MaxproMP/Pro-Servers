@@ -35,6 +35,8 @@ return [
         ],
     ],
 
+    'public_url' => env('PUBLIC_URL', env('APP_URL', 'http://localhost')),
+
     'ceo_email' => env('CEO_EMAIL', 'rodasmaximo51@gmail.com'),
 
     'daemon' => [

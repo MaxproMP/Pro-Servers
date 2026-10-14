@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AccountingController;
+use App\Http\Controllers\Api\Admin\ClientController;
+use App\Http\Controllers\Api\Admin\OverviewController;
+use App\Http\Controllers\Api\Admin\PlanAdminController;
+use App\Http\Controllers\Api\Admin\SystemController;
+use App\Http\Controllers\Api\Admin\TicketAdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\NodeProxyController;
 use App\Http\Controllers\Api\StaffController;
@@ -60,23 +66,63 @@ Route::middleware('firebase.auth')->group(function () {
     Route::any('/curseforge/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', '.*');
 });
 
-// === MIDDLEWARE ADMINISTRATIVO (admin) ===
-Route::middleware(['firebase.auth', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/all-servers', [NodeProxyController::class, 'getAdminServers']);
-    Route::get('/stats', [NodeProxyController::class, 'getAdminStats']);
-    Route::get('/dashboard-stats', [NodeProxyController::class, 'getAdminStats']);
+// === PANEL OVERWATCH ===
+// Nivel 1: ceo, admin y soporte. Nivel 2: ceo y admin. Nivel 3: solo ceo.
+Route::middleware(['firebase.auth', 'admin:ceo,admin,soporte'])->prefix('admin')->group(function () {
+    Route::get('/stats', [OverviewController::class, 'stats']);
+    Route::get('/dashboard-stats', [OverviewController::class, 'stats']);
+    Route::get('/telemetry', [OverviewController::class, 'telemetry']);
+    Route::get('/all-servers', [OverviewController::class, 'telemetry']);
+    Route::get('/audit', [OverviewController::class, 'audit']);
 
+    Route::get('/clients', [ClientController::class, 'index']);
+    Route::get('/clients/{id}', [ClientController::class, 'show'])->whereNumber('id');
+    Route::post('/clients/{id}/recovery', [ClientController::class, 'recovery'])->whereNumber('id')->middleware('throttle:20,1');
+
+    Route::post('/server-action', [SystemController::class, 'serverAction']);
     Route::get('/staff/list', [StaffController::class, 'list']);
-    Route::post('/staff/add', [StaffController::class, 'add']);
-    Route::post('/staff/remove', [StaffController::class, 'remove']);
-});
 
-// === SOPORTE (ceo y soporte) ===
-Route::middleware(['firebase.auth', 'admin:ceo,soporte'])->prefix('admin')->group(function () {
+    Route::get('/tickets', [TicketAdminController::class, 'index']);
+    Route::get('/tickets/{id}', [TicketAdminController::class, 'show'])->whereNumber('id');
+    Route::post('/tickets/{id}/reply', [TicketAdminController::class, 'reply'])->whereNumber('id');
+    Route::post('/tickets/{id}/close', [TicketAdminController::class, 'close'])->whereNumber('id');
+    Route::post('/tickets/{id}/diagnose', [TicketAdminController::class, 'diagnose'])->whereNumber('id');
+    Route::get('/tickets/{id}/pdf', [TicketAdminController::class, 'pdf'])->whereNumber('id');
+
+    // Compatibilidad con el soporte anterior
     Route::get('/support-tickets', [SupportController::class, 'adminTickets']);
     Route::post('/support-reply', [SupportController::class, 'adminReply']);
     Route::post('/close-ticket', [SupportController::class, 'adminClose']);
 });
+
+Route::middleware(['firebase.auth', 'admin:ceo,admin'])->prefix('admin')->group(function () {
+    Route::patch('/clients/{id}', [ClientController::class, 'update'])->whereNumber('id');
+    Route::post('/clients/{id}/plan', [ClientController::class, 'setPlan'])->whereNumber('id');
+    Route::post('/clients/{id}/compensate', [ClientController::class, 'compensate'])->whereNumber('id');
+    Route::post('/clients/{id}/freeze', [ClientController::class, 'freeze'])->whereNumber('id');
+    Route::delete('/clients/{id}', [ClientController::class, 'destroy'])->whereNumber('id');
+
+    Route::get('/accounting', [AccountingController::class, 'summary']);
+    Route::post('/accounting/payment', [AccountingController::class, 'payment']);
+    Route::post('/accounting/refund', [AccountingController::class, 'refund']);
+    Route::get('/payments/{id}/pdf', [AccountingController::class, 'pdf'])->whereNumber('id');
+
+    Route::get('/plans', [PlanAdminController::class, 'index']);
+    Route::patch('/plans/{id}', [PlanAdminController::class, 'update'])->whereNumber('id');
+
+    Route::post('/system-prune', [SystemController::class, 'prune']);
+    Route::post('/global-broadcast', [SystemController::class, 'broadcast']);
+});
+
+Route::middleware(['firebase.auth', 'admin:ceo'])->prefix('admin')->group(function () {
+    Route::post('/staff/add', [StaffController::class, 'add']);
+    Route::post('/staff/remove', [StaffController::class, 'remove']);
+    Route::post('/system/sync-mongo', [SystemController::class, 'syncMongo']);
+    Route::post('/system/purge-seed', [SystemController::class, 'purgeSeed']);
+});
+
+// Catálogo público (solo planes visibles)
+Route::get('/plans', [PlanAdminController::class, 'publico']);
 
 // === WEBHOOKS (Abiertos a Internet) ===
 Route::post('/pagos/webhook/astropay', [PaymentController::class, 'webhookAstroPay']);

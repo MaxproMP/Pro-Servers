@@ -38,14 +38,19 @@ it('acepta un código TOTP válido y marca la sesión como verificada', function
     expect(Cache::has('2fa:7:0'))->toBeTrue();
 });
 
-it('solo el CEO gestiona el staff', function (string $rol) {
-    $c = new Cliente(['role' => $rol]);
-
+it('solo el CEO asigna roles de staff', function (string $rol) {
     $this->withoutMiddleware(FirebaseTokenMiddleware::class)
-        ->actingAs($c)
+        ->actingAs(new Cliente(['role' => $rol]))
+        ->postJson('/api/admin/staff/add', ['emailToStaff' => 'x@test.com'])
+        ->assertForbidden();
+})->with(['usuario', 'soporte', 'admin']);
+
+it('un usuario común no puede ver el staff', function () {
+    $this->withoutMiddleware(FirebaseTokenMiddleware::class)
+        ->actingAs(new Cliente(['role' => 'usuario']))
         ->getJson('/api/admin/staff/list')
         ->assertForbidden();
-})->with(['usuario', 'soporte']);
+});
 
 it('el soporte no accede a los tickets si es un usuario común', function () {
     $this->withoutMiddleware(FirebaseTokenMiddleware::class)

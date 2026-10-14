@@ -45,30 +45,4 @@ class NodeProxyController extends Controller
         return response($response->body(), $response->status())
             ->header('Content-Type', $response->header('Content-Type'));
     }
-
-    public function getAdminServers(Request $request)
-    {
-        // Validado por middleware 'admin' en la ruta
-        $response = Http::withToken((string) $request->bearerToken())->get($this->nodeUrl . '/api/admin/all-servers');
-        return response($response->body(), $response->status())
-            ->header('Content-Type', $response->header('Content-Type'));
-    }
-
-    public function getAdminStats(Request $request)
-    {
-        // Validado por middleware 'admin'
-        $totalClientes = \App\Models\Cliente::count();
-        $dineroTotal = \App\Models\Pago::sum('monto');
-        
-        $responseNode = Http::withToken((string) $request->bearerToken())->get($this->nodeUrl . '/api/admin/all-servers');
-        $servers = $responseNode->json()['servers'] ?? [];
-
-        return response()->json([
-            'totalServidores' => count($servers),
-            'totalUsuariosMongo' => $totalClientes, // compatibilidad front
-            'totalClientes' => $totalClientes,
-            'dineroTotal' => $dineroTotal,
-            'success' => true
-        ]);
-    }
 }

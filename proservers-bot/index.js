@@ -127,6 +127,26 @@ app.post('/api/bot/asignar-rol', async (req, res) => {
     }
 });
 
+// 5. DIFUSIÓN GLOBAL (la llama el demonio Node con el secreto compartido)
+app.post('/api/bot/broadcast', async (req, res) => {
+    const secreto = process.env.NODE_SECRET_KEY || '';
+    if (!secreto || req.headers['x-daemon-secret'] !== secreto) return res.status(403).json({ error: 'Acceso denegado' });
+
+    const { message, level, author } = req.body;
+    const canalId = process.env.DISCORD_ANNOUNCE_CHANNEL_ID;
+    if (!message) return res.status(400).json({ error: 'Falta el mensaje' });
+    if (!canalId) return res.status(503).json({ error: 'DISCORD_ANNOUNCE_CHANNEL_ID no está configurado' });
+
+    try {
+        const canal = await client.channels.fetch(canalId);
+        const icono = { danger: '🚨', warn: '⚠️', info: '📢' }[level] || '📢';
+        await canal.send(`${icono} **${author || 'ProServers'}**: ${String(message).slice(0, 1800)}`);
+        res.json({ status: 'enviado' });
+    } catch (error) {
+        res.status(500).json({ error: 'Fallo al enviar a Discord' });
+    }
+});
+
 app.listen(3001, () => {
     console.log('Receptor de Webhooks del bot escuchando en el puerto 3001');
 });
