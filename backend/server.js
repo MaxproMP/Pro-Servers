@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const Docker = require('dockerode');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 // === INTEGRACIÓN FIREBASE ADMIN SDK (Seguridad) ===
@@ -141,7 +142,20 @@ function getDockerImage(edition, software) {
 }
 
 // === HELPER: Variables de entorno para el contenedor ===
-function getServerEnv(payload, port) {
+// Límites de hardware del plan (los envía Laravel desde SQL Server). Sin plan: valores históricos.
+function limitesDePlan(plan) {
+    const memoryMb = Number.isInteger(plan?.memoria_mb) && plan.memoria_mb > 0 ? plan.memoria_mb : 1024;
+    const pedidos = Number(plan?.cpu_cores) > 0 ? Number(plan.cpu_cores) : 1;
+    return {
+        plan: plan?.nombre || null,
+        memoryMb,
+        cpuCores: Math.min(pedidos, os.cpus().length), // Docker rechaza más CPUs de las que tiene el host
+        storageGb: Number(plan?.almacenamiento_gb) > 0 ? Number(plan.almacenamiento_gb) : null, // informativo: no se aplica cuota de disco
+        heapMb: Math.max(512, Math.floor(memoryMb * 0.8)), // la JVM deja margen para memoria fuera del heap
+    };
+}
+
+function getServerEnv(payload, port, limites) {
     const env = [
         'EULA=TRUE',
         `MOTD=${payload.motd || 'Professional Server'}`,
@@ -176,8 +190,7 @@ function getServerEnv(payload, port) {
             env.push(`GENERIC_PACK=${payload.modpackUrl}`);
         }
 
-        // Memoria por defecto
-        env.push('MEMORY=1G');
+        env.push(`MEMORY=${limites.heapMb}M`);
         env.push('ONLINE_MODE=FALSE');
     }
 
@@ -197,7 +210,6 @@ app.get('/ping', (req, res) => {
 // === ADMIN (solo Laravel, autenticado con x-daemon-secret) ===
 // Laravel valida el rol del staff; Node nunca queda expuesto al navegador.
 // ============================================================
-const os = require('os');
 
 function ubicarServidor(serverId) {
     const db = loadDB();
@@ -339,6 +351,30 @@ app.post('/api/admin/freeze', verificarCerebro, async (req, res) => {
     res.json({ success: errores.length === 0, afectados: servers.length, errores });
 });
 
+// Plan cambiado: aplica los nuevos límites de CPU y RAM a los contenedores existentes del cliente.
+// El heap de la JVM (MEMORY) solo cambia cuando el servidor se vuelve a crear.
+app.post('/api/admin/apply-limits', verificarCerebro, async (req, res) => {
+    const { uid, plan } = req.body;
+    if (!uid) return res.status(400).json({ error: 'uid es obligatorio.' });
+    const limites = limitesDePlan(plan);
+    const db = loadDB();
+    const errores = [];
+    let aplicados = 0;
+    for (const s of db[uid]?.servers || []) {
+        s.limits = limites;
+        try {
+            await docker.getContainer(`mc-${s.id}`).update({
+                Memory: limites.memoryMb * 1024 * 1024,
+                MemorySwap: limites.memoryMb * 1024 * 1024,
+                NanoCpus: Math.round(limites.cpuCores * 1e9),
+            });
+            aplicados++;
+        } catch (e) { if (e.statusCode !== 404) errores.push(`${s.id}: ${e.message}`); }
+    }
+    saveDB(db);
+    res.json({ success: errores.length === 0, aplicados, limites, errores });
+});
+
 // Purga segura: solo imágenes huérfanas. Nunca borra contenedores ni volúmenes de clientes.
 app.post('/api/admin/system-prune', verificarCerebro, async (req, res) => {
     try {
@@ -441,6 +477,7 @@ app.post('/api/project/create', async (req, res) => {
         return res.status(503).json({ success: false, message: 'No hay puertos disponibles. Contactá a soporte.' });
     }
 
+    const limites = limitesDePlan(req.body.plan);
     const containerName = `mc-${serverId}`;
     const playitName = `playit-${serverId}`;
     const serverDataPath = path.join(SERVERS_DIR, serverId);
@@ -462,6 +499,7 @@ app.post('/api/project/create', async (req, res) => {
         port,
         containerName,
         status: 'deploying',
+        limits: limites,
         motd: motd || 'Professional Server',
         createdAt: new Date().toISOString(),
         email: email || null,
@@ -480,7 +518,7 @@ app.post('/api/project/create', async (req, res) => {
         deployStatus[serverId] = { step: 'Descargando imagen Docker...', pct: 25, done: false, error: null };
 
         const image = getDockerImage(edition, software);
-        const envVars = getServerEnv(req.body, port);
+        const envVars = getServerEnv(req.body, port, limites);
         const internalPort = edition === 'bedrock' ? '19132/udp' : '25565/tcp';
 
         // Intentar pull de la imagen de MC
@@ -523,8 +561,9 @@ app.post('/api/project/create', async (req, res) => {
             HostConfig: {
                 PortBindings: portBindings,
                 Binds: [`${dockerServerDataPath}:/data`],
-                Memory: 1024 * 1024 * 1024, // 1GB RAM
-                NanoCpus: 1000000000,        // 1 CPU
+                Memory: limites.memoryMb * 1024 * 1024,
+                MemorySwap: limites.memoryMb * 1024 * 1024, // sin swap
+                NanoCpus: Math.round(limites.cpuCores * 1e9),
                 RestartPolicy: { Name: 'unless-stopped' },
                 NetworkMode: 'minecraft-panel_minecraft-net',
             },

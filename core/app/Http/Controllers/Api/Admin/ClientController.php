@@ -117,9 +117,15 @@ final class ClientController extends AdminController
             return $sub;
         });
         $c->update(['plan_activo' => $plan->nombre]);
-        $this->auditar('admin.set_plan', null, ['cliente_id' => $id, 'plan' => $plan->nombre]);
 
-        return response()->json(['success' => true, 'suscripcion_id' => $sub->id]);
+        // Los contenedores existentes pasan a los límites del nuevo plan.
+        $nodo = $c->firebase_uid ? $this->node->post('/api/admin/apply-limits', ['uid' => $c->firebase_uid, 'plan' => [
+            'nombre' => $plan->nombre, 'memoria_mb' => (int) $plan->memoria_mb,
+            'cpu_cores' => (int) $plan->cpu_cores, 'almacenamiento_gb' => (int) $plan->almacenamiento_gb,
+        ]]) : ['ok' => true, 'data' => ['aplicados' => 0]];
+        $this->auditar('admin.set_plan', null, ['cliente_id' => $id, 'plan' => $plan->nombre, 'contenedores' => $nodo['data']['aplicados'] ?? 0]);
+
+        return response()->json(['success' => true, 'suscripcion_id' => $sub->id, 'contenedores' => $nodo['data']], $nodo['ok'] ? 200 : 207);
     }
 
     public function compensate(Request $request, int $id): JsonResponse

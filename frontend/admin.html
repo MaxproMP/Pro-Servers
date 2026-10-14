@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ProServers Overwatch</title>
+<title>ProServers Panel admin</title>
 <link rel="icon" href="/img/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -188,10 +188,10 @@ pre.log{background:#000;border:1px solid var(--bd);border-radius:8px;padding:8px
 </head>
 <body data-role="">
 
-<div class="gate" id="gate"><b>ProServers Overwatch</b><span id="gate-msg">Verificando credenciales…</span></div>
+<div class="gate" id="gate"><b>ProServers Panel admin</b><span id="gate-msg">Verificando credenciales…</span></div>
 
 <header class="topbar">
-  <div class="brand" id="brand-btn" title="Ir a crear un servidor"><img src="/img/favicon.ico" alt=""><span>ProServers</span><b>Overwatch</b></div>
+  <div class="brand" id="brand-btn" title="Ir a crear un servidor"><img src="/img/favicon.ico" alt=""><span>ProServers</span><b>Panel admin</b></div>
   <div class="pills">
     <span class="pill" id="pill-docker"><i class="dot"></i>Docker Engine</span>
     <span class="pill" id="pill-sql"><i class="dot"></i>SQL Server 3FN</span>
@@ -244,8 +244,8 @@ pre.log{background:#000;border:1px solid var(--bd);border-radius:8px;padding:8px
         <div class="chart-box"><canvas id="chart-live"></canvas></div>
         <div id="host-bars" style="margin-top:12px"></div>
       </div>
-      <div class="card span6 only-admin"><div class="chd"><h2>Ingresos, últimos 6 meses</h2><span class="sub">pagos completados</span></div><div class="chart-box"><canvas id="chart-rev"></canvas></div></div>
-      <div class="card span6 only-admin"><div class="chd"><h2>Suscripciones por plan</h2><span class="sub">SQL Server</span></div><div class="chart-box"><canvas id="chart-plans"></canvas></div></div>
+      <div class="card span6 only-admin"><div class="chd"><h2>Ingresos, últimos 6 meses</h2><span class="sub">pagos completados</span></div><div class="chart-box" id="box-chart-rev"><canvas id="chart-rev"></canvas></div></div>
+      <div class="card span6 only-admin"><div class="chd"><h2>Suscripciones por plan</h2><span class="sub">SQL Server</span></div><div class="chart-box" id="box-chart-plans"><canvas id="chart-plans"></canvas></div></div>
       <div class="card span12">
         <div class="chd"><h2>Flota de nodos</h2>
           <div class="tools"><input id="f-q" placeholder="Buscar nodo, dueño o plan" aria-label="Buscar nodo">
@@ -395,6 +395,12 @@ function mkChart(id, cfg) {
   const c = document.getElementById(id); if (!c || !window.Chart) return null;
   S.charts[id]?.destroy(); return S.charts[id] = new Chart(c, cfg);
 }
+function chartOrEmpty(id, vacio, msg, cfg) {
+  const box = $('#box-' + id);
+  if (vacio) { S.charts[id]?.destroy(); delete S.charts[id]; box.innerHTML = `<div class="empty">${msg}</div>`; return; }
+  if (!box.querySelector('canvas')) box.innerHTML = `<canvas id="${id}"></canvas>`;
+  mkChart(id, cfg);
+}
 const spark = (id, color) => mkChart(id, { type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: color, borderWidth: 1.5, pointRadius: 0, tension: .35, fill: true, backgroundColor: color + '22' }] },
   options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false, min: 0 } } } });
 function setSpark(id, arr) { const c = S.charts[id]; if (!c) return; c.data.labels = arr.map((_, i) => i); c.data.datasets[0].data = arr; c.update('none'); }
@@ -514,9 +520,9 @@ function paintStats() {
   const f = d.financiero; if (!f) return;
   setK('mrr', money(f.mrr), `Facturado este mes: ${money(f.facturado_mes)}`);
   setSpark('sp-mrr', f.serie_6m.map(x => x.monto));
-  mkChart('chart-rev', { type: 'bar', data: { labels: f.serie_6m.map(x => x.mes), datasets: [{ data: f.serie_6m.map(x => x.monto), backgroundColor: '#8B5CF6', borderRadius: 5 }] },
+  chartOrEmpty('chart-rev', f.serie_6m.every(x => !x.monto), 'Sin ingresos registrados.', { type: 'bar', data: { labels: f.serie_6m.map(x => x.mes), datasets: [{ data: f.serie_6m.map(x => x.monto), backgroundColor: '#8B5CF6', borderRadius: 5 }] },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
-  mkChart('chart-plans', { type: 'doughnut', data: { labels: f.planes.map(p => p.plan), datasets: [{ data: f.planes.map(p => p.clientes), backgroundColor: ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#a78bfa', '#67e8f9'], borderWidth: 0 }] },
+  chartOrEmpty('chart-plans', !f.planes.length, 'Sin suscripciones activas.', { type: 'doughnut', data: { labels: f.planes.map(p => p.plan), datasets: [{ data: f.planes.map(p => p.clientes), backgroundColor: ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#a78bfa', '#67e8f9'], borderWidth: 0 }] },
     options: { responsive: true, maintainAspectRatio: false, cutout: '64%', plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } } } });
 }
 
@@ -635,7 +641,7 @@ function paintClients() {
     <td>${c.server ? `<span class="mono">#${c.server.id}</span> <span class="sub">${esc(c.server.status)}</span>` : '<span class="mu">sin servidor</span>'}</td>
     <td class="r num">${c.pagos_count}</td><td class="r num">${c.tickets_abiertos ? `<b style="color:var(--am)">${c.tickets_abiertos}</b>/` : ''}${c.tickets_count}</td>
     <td>${c.has_2fa ? '<span class="b ok">2FA</span>' : '<span class="b mu">sin 2FA</span>'} ${c.has_webauthn ? '<span class="b cy">passkey</span>' : ''}</td>
-    <td class="sub">${fday(c.created_at)}</td></tr>`).join('') : '<tr><td colspan="9" class="empty">Ninguna cuenta coincide con los filtros.</td></tr>';
+    <td class="sub">${fday(c.created_at)}</td></tr>`).join('') : `<tr><td colspan="9" class="empty">${S.clients.length ? 'Ninguna cuenta coincide con los filtros.' : 'Aún no hay cuentas registradas.'}</td></tr>`;
   $('#clients-count').textContent = `${list.length} de ${S.clients.length} cuentas en SQL Server`;
 }
 async function ensurePlans() { if (!S.plans.length && isAdmin()) S.plans = (await api('GET', '/plans')).planes; }
@@ -727,7 +733,7 @@ function paintPagos() {
     <td>${p.cliente ? `${esc(p.cliente.username)}<div class="sub">${esc(p.cliente.email)}</div>` : '—'}</td><td>${esc(p.plan || '—')}</td><td>${esc(p.pasarela_pago)}</td><td>${esc(p.medio_pago)}</td>
     <td><span class="b ${PAGO_B[p.estado] || 'mu'}">${esc(p.estado)}</span></td><td class="r num">${money(p.monto)}</td>
     <td class="r"><div class="acts"><button class="btn sm" data-act="pdf" data-id="${p.id}">Descargar factura PDF</button>${p.estado === 'completado' ? `<button class="btn sm danger" data-act="refund" data-id="${p.id}" data-monto="${p.monto}">Reembolsar</button>` : ''}</div></td></tr>`).join('')
-    : '<tr><td colspan="9" class="empty">No hay pagos que coincidan.</td></tr>';
+    : `<tr><td colspan="9" class="empty">${S.acct.pagos.length ? 'No hay pagos que coincidan.' : 'Aún no hay pagos registrados.'}</td></tr>`;
 }
 async function payDialog() {
   if (!S.clients.length) await loadClients();
@@ -810,7 +816,7 @@ async function loadAudit() {
   } catch (e) { term.innerHTML = `<div class="t">MongoDB no disponible: ${esc(e.message)}</div>`; }
 }
 const CLEAN = {
-  seed: { path: '/system/purge-seed', title: 'Datos de prueba en SQL Server', note: 'Clientes sembrados (Faker y admin falso) sin pagos. Borrado lógico, reversible.', items: r => r.clientes.map(c => `${c.email} (${c.username})`) },
+  seed: { path: '/system/purge-seed', title: 'Datos de prueba en SQL Server', note: 'Cuentas de prueba (Faker y admin sembrado) sin pagos, con sus suscripciones y servidores. Borrado físico en SQL Server.', items: r => r.clientes.map(c => `${c.email} (${c.username})`) },
   mongo: { path: '/system/sync-mongo', title: 'Eventos huérfanos en MongoDB', note: 'Eventos de pruebas o de clientes y servidores que ya no existen. Eliminación definitiva.', items: r => r.candidatos.map(c => `${c.event} — ${c.motivo}`) }
 };
 async function openCleanup(kinds) {

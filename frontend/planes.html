@@ -742,6 +742,29 @@
             indicator.style.left = firstBtn.offsetLeft + 'px';
         };
     </script>
+
+    <script>
+        // Catálogo en vivo: precios, RAM y visibilidad vienen de SQL Server (editable desde el panel Overwatch).
+        // Si la API falla, se conserva el catálogo estático de arriba.
+        (async () => {
+            try {
+                const r = await fetch('/api/plans', { headers: { Accept: 'application/json' } });
+                if (!r.ok) return;
+                const { planes } = await r.json();
+                const porNombre = new Map(planes.map(p => [p.nombre, p]));
+                document.querySelectorAll('.glass-card').forEach(card => {
+                    const m = card.innerHTML.match(/procesarContratacion\('([\w-]+)'/);
+                    if (!m) return;
+                    const p = porNombre.get(m[1]);
+                    if (!p) { card.style.display = 'none'; return; }
+                    const precio = card.querySelector('.price-display');
+                    if (precio) { precio.dataset.base = p.precio_mensual; precio.textContent = `$${Number(p.precio_mensual)} USD`; }
+                    const ram = [...card.querySelectorAll('b')].find(b => /GB RAM/.test(b.textContent));
+                    if (ram) ram.textContent = `${Number((p.memoria_mb / 1024).toFixed(1))} GB RAM`;
+                });
+            } catch (e) { /* catálogo estático */ }
+        })();
+    </script>
 </body>
 
 </html>

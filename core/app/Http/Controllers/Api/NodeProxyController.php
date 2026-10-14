@@ -10,6 +10,19 @@ class NodeProxyController extends Controller
 {
     private string $nodeUrl = 'http://minecraft-panel-backend:3000';
 
+    /** @return array{nombre: string, memoria_mb: int, cpu_cores: int, almacenamiento_gb: int}|null */
+    private function limitesDelPlan($cliente): ?array
+    {
+        $plan = $cliente->suscripcionActiva()->with('plan')->first()?->plan;
+
+        return $plan ? [
+            'nombre' => $plan->nombre,
+            'memoria_mb' => (int) $plan->memoria_mb,
+            'cpu_cores' => (int) $plan->cpu_cores,
+            'almacenamiento_gb' => (int) $plan->almacenamiento_gb,
+        ] : null;
+    }
+
     public function proxyToNode(Request $request, $path)
     {
         // Validación de acciones delegada por Laravel
@@ -21,6 +34,11 @@ class NodeProxyController extends Controller
         // Agregar el UID del cliente a los datos (para mantener retrocompatibilidad con el demonio Node)
         $data = $request->all();
         $data['uid'] = (string) ($user->firebase_uid ?: $user->getAuthIdentifier());
+        // Los límites de hardware salen del plan en SQL Server; lo que envíe el navegador se descarta.
+        unset($data['plan']);
+        if ($request->isMethod('post') && $request->path() === 'api/project/create') {
+            $data['plan'] = $this->limitesDelPlan($user);
+        }
         // Node guarda los proyectos bajo el UID de Firebase, no bajo el ID local de clientes.
 
         // Node valida el token de Firebase por su cuenta: hay que reenviarlo.
