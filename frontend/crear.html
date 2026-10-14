@@ -948,12 +948,29 @@
                     if (responseData && responseData.success) {
                         const serverId = responseData.server.id;
 
+                        let fallos = 0;
+                        const inicioDeploy = Date.now();
+                        const abortarDeploy = (msg) => {
+                            clearInterval(statusInterval);
+                            alert(msg);
+                            overlay.classList.remove('active');
+                            btnSubmit.disabled = false;
+                            btnSubmit.innerText = getDeployText();
+                        };
                         const statusInterval = setInterval(async () => {
+                            if (Date.now() - inicioDeploy > 15 * 60 * 1000) {
+                                return abortarDeploy("El despliegue tarda demasiado. Revisa el estado de tus servidores en unos minutos.");
+                            }
                             try {
+                                const tk = await auth.currentUser.getIdToken();
                                 const statRes = await fetch(`${API_URL}/api/project/deploy-status?serverId=${serverId}`, {
-                                    headers: { 'Authorization': 'Bearer ' + token }
+                                    headers: { 'Authorization': 'Bearer ' + tk }
                                 });
-                                if (!statRes.ok) return;
+                                if (!statRes.ok) {
+                                    if (++fallos >= 10) abortarDeploy("No se pudo leer el estado del despliegue (HTTP " + statRes.status + ").");
+                                    return;
+                                }
+                                fallos = 0;
                                 const statData = await statRes.json();
 
                                 loadingStep.innerText = statData.step;
@@ -983,6 +1000,7 @@
                                 }
                             } catch (errStatus) {
                                 console.error("Error leyendo estado del backend:", errStatus);
+                                if (++fallos >= 10) abortarDeploy("Se perdió la conexión con el servidor durante el despliegue.");
                             }
                         }, 2000);
 

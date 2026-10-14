@@ -23,7 +23,8 @@ class NodeProxyController extends Controller
         $data['uid'] = (string) ($user->firebase_uid ?: $user->getAuthIdentifier());
         // Node guarda los proyectos bajo el UID de Firebase, no bajo el ID local de clientes.
 
-        $response = Http::withHeaders([
+        // Node valida el token de Firebase por su cuenta: hay que reenviarlo.
+        $response = Http::withToken((string) $request->bearerToken())->withHeaders([
             'X-Forwarded-For' => $request->ip()
         ]);
 
@@ -48,7 +49,7 @@ class NodeProxyController extends Controller
     public function getAdminServers(Request $request)
     {
         // Validado por middleware 'admin' en la ruta
-        $response = Http::get($this->nodeUrl . '/api/admin/all-servers');
+        $response = Http::withToken((string) $request->bearerToken())->get($this->nodeUrl . '/api/admin/all-servers');
         return response($response->body(), $response->status())
             ->header('Content-Type', $response->header('Content-Type'));
     }
@@ -59,7 +60,7 @@ class NodeProxyController extends Controller
         $totalClientes = \App\Models\Cliente::count();
         $dineroTotal = \App\Models\Pago::sum('monto');
         
-        $responseNode = Http::get($this->nodeUrl . '/api/admin/all-servers');
+        $responseNode = Http::withToken((string) $request->bearerToken())->get($this->nodeUrl . '/api/admin/all-servers');
         $servers = $responseNode->json()['servers'] ?? [];
 
         return response()->json([

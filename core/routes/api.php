@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\NodeProxyController;
+use App\Http\Controllers\Api\StaffController;
+use App\Http\Controllers\Api\SupportController;
+use App\Http\Controllers\Api\TwoFactorController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaymentController;
@@ -23,6 +26,17 @@ Route::middleware('firebase.auth')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+
+    // 2FA (TOTP)
+    Route::get('/2fa/status', [TwoFactorController::class, 'status']);
+    Route::post('/2fa/setup', [TwoFactorController::class, 'setup']);
+    Route::post('/2fa/enable', [TwoFactorController::class, 'enable'])->middleware('throttle:10,1');
+    Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->middleware('throttle:10,1');
+    Route::post('/2fa/disable', [TwoFactorController::class, 'disable'])->middleware('throttle:10,1');
+
+    // Soporte (lado cliente)
+    Route::post('/support/chat', [SupportController::class, 'chat']);
+    Route::get('/support/messages', [SupportController::class, 'messages']);
 
     // Perfil y status
     Route::get('/user/status', function (Request $request) {
@@ -50,6 +64,18 @@ Route::middleware('firebase.auth')->group(function () {
 Route::middleware(['firebase.auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/all-servers', [NodeProxyController::class, 'getAdminServers']);
     Route::get('/stats', [NodeProxyController::class, 'getAdminStats']);
+    Route::get('/dashboard-stats', [NodeProxyController::class, 'getAdminStats']);
+
+    Route::get('/staff/list', [StaffController::class, 'list']);
+    Route::post('/staff/add', [StaffController::class, 'add']);
+    Route::post('/staff/remove', [StaffController::class, 'remove']);
+});
+
+// === SOPORTE (ceo y soporte) ===
+Route::middleware(['firebase.auth', 'admin:ceo,soporte'])->prefix('admin')->group(function () {
+    Route::get('/support-tickets', [SupportController::class, 'adminTickets']);
+    Route::post('/support-reply', [SupportController::class, 'adminReply']);
+    Route::post('/close-ticket', [SupportController::class, 'adminClose']);
 });
 
 // === WEBHOOKS (Abiertos a Internet) ===

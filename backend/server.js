@@ -55,6 +55,18 @@ const deployStatus = {};
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(SERVERS_DIR)) fs.mkdirSync(SERVERS_DIR, { recursive: true });
 
+// Deploys que quedaron a medias por un reinicio del demonio: marcarlos como error.
+(() => {
+    const db = loadDB();
+    let cambios = false;
+    for (const d of Object.values(db)) {
+        for (const s of d.servers || []) {
+            if (s.status === 'deploying') { s.status = 'error'; s.error = 'Deploy interrumpido por reinicio del demonio.'; cambios = true; }
+        }
+    }
+    if (cambios) saveDB(db);
+})();
+
 function loadDB() {
     if (!fs.existsSync(DB_FILE)) return {};
     try { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); }
@@ -181,6 +193,28 @@ app.get('/ping', (req, res) => {
     res.json({ status: '🟢 Demonio Node.js en línea, blindado y esperando órdenes.' });
 });
 
+// --- Admin: todos los servidores (solo CEO; Laravel ya valida el rol) ---
+const CEO_EMAIL = 'rodasmaximo51@gmail.com';
+app.get('/api/admin/all-servers', verificarTokenFirebase, async (req, res) => {
+    if (req.user.email !== CEO_EMAIL) return res.status(403).json({ error: 'Solo CEO' });
+
+    // Estado real desde Docker: nombre de contenedor -> estado (running, exited, paused...)
+    const estados = new Map();
+    try {
+        const contenedores = await docker.listContainers({ all: true });
+        for (const c of contenedores) estados.set(c.Names[0].replace(/^\//, ''), c.State);
+    } catch (e) {
+        console.warn('[ADMIN] No se pudo consultar Docker:', e.message);
+    }
+
+    const db = loadDB();
+    const servers = Object.entries(db).flatMap(([uid, d]) => (d.servers || []).map(s => {
+        const estado = estados.get(`mc-${s.id}`) || 'missing';
+        return { ...s, uid, containerStatus: estado, isRunning: estado === 'running' };
+    }));
+    res.json({ success: true, servers });
+});
+
 // --- Verificar servidores del usuario ---
 app.get('/api/project/check', (req, res) => {
     const uid = req.query.uid;
@@ -266,7 +300,12 @@ app.post('/api/project/create', async (req, res) => {
             await new Promise((resolve, reject) => {
                 docker.pull(image, (err, stream) => {
                     if (err) return reject(err);
-                    docker.modem.followProgress(stream, (err) => err ? reject(err) : resolve());
+                    let ultimo = 0;
+                    docker.modem.followProgress(stream, (err) => err ? reject(err) : resolve(), (ev) => {
+                        if (Date.now() - ultimo < 1000 || !ev.status) return;
+                        ultimo = Date.now();
+                        deployStatus[serverId] = { step: `Descargando imagen del servidor (${ev.status})...`, pct: 35, done: false, error: null };
+                    });
                 });
             });
         } catch (pullErr) { console.warn(`[DEPLOY] Pull warning: ${pullErr.message} — Intentando con imagen local`); }
@@ -374,7 +413,8 @@ app.get('/api/project/deploy-status', (req, res) => {
         return res.json({ step: 'Error en el deploy', pct: 100, done: true, error: server.error || 'El deploy falló.' });
     }
 
-    return res.json({ step: 'Deploy en progreso...', pct: 60, done: false, error: null });
+    // Sin estado en memoria y aún 'deploying': el demonio se reinició a mitad del deploy.
+    return res.json({ step: 'Deploy interrumpido', pct: 100, done: true, error: 'El despliegue se interrumpió. Elimina este servidor y créalo de nuevo.' });
 });
 
 // --- Eliminar servidor ---
@@ -514,6 +554,9 @@ app.post('/api/server/start', async (req, res) => {
 
         res.json({ success: true, message: 'Servidor iniciado.' });
     } catch (e) {
+        if (e.statusCode === 404) {
+            return res.status(404).json({ error: 'container_not_found', message: 'El contenedor del servidor no existe.' });
+        }
         res.status(500).json({ error: 'Error al iniciar: ' + e.message });
     }
 });

@@ -124,7 +124,7 @@
     <aside class="w-64 border-r border-[#1f232b] flex flex-col justify-between hidden md:flex bg-[#0b0c10]">
         <div class="p-6">
             <div class="flex items-center gap-3 mb-1 cursor-pointer transition-transform hover:scale-105"
-                onclick="sessionStorage.setItem('forceUserMode', 'true'); window.location.href='/index.html'">
+                onclick="sessionStorage.setItem('forceUserMode', 'true'); window.location.href='/crear.html'">
                 <img src="/img/favicon.ico" alt="Logo" class="w-8 h-8 drop-shadow-[0_0_10px_rgba(147,51,234,0.5)]">
                 <span class="text-xl font-bold tracking-wide">ProServers</span>
             </div>
@@ -748,6 +748,22 @@
                     window.renderTicketsList();
                 }
             } catch (e) { console.error("Error trayendo tickets", e); }
+
+            // Sondeo cada 15s: los mensajes nuevos llegan por la API, no por socket.
+            if (!window.ticketsPoll) {
+                window.ticketsPoll = setInterval(async () => {
+                    try {
+                        const tk = await auth.currentUser.getIdToken();
+                        const r = await fetch('/api/admin/support-tickets', { headers: { 'Authorization': `Bearer ${tk}` } });
+                        const d = await r.json();
+                        if (d.success && d.tickets) {
+                            supportMessages = d.tickets;
+                            window.renderTicketsList();
+                            if (currentChatUid) window.renderChatWindow(currentChatUid);
+                        }
+                    } catch (e) { /* reintenta en el siguiente ciclo */ }
+                }, 15000);
+            }
 
             socketAdmin = io('/', { query: { token: globalToken, serverId: 'admin' } });
 

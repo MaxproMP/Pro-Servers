@@ -11,6 +11,7 @@
         rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -113,6 +114,12 @@
                         data-feather="user-check" class="text-green-500"></i> Mi Perfil Profesional</h3>
                 <p class="text-xs text-gray-400 mb-6">Actualiza tu información personal, datos de contacto, métodos de
                     pago y personaliza tu avatar (Máx. 128 MB).</p>
+
+                <div class="bg-[#161616] p-6 rounded-2xl border border-[#333] shadow-2xl mb-6">
+                    <h4 class="text-lg font-bold text-white mb-1 flex items-center gap-2"><i data-feather="shield" class="text-purple-400"></i> Verificación en dos pasos (2FA)</h4>
+                    <p class="text-xs text-gray-400 mb-4">Protege tu cuenta con un código de 6 dígitos de Google Authenticator, Authy o similar.</p>
+                    <div id="twofa-box" class="text-sm text-gray-300">Cargando...</div>
+                </div>
 
                 <div class="bg-[#161616] p-8 rounded-2xl border border-[#333] shadow-2xl">
                     <form id="advanced-profile-form" class="space-y-6">
@@ -373,6 +380,52 @@
                 }
             };
         });
+
+        // ===== 2FA (TOTP) =====
+        async function api2fa(path, body) {
+            const t = await auth.currentUser.getIdToken();
+            const r = await fetch(`${API_URL}/api/2fa/${path}`, {
+                method: body === undefined ? 'GET' : 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+                body: body === undefined ? undefined : JSON.stringify(body)
+            });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d.error || ('Error ' + r.status));
+            return d;
+        }
+        const inputCode = 'class="input-pro bg-[#0a0a0a] w-40 text-center tracking-widest" maxlength="6" inputmode="numeric" placeholder="000000"';
+        const btnCls = 'bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-lg text-xs uppercase';
+        window.render2fa = async () => {
+            const box = document.getElementById('twofa-box');
+            try {
+                const { enabled } = await api2fa('status');
+                box.innerHTML = enabled
+                    ? `<p class="text-green-400 font-bold mb-3">2FA activo.</p>
+                       <div class="flex gap-2 items-center"><input id="twofa-code" ${inputCode}><button class="${btnCls} !bg-red-700" onclick="window.disable2fa()">Desactivar</button></div>`
+                    : `<button class="${btnCls}" onclick="window.setup2fa()">Activar 2FA</button>`;
+            } catch (e) { box.innerText = 'No se pudo cargar el estado del 2FA.'; }
+        };
+        window.setup2fa = async () => {
+            const box = document.getElementById('twofa-box');
+            try {
+                const d = await api2fa('setup', {});
+                box.innerHTML = `<p class="mb-2">Escanea el código QR con tu app y escribe el código de 6 dígitos.</p>
+                    <div id="twofa-qr" class="bg-white p-2 inline-block rounded mb-2"></div>
+                    <p class="text-xs text-gray-500 mb-3 break-all">Clave manual: <b></b></p>
+                    <div class="flex gap-2 items-center"><input id="twofa-code" ${inputCode}><button class="${btnCls}" onclick="window.enable2fa()">Confirmar</button></div>`;
+                box.querySelector('b').innerText = d.secret;
+                new QRCode(document.getElementById('twofa-qr'), { text: d.otpauth_url, width: 160, height: 160 });
+            } catch (e) { alert(e.message); }
+        };
+        window.enable2fa = async () => {
+            try { await api2fa('enable', { code: document.getElementById('twofa-code').value.trim() }); window.render2fa(); }
+            catch (e) { alert(e.message); }
+        };
+        window.disable2fa = async () => {
+            try { await api2fa('disable', { code: document.getElementById('twofa-code').value.trim() }); window.render2fa(); }
+            catch (e) { alert(e.message); }
+        };
+        auth.authStateReady().then(() => { if (auth.currentUser) window.render2fa(); });
     </script>
 </body>
 

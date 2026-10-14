@@ -7,6 +7,17 @@ core/node_modules/
 core/vendor/
 npm-debug.log
 yarn-error.log
+*.log
+
+# ==========================================
+# Configuración local de Agentes IA y Skills
+# ==========================================
+.claude/
+.agents/
+skills-lock.json
+*.orig
+*.rej
+*.bak
 
 # ==========================================
 # Credenciales y variables de entorno (¡VITAL!)
@@ -22,6 +33,7 @@ firebase-adminsdk.json
 # ==========================================
 # Almacenamiento Pesado (Servidores y Bases de Datos)
 # ==========================================
+servers/
 backend/servers/
 data/
 backend/data/
@@ -41,3 +53,5 @@ Thumbs.db
 !ssl/
 !ssl/origin.crt
 ssl/origin.key
+# Grafo local de Graphify (caché generada)
+graphify-out/

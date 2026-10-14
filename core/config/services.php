@@ -35,6 +35,8 @@ return [
         ],
     ],
 
+    'ceo_email' => env('CEO_EMAIL', 'rodasmaximo51@gmail.com'),
+
     'daemon' => [
         'secret' => env('NODE_SECRET_KEY'),
     ],

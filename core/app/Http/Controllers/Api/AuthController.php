@@ -44,8 +44,9 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'message' => 'Login exitoso',
-            'user'    => $cliente
+            'message'      => 'Login exitoso',
+            'user'         => $cliente,
+            'requires_2fa' => (bool) $request->attributes->get('requires_2fa', false),
         ], 200);
     }
 }
