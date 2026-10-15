@@ -6,6 +6,8 @@ const Docker = require('dockerode');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const dns = require('dns').promises;
+const net = require('net');
 
 // === INTEGRACIÓN FIREBASE ADMIN SDK (Seguridad) ===
 const admin = require('firebase-admin');
@@ -114,6 +116,7 @@ async function registrarAuditoria(event, actorId, serverId, payload = {}) {
 app.use('/api/project', verificarTokenFirebase);
 app.use('/api/server', verificarTokenFirebase);
 app.use('/api/curseforge', verificarTokenFirebase);
+app.use('/api/modrinth', verificarTokenFirebase);
 
 // === HELPER: Generar ID único para servidor ===
 function generateId() {
@@ -164,6 +167,7 @@ function getServerEnv(payload, port, limites) {
 
     if (payload.edition === 'bedrock') {
         env.push(`SERVER_NAME=${payload.projectName || 'ProServer'}`);
+        env.push(`VERSION=${payload.version === 'PREVIEW' ? 'PREVIEW' : 'LATEST'}`);
     } else {
         // Java
         const typeMap = {
@@ -174,16 +178,24 @@ function getServerEnv(payload, port, limites) {
             'fabric': 'FABRIC',
             'purpur': 'PURPUR',
             'Server Pack': 'AUTO_CURSEFORGE',
+            'modrinth': 'MODRINTH',
         };
         env.push(`TYPE=${typeMap[payload.software] || 'VANILLA'}`);
 
-        if (payload.version && payload.version !== 'LATEST') {
+        // En modpacks la versión de Minecraft la fija el propio pack.
+        if (payload.version && payload.version !== 'LATEST' && !['Server Pack', 'modrinth'].includes(payload.software)) {
             env.push(`VERSION=${payload.version}`);
         }
 
-        if (payload.software === 'Server Pack' && payload.curseforgeFileId) {
-            env.push(`CF_PAGE_URL=https://www.curseforge.com/minecraft/modpacks`);
-            env.push(`CF_FILE_ID=${payload.curseforgeFileId}`);
+        if (payload.software === 'Server Pack') {
+            env.push(`CF_SLUG=${payload.cfSlug}`);
+            if (payload.curseforgeFileId) env.push(`CF_FILE_ID=${payload.curseforgeFileId}`);
+            env.push(`CF_API_KEY=${(process.env.CURSEFORGE_API_KEY || '').replace(/^"|"$/g, '').trim()}`);
+        }
+
+        if (payload.software === 'modrinth') {
+            env.push(`MODRINTH_MODPACK=${payload.modrinthSlug}`);
+            if (payload.modrinthVersion) env.push(`MODRINTH_VERSION=${payload.modrinthVersion}`);
         }
 
         if (payload.modpackUrl) {
@@ -195,6 +207,87 @@ function getServerEnv(payload, port, limites) {
     }
 
     return env;
+}
+
+// === HELPER: Validación del pedido de deploy (listas permitidas) ===
+const SOFTWARE_POR_EDICION = {
+    java: ['vanilla', 'paper', 'purpur', 'spigot', 'forge', 'fabric', 'Server Pack', 'modrinth'],
+    bedrock: ['bedrock'],
+};
+const SLUG_RE = /^[a-z0-9][a-z0-9_.-]{0,99}$/i;
+
+function validarPedidoDeploy(body) {
+    const { edition, software, version } = body;
+    if (!SOFTWARE_POR_EDICION[edition]) return 'Edición inválida.';
+    if (!SOFTWARE_POR_EDICION[edition].includes(software)) return 'Motor no soportado para esta edición.';
+    const versionOk = edition === 'bedrock'
+        ? ['LATEST', 'PREVIEW'].includes(version)
+        : version === 'LATEST' || /^\d+\.\d+(\.\d+)?$/.test(version || '');
+    if (!versionOk) return 'Versión inválida.';
+    if (typeof body.projectName !== 'string' || !/^[\p{L}\p{N} _.-]{3,32}$/u.test(body.projectName.trim())) {
+        return 'El nombre debe tener entre 3 y 32 caracteres (letras, números, espacios, _ . -).';
+    }
+    if (body.motd != null && (typeof body.motd !== 'string' || body.motd.length > 59 || /[\r\n]/.test(body.motd))) {
+        return 'El MOTD admite hasta 59 caracteres en una sola línea.';
+    }
+    if (software === 'Server Pack') {
+        if (!SLUG_RE.test(body.cfSlug || '')) return 'Modpack de CurseForge inválido.';
+        if (body.curseforgeFileId != null && !/^\d{1,12}$/.test(String(body.curseforgeFileId))) return 'Archivo de CurseForge inválido.';
+    }
+    if (software === 'modrinth') {
+        if (!SLUG_RE.test(body.modrinthSlug || '')) return 'Modpack de Modrinth inválido.';
+        if (body.modrinthVersion != null && !/^[a-zA-Z0-9]{8}$/.test(body.modrinthVersion)) return 'Versión de Modrinth inválida.';
+    }
+    return null;
+}
+
+// === HELPER: Anti-SSRF para instalación por URL externa ===
+// Solo HTTPS, solo .zip, nunca hacia redes privadas/locales (se revalida en cada redirección).
+const MAX_PACK_BYTES = 2 * 1024 ** 3;
+
+function ipPrivada(ip) {
+    if (net.isIPv4(ip)) {
+        const [a, b] = ip.split('.').map(Number);
+        return a === 0 || a === 10 || a === 127 || a >= 224 || (a === 100 && b >= 64 && b <= 127)
+            || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+    }
+    const v6 = ip.toLowerCase();
+    if (v6.startsWith('::ffff:')) return ipPrivada(v6.slice(7));
+    return v6 === '::' || v6 === '::1' || /^f[cd]/.test(v6) || /^fe[89ab]/.test(v6) || v6.startsWith('ff');
+}
+
+async function validarUrlPack(rawUrl) {
+    let url = rawUrl;
+    for (let salto = 0; salto <= 3; salto++) {
+        let u;
+        try { u = new URL(url); } catch { throw new Error('URL mal formada.'); }
+        if (u.protocol !== 'https:') throw new Error('Solo se aceptan enlaces HTTPS.');
+        if (u.username || u.password) throw new Error('La URL no puede incluir credenciales.');
+        if (u.port && u.port !== '443') throw new Error('Solo se acepta el puerto 443.');
+
+        const host = u.hostname.replace(/^\[|\]$/g, '');
+        const ips = net.isIP(host) ? [host] : (await dns.lookup(host, { all: true }).catch(() => [])).map(r => r.address);
+        if (!ips.length) throw new Error('No se pudo resolver el dominio.');
+        if (ips.some(ipPrivada)) throw new Error('El destino apunta a una red privada.');
+
+        const res = await fetch(u, { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(10000) })
+            .catch(() => { throw new Error('El enlace no respondió.'); });
+        if (res.status >= 300 && res.status < 400 && res.headers.get('location')) {
+            url = new URL(res.headers.get('location'), u).toString();
+            continue;
+        }
+        if (!res.ok) throw new Error(`El enlace respondió HTTP ${res.status}.`);
+
+        const tipo = (res.headers.get('content-type') || '').split(';')[0].trim();
+        const disposicion = res.headers.get('content-disposition') || '';
+        const esZip = u.pathname.toLowerCase().endsWith('.zip') || /\.zip"?$/i.test(disposicion)
+            || ['application/zip', 'application/x-zip-compressed'].includes(tipo);
+        if (!esZip) throw new Error('El archivo debe ser un .zip.');
+        const largo = Number(res.headers.get('content-length') || 0);
+        if (largo > MAX_PACK_BYTES) throw new Error('El archivo supera el máximo de 2 GB.');
+        return u.toString();
+    }
+    throw new Error('Demasiadas redirecciones.');
 }
 
 // ============================================================
@@ -469,6 +562,19 @@ app.post('/api/project/create', async (req, res) => {
         return res.status(400).json({ success: false, message: 'Faltan datos obligatorios (uid, edition).' });
     }
 
+    const errorPedido = validarPedidoDeploy(req.body);
+    if (errorPedido) return res.status(422).json({ success: false, message: errorPedido });
+
+    if (modpackUrl) {
+        if (edition !== 'java') return res.status(422).json({ success: false, message: 'La instalación por URL es solo para Java.' });
+        try {
+            req.body.modpackUrl = await validarUrlPack(String(modpackUrl));
+        } catch (e) {
+            return res.status(422).json({ success: false, message: `URL rechazada: ${e.message}` });
+        }
+    }
+    req.body.projectName = projectName.trim();
+
     const db = loadDB();
     const serverId = generateId();
     const port = getAvailablePort(db);
@@ -492,7 +598,7 @@ app.post('/api/project/create', async (req, res) => {
 
     const serverRecord = {
         id: serverId,
-        name: projectName || `Server-${serverId.substring(4, 10)}`,
+        name: req.body.projectName,
         edition,
         software: software || 'vanilla',
         version: version || 'LATEST',
@@ -952,6 +1058,34 @@ app.get('/api/curseforge/files', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: 'Error consultando CurseForge: ' + err.message });
     }
+});
+
+// --- Modrinth API Proxy (API pública, sin key) ---
+const MODRINTH_API = 'https://api.modrinth.com/v2';
+const modrinthGet = async (res, url) => {
+    try {
+        const r = await fetch(url, { headers: { 'User-Agent': 'ProServers-Daemon/1.0' }, signal: AbortSignal.timeout(10000) });
+        if (!r.ok) return res.status(502).json({ error: `Modrinth respondió HTTP ${r.status}.` });
+        return res.json(await r.json());
+    } catch (err) {
+        return res.status(502).json({ error: 'Error consultando Modrinth: ' + err.message });
+    }
+};
+
+app.get('/api/modrinth/search', (req, res) => {
+    const params = new URLSearchParams({
+        query: String(req.query.query || '').slice(0, 80),
+        facets: JSON.stringify([['project_type:modpack'], ['server_side:required', 'server_side:optional']]),
+        index: 'downloads',
+        limit: '24',
+    });
+    return modrinthGet(res, `${MODRINTH_API}/search?${params}`);
+});
+
+app.get('/api/modrinth/versions', (req, res) => {
+    const slug = String(req.query.slug || '');
+    if (!SLUG_RE.test(slug)) return res.status(422).json({ error: 'Slug inválido.' });
+    return modrinthGet(res, `${MODRINTH_API}/project/${encodeURIComponent(slug)}/version`);
 });
 
 // === Rutas internas Laravel -> Node ===

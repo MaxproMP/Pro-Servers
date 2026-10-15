@@ -64,6 +64,7 @@ Route::middleware('firebase.auth')->group(function () {
     Route::any('/project/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', '.*');
     Route::any('/server/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', '.*');
     Route::any('/curseforge/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', '.*');
+    Route::get('/modrinth/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', 'search|versions');
 });
 
 // === PANEL OVERWATCH ===

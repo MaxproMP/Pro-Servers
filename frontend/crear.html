@@ -1,1025 +1,849 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desplegar Servidor | Professional Servers V0.9 BETA</title>
-    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600&family=Press+Start+2P&display=swap"
-        rel="stylesheet">
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desplegar Servidor · ProServers</title>
+<link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+<style>
+:root{
+  --bg:#050609; --sf:#0B0D13; --sf2:#10131b; --bd:rgba(255,255,255,.08); --bd2:rgba(255,255,255,.16);
+  --tx:#e6e8ee; --mu:#8b93a7; --ok:#10B981; --vi:#8B5CF6; --cy:#06B6D4; --am:#F59E0B; --rd:#EF4444;
+  --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font:15px/1.55 'Plus Jakarta Sans',system-ui,sans-serif;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(900px 500px at 85% -10%,rgba(139,92,246,.12),transparent 60%),radial-gradient(800px 500px at -10% 30%,rgba(16,185,129,.08),transparent 60%);}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:48px 48px;
+  mask-image:linear-gradient(to bottom,#000,transparent 70%)}
+.mono,.num,code,input.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+svg.feather{width:16px;height:16px;stroke-width:2;flex:none}
+.wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:0 16px}
+@media(min-width:768px){.wrap{padding:0 28px}}
+.hidden{display:none!important}
 
-        body {
-            background: #0a0a0a;
-            color: white;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+/* --- Topbar --- */
+.top{position:sticky;top:0;z-index:30;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:rgba(5,6,9,.72);border-bottom:1px solid var(--bd)}
+.top .wrap{display:flex;align-items:center;gap:12px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em}
+.brand img{width:26px;height:26px}
+.brand small{font:600 10px 'JetBrains Mono',monospace;color:var(--mu);border:1px solid var(--bd);padding:2px 6px;border-radius:6px;letter-spacing:.08em}
+.nav{margin-left:auto;display:flex;align-items:center;gap:4px}
+.nav a,.nav button{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;color:var(--mu);font-size:13px;font-weight:600;transition:.2s}
+.nav a:hover,.nav button:hover{color:var(--tx);background:var(--sf2)}
+.nav .lbl{display:none}
+@media(min-width:768px){.nav .lbl{display:inline}}
+@media(max-width:767px){#role-chip,.brand small{display:none!important}.nav{gap:0}.nav a,.nav button{padding:8px}}
+.chip{display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid var(--bd);color:var(--mu);background:rgba(255,255,255,.02)}
+.chip.vi{color:#c4b5fd;border-color:rgba(139,92,246,.35);background:rgba(139,92,246,.08)}
+.chip.ok{color:#6ee7b7;border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.08)}
+.chip.am{color:#fcd34d;border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.08)}
+.chip.rd{color:#fca5a5;border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.08)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
+.dot.pulse{animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.35}}
 
-        .bg-glow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 50% 50%, #1a3a1a 0%, #0a0a0a 100%);
-            z-index: -1;
-        }
+/* --- Hero --- */
+.hero{padding:44px 0 28px;display:grid;gap:24px}
+@media(min-width:1024px){.hero{grid-template-columns:1.2fr 1fr;align-items:end;padding:64px 0 36px}}
+.eyebrow{font:600 12px 'JetBrains Mono',monospace;color:var(--ok);letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+h1{font-size:clamp(34px,6vw,60px);line-height:1.02;letter-spacing:-.035em;font-weight:800;margin-top:14px}
+h1 em{font-style:normal;background:linear-gradient(90deg,#34d399,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mu);max-width:52ch;margin-top:14px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.step{border:1px solid var(--bd);background:rgba(11,13,19,.6);border-radius:12px;padding:12px;transition:.3s}
+.step .n{font:600 11px 'JetBrains Mono',monospace;color:var(--mu)}
+.step .t{font-size:13px;font-weight:700;margin-top:4px}
+.step .bar{height:2px;border-radius:2px;background:var(--bd);margin-top:10px;overflow:hidden}
+.step .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--vi));transition:width .4s}
+.step.done{border-color:rgba(16,185,129,.35)}
+.step.done .bar i{width:100%}
+.step.done .n{color:var(--ok)}
 
-        .glass {
-            background: rgba(20, 20, 20, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-        }
+/* --- Panels / Bento --- */
+.panel{position:relative;background:rgba(11,13,19,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:var(--r);transition:border-color .3s,box-shadow .3s}
+.panel:hover{border-color:rgba(16,185,129,.28);box-shadow:0 0 0 1px rgba(16,185,129,.06),0 20px 60px -30px rgba(139,92,246,.35)}
+.panel-h{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--bd)}
+.panel-h .idx{font:600 12px 'JetBrains Mono',monospace;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;border:1px solid var(--bd2);color:var(--ok);background:rgba(16,185,129,.06)}
+.panel-h h2{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.panel-h p{font-size:12px;color:var(--mu)}
+.panel-h .chip{margin-left:auto}
+.panel-b{padding:20px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding-bottom:48px}
+@media(min-width:1024px){.layout{grid-template-columns:minmax(0,1fr) 340px;align-items:start}}
+.stack{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;min-width:0}
+.sticky{position:sticky;top:76px;display:grid;gap:16px}
 
-        .input-pro {
-            background: #161616;
-            border: 1px solid #333;
-            border-radius: 10px;
-            color: white;
-            padding: 12px;
-            outline: none;
-            transition: 0.3s;
-            width: 100%;
-            font-size: 14px;
-        }
+/* --- Form --- */
+.fields{display:grid;gap:14px}
+@media(min-width:640px){.fields.two{grid-template-columns:1fr 1fr}}
+label.f{display:grid;gap:6px;font-size:12px;font-weight:600;color:var(--mu);letter-spacing:.02em}
+.inp,select.inp{width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:11px 13px;color:var(--tx);font:500 14px 'Plus Jakarta Sans',sans-serif;outline:none;transition:.2s;appearance:none}
+select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%238b93a7' stroke-width='2'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+.inp:focus{border-color:rgba(16,185,129,.55);box-shadow:0 0 0 3px rgba(16,185,129,.12)}
+.inp.bad{border-color:rgba(239,68,68,.6)}
+.hint{font-size:11px;color:var(--mu);font-weight:500}
+.hint.err{color:#fca5a5}
+.counter{font:500 11px 'JetBrains Mono',monospace;color:var(--mu);justify-self:end;margin-top:-2px}
 
-        .input-pro:focus {
-            border-color: #4CAF50;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
-            background: #1a1a1a;
-        }
+/* Edition toggle */
+.seg{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--sf2);border:1px solid var(--bd);border-radius:12px;padding:4px}
+.seg .knob{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:9px;background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(139,92,246,.18));border:1px solid var(--bd2);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.seg[data-v="bedrock"] .knob{transform:translateX(100%)}
+.seg button{position:relative;z-index:1;padding:12px 10px;border-radius:9px;text-align:left;display:flex;gap:10px;align-items:center}
+.seg button b{display:block;font-size:14px}
+.seg button span{display:block;font-size:11px;color:var(--mu)}
+.seg button[aria-pressed="false"]{opacity:.6}
+.portline{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 
-        .btn-crear {
-            background: #4CAF50;
-            color: white;
-            font-weight: bold;
-            padding: 15px;
-            border-radius: 12px;
-            transition: 0.3s;
-            text-transform: uppercase;
-            cursor: pointer;
-            border: none;
-            width: 100%;
-        }
+/* Engine cards */
+.engines{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:18px}
+@media(min-width:640px){.engines{grid-template-columns:repeat(3,1fr)}}
+.eng{position:relative;text-align:left;padding:14px;border-radius:12px;border:1px solid var(--bd);background:var(--sf2);transition:.2s;min-height:92px}
+.eng:hover{border-color:var(--bd2);transform:translateY(-1px)}
+.eng[aria-checked="true"]{border-color:rgba(16,185,129,.6);background:linear-gradient(160deg,rgba(16,185,129,.1),rgba(139,92,246,.06));box-shadow:0 0 24px -8px rgba(16,185,129,.45)}
+.eng[aria-checked="true"]::after{content:"";position:absolute;top:12px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.eng b{font-size:14px;display:block}
+.eng span{font-size:11.5px;color:var(--mu);display:block;margin-top:4px;line-height:1.4}
+.eng code{font-size:10px;color:var(--vi);letter-spacing:.06em}
 
-        .btn-crear:hover {
-            background: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
-        }
+/* Source tabs */
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.tabs button{display:flex;align-items:center;gap:8px;white-space:nowrap;padding:9px 13px;border-radius:10px;border:1px solid var(--bd);font-size:13px;font-weight:600;color:var(--mu);transition:.2s}
+.tabs button[aria-selected="true"]{color:var(--tx);border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.1)}
+.tabs button:disabled{opacity:.35;cursor:not-allowed}
+.tabs img{width:14px;height:14px}
+.searchbar{display:flex;gap:8px;margin-top:16px}
+.searchbar .inp{flex:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:10px;font-weight:700;font-size:13px;border:1px solid var(--bd2);background:var(--sf2);transition:.2s}
+.btn:hover{border-color:rgba(255,255,255,.3)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pri{border:0;color:#04120c;background:linear-gradient(135deg,#34d399,#10b981);box-shadow:0 10px 30px -12px rgba(16,185,129,.7)}
+.btn.pri:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px)}
+.btn.danger{color:#fca5a5}
+.btn.danger:hover{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.08)}
+.btn.block{width:100%;padding:15px}
+.packs{display:grid;gap:10px;margin-top:14px;max-height:440px;overflow:auto;padding-right:2px}
+@media(min-width:640px){.packs{grid-template-columns:1fr 1fr}}
+.pack{display:flex;gap:12px;text-align:left;padding:12px;border-radius:12px;border:1px solid var(--bd);background:var(--sf2);transition:.2s;min-width:0}
+.pack:hover{border-color:var(--bd2)}
+.pack[aria-checked="true"]{border-color:rgba(139,92,246,.6);background:rgba(139,92,246,.08)}
+.pack img{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#151925;flex:none}
+.pack div{min-width:0}
+.pack b{font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pack p{font-size:11.5px;color:var(--mu);display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pack small{font:500 10.5px 'JetBrains Mono',monospace;color:var(--mu)}
+.empty{display:grid;place-items:center;text-align:center;gap:8px;padding:34px 16px;border:1px dashed var(--bd2);border-radius:12px;color:var(--mu);font-size:13px;margin-top:14px}
+.empty svg.feather{width:22px;height:22px}
+details.url{margin-top:16px;border:1px solid var(--bd);border-radius:12px;background:var(--sf2)}
+details.url summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px;font-weight:700;font-size:13.5px}
+details.url summary::-webkit-details-marker{display:none}
+details.url summary .chev{margin-left:auto;transition:transform .25s}
+details.url[open] summary .chev{transform:rotate(180deg)}
+details.url .body{padding:0 14px 14px;display:grid;gap:12px}
+.rules{display:grid;gap:6px;font-size:12px;color:var(--mu)}
+.rules li{list-style:none;display:flex;gap:8px;align-items:center}
+.rules svg.feather{width:13px;height:13px;color:var(--ok)}
+.skeleton{height:68px;border-radius:12px;background:linear-gradient(90deg,var(--sf2),#161a24,var(--sf2));background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{to{background-position:-200% 0}}
 
-        .btn-crear:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-            background: #555;
-        }
+/* Summary */
+.sum{display:grid;gap:0}
+.sum div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed var(--bd);font-size:13px}
+.sum div:last-child{border-bottom:0}
+.sum dt{color:var(--mu)}
+.sum dd{font-family:'JetBrains Mono',monospace;font-size:12.5px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%}
 
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(5, 5, 5, 0.96);
-            backdrop-filter: blur(15px);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease;
-        }
+/* Fleet */
+.fleet{display:grid;gap:12px;margin-bottom:28px}
+@media(min-width:640px){.fleet{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1024px){.fleet{grid-template-columns:repeat(3,1fr)}}
+.srv{padding:16px;display:grid;gap:14px}
+.srv h3{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srv .meta{display:flex;flex-wrap:wrap;gap:6px}
+.srv .act{display:flex;gap:8px}
+.srv .act .btn{flex:1;padding:9px}
+.sec-h{display:flex;align-items:baseline;gap:12px;margin:8px 0 14px}
+.sec-h h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--mu)}
+.sec-h .ln{flex:1;height:1px;background:var(--bd)}
 
-        .loading-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
+/* Deploy overlay */
+.ov{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:rgba(3,4,6,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .3s}
+.ov.on{opacity:1;pointer-events:auto}
+.ov .panel{width:min(560px,100%)}
+.ring{width:56px;height:56px;border-radius:50%;border:2px solid var(--bd);border-top-color:var(--ok);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prog{height:8px;border-radius:99px;background:var(--sf2);border:1px solid var(--bd);overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--cy),var(--vi));background-size:200% 100%;animation:flow 2s linear infinite;transition:width .5s}
+@keyframes flow{to{background-position:-200% 0}}
+.log{font:500 12px 'JetBrains Mono',monospace;background:#07080c;border:1px solid var(--bd);border-radius:10px;padding:12px;max-height:170px;overflow:auto;display:grid;gap:4px;color:var(--mu)}
+.log .k{color:var(--ok)}
+.log .e{color:#fca5a5}
+.ov.err .ring{animation:none;border-color:rgba(239,68,68,.5)}
+.ov.err .prog i{background:var(--rd);animation:none}
 
-        .spinner-ring {
-            width: 80px;
-            height: 80px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: currentColor;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+/* Toast / dialog / support drawer */
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);z-index:80;opacity:0;transition:.3s;max-width:calc(100% - 32px);display:flex;gap:10px;align-items:center;padding:12px 16px;border-radius:12px;background:#11141c;border:1px solid var(--bd2);font-size:13px;box-shadow:0 20px 50px -20px #000}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast.err{border-color:rgba(239,68,68,.45)}
+dialog{margin:auto;background:var(--sf);color:var(--tx);border:1px solid var(--bd2);border-radius:var(--r);padding:22px;width:min(420px,calc(100% - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.7);backdrop-filter:blur(4px)}
+dialog h3{font-size:17px;margin-bottom:8px}
+dialog p{color:var(--mu);font-size:13.5px}
+dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.drawer{position:fixed;top:0;right:0;bottom:0;z-index:70;width:min(400px,100%);background:var(--sf);border-left:1px solid var(--bd2);transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);display:grid;grid-template-rows:auto 1fr auto}
+.drawer.on{transform:none}
+.drawer .msgs{overflow:auto;padding:16px;display:grid;gap:10px;align-content:start}
+.bub{max-width:85%;padding:10px 12px;border-radius:12px;font-size:13px;background:var(--sf2);border:1px solid var(--bd);white-space:pre-wrap;word-break:break-word}
+.bub.me{justify-self:end;background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3)}
+.drawer form{display:flex;gap:8px;padding:12px;border-top:1px solid var(--bd)}
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .glow-purple {
-            box-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #111;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-    </style>
+/* Footer */
+footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:linear-gradient(to bottom,rgba(11,13,19,.4),#030406);margin-top:24px}
+.ft{display:grid;gap:36px;padding:56px 0 32px}
+@media(min-width:768px){.ft{grid-template-columns:1.4fr 1fr 1fr 1fr}}
+.ft h4{font:600 11px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--mu);margin-bottom:14px}
+.ft ul{list-style:none;display:grid;gap:10px;font-size:14px}
+.ft ul a,.ft ul button{color:#c3c8d4;transition:.2s}
+.ft ul a:hover,.ft ul button:hover{color:var(--ok)}
+.ft .about p{color:var(--mu);font-size:13.5px;max-width:36ch;margin:14px 0 18px}
+.socials{display:flex;flex-wrap:wrap;gap:8px}
+.soc{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);transition:.25s}
+.soc i{width:17px;height:17px;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+.soc:hover{color:#fff;border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.12);transform:translateY(-2px)}
+.ft-b{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:20px 0 28px;border-top:1px solid var(--bd);font-size:12px;color:var(--mu)}
+.mega{font-weight:800;letter-spacing:-.05em;font-size:clamp(48px,13vw,170px);line-height:.8;text-align:center;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.07);user-select:none;padding-top:8px;overflow:hidden;white-space:nowrap}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
-
 <body>
-    <div class="bg-glow"></div>
-    <div class="max-w-5xl mx-auto p-6 pt-12">
-        <div class="flex flex-col md:flex-row items-center justify-between mb-10 gap-4">
-            <div class="flex items-center gap-4">
-                <img src="/img/favicon.ico" class="w-14 h-14 object-contain drop-shadow-[0_0_12px_rgba(76,175,80,0.5)]"
-                    onerror="this.src='/img/logo-minecraft.ico'">
-                <div>
-                    <h1
-                        class="text-3xl font-bold font-['Cinzel'] tracking-wider text-white uppercase flex items-center gap-3">
-                        Nuevo Proyecto
-                        <span id="ceo-badge"
-                            class="hidden text-[9px] bg-purple-600 text-white px-2 py-1 rounded border border-purple-400 glow-purple tracking-widest font-sans font-bold">MODO
-                            CEO</span>
-                    </h1>
-                    <p class="text-xs text-green-500 font-bold uppercase tracking-widest">Infraestructura V0.9 Pro</p>
-                </div>
-            </div>
-            <button onclick="window.cerrarSesion()"
-                class="text-xs text-gray-400 hover:text-red-500 transition-colors uppercase font-bold flex items-center gap-2 bg-[#111] px-4 py-2 rounded-lg border border-[#333] hover:border-red-500/50">
-                <i data-feather="log-out" class="w-4 h-4"></i> Cerrar Sesión
-            </button>
+
+<header class="top">
+  <div class="wrap">
+    <a href="/crear.html" class="brand"><img src="/img/favicon.ico" alt="">ProServers <small>DEPLOY</small></a>
+    <nav class="nav">
+      <span id="role-chip" class="chip vi hidden"></span>
+      <a href="/admin.html" id="nav-admin" class="hidden"><i data-feather="shield"></i><span class="lbl">Overwatch</span></a>
+      <a href="/planes.html"><i data-feather="layers"></i><span class="lbl">Planes</span></a>
+      <a href="/perfil.html"><i data-feather="user"></i><span class="lbl">Perfil</span></a>
+      <button type="button" id="btn-logout" title="Cerrar sesión"><i data-feather="log-out"></i><span class="lbl">Salir</span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <div class="eyebrow"><span class="dot pulse"></span>Centro de despliegue</div>
+      <h1>Levantá tu servidor<br><em>en tres pasos.</em></h1>
+      <p class="lead">Elegí nombre, edición y motor. Opcionalmente sumá un modpack o tu propio ZIP. Los recursos de hardware salen de tu plan.</p>
+    </div>
+    <div class="steps" aria-label="Progreso">
+      <div class="step" id="st-1"><div class="n">01 / IDENTIDAD</div><div class="t">Nombre</div><div class="bar"><i></i></div></div>
+      <div class="step" id="st-2"><div class="n">02 / MOTOR</div><div class="t">Infraestructura</div><div class="bar"><i></i></div></div>
+      <div class="step" id="st-3"><div class="n">03 / CONTENIDO</div><div class="t">Modpack o URL</div><div class="bar"><i></i></div></div>
+    </div>
+  </section>
+
+  <section id="fleet-sec" class="hidden">
+    <div class="sec-h"><h2>Tu flota</h2><span class="ln"></span><span class="chip mono" id="fleet-count">0</span></div>
+    <div class="fleet" id="fleet"></div>
+  </section>
+
+  <form id="deploy-form" class="layout" novalidate autocomplete="off">
+    <div class="stack">
+      <!-- PASO 1 -->
+      <section class="panel">
+        <header class="panel-h"><span class="idx">01</span><div><h2>Identidad del servidor</h2><p>Cómo lo van a ver vos y tus jugadores.</p></div></header>
+        <div class="panel-b fields two">
+          <label class="f">Nombre del servidor
+            <input class="inp" id="f-name" maxlength="32" placeholder="Ej: Survival Tierra Media" required>
+            <span class="hint" id="name-hint">3 a 32 caracteres: letras, números, espacios, _ . -</span>
+          </label>
+          <label class="f">MOTD (mensaje en la lista)
+            <input class="inp" id="f-motd" maxlength="59" placeholder="Professional Server">
+            <span class="counter" id="motd-count">0/59</span>
+          </label>
         </div>
+      </section>
 
-        <div id="servers-list-container" class="mb-8"></div>
-
-        <form id="view-create" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="glass p-8 space-y-6">
-                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-[#333] pb-3">
-                    Identidad</h3>
-                <div class="space-y-2">
-                    <label class="text-xs text-gray-500 uppercase font-bold">Nombre del Proyecto</label>
-                    <input type="text" id="custom-name" class="input-pro" placeholder="Ej: Mi Mundo" required>
-                </div>
-                <div class="space-y-2">
-                    <label class="text-xs text-gray-500 uppercase font-bold">MOTD (Mensaje en el cliente)</label>
-                    <input type="text" id="custom-motd" class="input-pro"
-                        placeholder="Ej: ¡Bienvenidos a nuestro server!" required>
-                </div>
-                <div class="space-y-2">
-                    <label class="text-xs text-gray-500 uppercase font-bold">Edición</label>
-                    <select id="server-edition" class="input-pro">
-                        <option value="java">Java Edition (PC)</option>
-                        <option value="bedrock">Bedrock (Consola/Mobile)</option>
-                    </select>
-                </div>
-
-                <div id="modpack-section" class="pt-4 mt-6 border-t border-[#333]">
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Instalación Inicial</h3>
-                    <select id="install-type" class="input-pro mb-4">
-                        <option value="clean">Instalación Limpia (Solo Motor)</option>
-                        <option value="cf_modpack">Buscar Modpack en CurseForge</option>
-                        <option value="url_modpack">Importar Modpack por URL (MediaFire/Directo)</option>
-                    </select>
-
-                    <div id="modpack-warning-msg"
-                        class="hidden bg-red-950/40 border border-red-500 p-6 rounded-xl mb-4 text-center shadow-[0_0_20px_rgba(220,38,38,0.15)]">
-                        <i data-feather="alert-octagon" class="w-10 h-10 text-red-500 mx-auto mb-3"></i>
-                        <p class="text-sm text-white font-bold mb-2">Función Premium Bloqueada</p>
-                        <p class="text-xs text-gray-400">Los Modpacks masivos requieren descompresión profunda y el
-                            Gestor de Archivos activado para configurarlos correctamente. Para desbloquear esta función
-                            necesitas actualizar al <b class="text-yellow-500">Plan Oro (16GB)</b> o superior.</p>
-                        <button type="button" onclick="window.location.href='/planes.html'"
-                            class="mt-4 w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-lg transition-colors uppercase text-xs tracking-wider shadow-lg shadow-red-950/50">
-                            Mejorar a Plan Oro
-                        </button>
-                    </div>
-
-                    <div id="cf-modpack-container"
-                        class="hidden space-y-4 bg-[#111] p-4 rounded-lg border border-[#333]">
-                        <div class="flex gap-2">
-                            <input type="text" id="cf-search-input" class="input-pro !py-2"
-                                placeholder="Ej: Create Ultimate Selection...">
-                            <button type="button" id="btn-cf-search" onclick="window.buscarModpacksCF()"
-                                class="bg-indigo-600 hover:bg-indigo-500 px-4 rounded-lg text-white font-bold transition-colors flex justify-center items-center">
-                                <i data-feather="search" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                        <div id="cf-results" class="max-h-48 overflow-y-auto space-y-2 pr-1"></div>
-                        <input type="hidden" id="selected-cf-id" value="">
-                    </div>
-
-                    <div id="url-modpack-container"
-                        class="hidden space-y-2 bg-[#111] p-4 rounded-lg border border-[#333]">
-                        <label class="text-xs text-gray-400 font-bold">URL Directa del ZIP (.zip)</label>
-                        <input type="url" id="modpack-url-input" class="input-pro"
-                            placeholder="https://www.mediafire.com/file/... o URL directa">
-                        <p class="text-[10px] text-yellow-500"><i data-feather="alert-circle"
-                                class="inline w-3 h-3"></i> Se descargará y extraerá en la raíz del servidor
-                            automáticamente.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass p-8 space-y-6 flex flex-col justify-between relative">
-                <div>
-                    <h3
-                        class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-[#333] pb-3">
-                        Configuración de Motor</h3>
-
-                    <div id="config-motor-container">
-                        <div class="space-y-2 mb-6">
-                            <label class="text-xs text-gray-500 uppercase font-bold">Software / Motor</label>
-                            <select id="software-select" class="input-pro"></select>
-                            <div id="software-msg" class="text-[10px] text-yellow-500 flex items-center gap-1 mt-1">
-                            </div>
-                        </div>
-
-                        <div id="version-section" class="space-y-2">
-                            <label class="text-xs text-gray-500 uppercase font-bold">Versión</label>
-                            <select id="mc-version-select" class="input-pro">
-                                <option value="LATEST">Última versión disponible (LATEST)</option>
-                                <option value="26.2">26.2 (NUEVA)</option>
-                                <option value="26.1.2">26.1.2</option>
-                                <option value="26.1.1">26.1.1</option>
-                                <option value="26.1">26.1</option>
-                                <option value="1.21.11">1.21.11</option>
-                                <option value="1.21.10">1.21.10</option>
-                                <option value="1.21.9">1.21.9</option>
-                                <option value="1.21.8">1.21.8</option>
-                                <option value="1.21.7">1.21.7</option>
-                                <option value="1.21.6">1.21.6</option>
-                                <option value="1.21.5">1.21.5</option>
-                                <option value="1.21.4">1.21.4</option>
-                                <option value="1.21.3">1.21.3</option>
-                                <option value="1.21.1">1.21.1</option>
-                                <option value="1.21">1.21</option>
-                                <option value="1.20.6">1.20.6</option>
-                                <option value="1.20.4">1.20.4</option>
-                                <option value="1.20.3">1.20.3</option>
-                                <option value="1.20.2">1.20.2</option>
-                                <option value="1.20.1">1.20.1</option>
-                                <option value="1.20">1.20</option>
-                                <option value="1.19.4">1.19.4</option>
-                                <option value="1.19.3">1.19.3</option>
-                                <option value="1.19.2">1.19.2</option>
-                                <option value="1.19.1">1.19.1</option>
-                                <option value="1.19">1.19</option>
-                                <option value="1.18.2">1.18.2</option>
-                                <option value="1.18.1">1.18.1</option>
-                                <option value="1.18">1.18</option>
-                                <option value="1.17.1">1.17.1</option>
-                                <option value="1.16.5">1.16.5</option>
-                                <option value="1.16.4">1.16.4</option>
-                                <option value="1.16.3">1.16.3</option>
-                                <option value="1.16.2">1.16.2</option>
-                                <option value="1.16.1">1.16.1</option>
-                                <option value="1.15.2">1.15.2</option>
-                                <option value="1.15.1">1.15.1</option>
-                                <option value="1.15">1.15</option>
-                                <option value="1.14.4">1.14.4</option>
-                                <option value="1.14.3">1.14.3</option>
-                                <option value="1.14.2">1.14.2</option>
-                                <option value="1.13.2">1.13.2</option>
-                                <option value="1.12.2">1.12.2</option>
-                                <option value="1.12.1">1.12.1</option>
-                                <option value="1.12">1.12</option>
-                                <option value="1.11.2">1.11.2</option>
-                                <option value="1.11">1.11</option>
-                                <option value="1.10.2">1.10.2</option>
-                                <option value="1.10">1.10</option>
-                                <option value="1.9.4">1.9.4</option>
-                                <option value="1.9">1.9</option>
-                                <option value="1.8.9">1.8.9</option>
-                                <option value="1.8.8">1.8.8</option>
-                                <option value="1.8">1.8</option>
-                                <option value="1.7.10">1.7.10</option>
-                                <option value="1.7.10_pre4">1.7.10_pre4</option>
-                                <option value="1.7.2">1.7.2</option>
-                                <option value="1.6.4">1.6.4</option>
-                                <option value="1.6.3">1.6.3</option>
-                                <option value="1.6.2">1.6.2</option>
-                                <option value="1.6.1">1.6.1</option>
-                                <option value="1.5.2">1.5.2</option>
-                                <option value="1.5.1">1.5.1</option>
-                                <option value="1.5">1.5</option>
-                                <option value="1.4.7">1.4.7</option>
-                                <option value="1.4.6">1.4.6</option>
-                                <option value="1.4.5">1.4.5</option>
-                                <option value="1.4.4">1.4.4</option>
-                                <option value="1.4.3">1.4.3</option>
-                                <option value="1.4.2">1.4.2</option>
-                                <option value="1.4.1">1.4.1</option>
-                                <option value="1.4.0">1.4.0</option>
-                                <option value="1.3.2">1.3.2</option>
-                                <option value="1.2.5">1.2.5</option>
-                                <option value="1.2.4">1.2.4</option>
-                                <option value="1.2.3">1.2.3</option>
-                                <option value="1.1">1.1</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="auto-config-msg"
-                        class="hidden text-center py-6 bg-[#111] border border-indigo-500/30 rounded-xl">
-                        <i data-feather="cpu" class="w-12 h-12 text-indigo-500 mx-auto mb-3 opacity-80"></i>
-                        <h4 class="text-white font-bold mb-1">Ajuste Automático</h4>
-                        <p class="text-xs text-gray-400 px-4">El servidor se configurará usando el modpack oficial de
-                            CurseForge.</p>
-                    </div>
-                </div>
-
-                <div class="pt-6 mt-6 border-t border-[#333]">
-                    <button type="submit" id="btn-submit-create" class="btn-crear">Desplegar Servidor</button>
-                    <p id="limit-msg" class="text-xs text-red-500 font-bold mt-3 text-center hidden"></p>
-                </div>
-            </div>
-        </form>
-
-        <div id="loading-overlay" class="loading-overlay">
-            <div id="loading-spinner" class="spinner-ring"></div>
-            <h2 id="loading-title"
-                class="mt-8 text-3xl font-bold font-['Cinzel'] tracking-widest text-green-400 drop-shadow-[0_0_15px_rgba(76,175,80,0.6)]">
-                CONFIGURANDO NODO</h2>
-            <p id="loading-desc" class="text-gray-400 font-mono text-sm mt-3 uppercase tracking-wider">Iniciando
-                secuencia de despliegue...</p>
-
-            <div class="w-full max-w-md mt-10">
-                <div class="flex justify-between text-[11px] text-gray-500 mb-2 uppercase font-bold tracking-widest">
-                    <span id="loading-step">Procesando...</span>
-                    <span id="loading-pct" class="text-white font-mono">0%</span>
-                </div>
-                <div
-                    class="w-full bg-[#111] border border-[#333] rounded-full h-3 overflow-hidden relative shadow-inner">
-                    <div id="loading-bar"
-                        class="h-full w-0 bg-gradient-to-r from-green-600 to-green-400 transition-all duration-300 shadow-[0_0_10px_rgba(76,175,80,0.8)]">
-                    </div>
-                </div>
-            </div>
+      <!-- PASO 2 -->
+      <section class="panel">
+        <header class="panel-h"><span class="idx">02</span><div><h2>Motor e infraestructura</h2><p>Edición, software y versión del contenedor.</p></div></header>
+        <div class="panel-b">
+          <div class="seg" id="edition" data-v="java" role="group" aria-label="Edición">
+            <span class="knob"></span>
+            <button type="button" data-ed="java" aria-pressed="true"><i data-feather="monitor"></i><div><b>Java Edition</b><span>PC · Mac · Linux</span></div></button>
+            <button type="button" data-ed="bedrock" aria-pressed="false"><i data-feather="smartphone"></i><div><b>Bedrock Edition</b><span>Mobile · Win10 · Consolas</span></div></button>
+          </div>
+          <div class="portline" id="portline"></div>
+          <div class="engines" id="engines" role="radiogroup" aria-label="Motor"></div>
+          <div class="fields two" style="margin-top:18px">
+            <label class="f">Versión
+              <select class="inp mono" id="f-version"></select>
+              <span class="hint" id="ver-hint"></span>
+            </label>
+            <label class="f">Imagen del contenedor
+              <input class="inp mono" id="f-image" readonly tabindex="-1">
+              <span class="hint">Asignada automáticamente según la edición.</span>
+            </label>
+          </div>
         </div>
+      </section>
+
+      <!-- PASO 3 -->
+      <section class="panel" id="panel-src">
+        <header class="panel-h"><span class="idx">03</span><div><h2>Modpacks o URL personalizada</h2><p>Opcional. Solo disponible en Java Edition.</p></div><span class="chip" id="src-chip">Limpio</span></header>
+        <div class="panel-b">
+          <div class="tabs" role="tablist">
+            <button type="button" role="tab" data-src="none" aria-selected="true"><i data-feather="box"></i>Instalación limpia</button>
+            <button type="button" role="tab" data-src="curseforge" aria-selected="false"><i data-feather="zap"></i>CurseForge</button>
+            <button type="button" role="tab" data-src="modrinth" aria-selected="false"><img src="/img/modrinth.ico" alt="">Modrinth</button>
+          </div>
+
+          <div id="src-none" class="empty"><i data-feather="package"></i>El servidor arranca sin mods con el motor elegido.</div>
+
+          <div id="src-search" class="hidden">
+            <div class="searchbar">
+              <input class="inp" id="pack-q" placeholder="Buscar modpacks: ATM, RLCraft, Create…" maxlength="80">
+              <button type="button" class="btn" id="pack-go"><i data-feather="search"></i></button>
+            </div>
+            <div class="packs" id="packs"></div>
+            <label class="f hidden" id="pack-file-wrap" style="margin-top:14px">Versión del modpack
+              <select class="inp mono" id="pack-file"></select>
+            </label>
+          </div>
+
+          <details class="url" id="url-box">
+            <summary><i data-feather="link"></i>Instalación por URL / archivo externo<i data-feather="chevron-down" class="chev"></i></summary>
+            <div class="body">
+              <label class="f">Enlace directo al .zip (modpack o mapa)
+                <input class="inp mono" id="f-url" type="url" inputmode="url" placeholder="https://cdn.ejemplo.com/pack.zip">
+                <span class="hint" id="url-hint"></span>
+              </label>
+              <ul class="rules">
+                <li><i data-feather="check"></i>Solo HTTPS y archivos .zip de hasta 2 GB.</li>
+                <li><i data-feather="check"></i>El daemon valida el destino (bloquea redes privadas) antes de descargar.</li>
+                <li><i data-feather="check"></i>Se descomprime en el volumen persistente de tu servidor.</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </section>
     </div>
 
-    <script type="module">
-        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAg-wvhB7iaHOF5UOSsOOOz6le1ZutVmMM",
-            authDomain: "proffesional-server.firebaseapp.com",
-            projectId: "proffesional-server",
-            storageBucket: "proffesional-server.firebasestorage.app",
-            messagingSenderId: "833822850667",
-            appId: "1:833822850667:web:3c03219c6822116edbfb2e",
-            measurementId: "G-8SZ528Y5NZ"
-        };
-
-        const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-        const auth = getAuth(app);
-
-        const API_URL = window.location.protocol + '//' + window.location.hostname;
-
-        window.userPlan = { name: 'Plan Redstone', maxServers: 1, ram: '8GB', ramNum: 8, fileManager: false };
-
-        const getDeployText = () => {
-            const isCEO = auth.currentUser && auth.currentUser.email === 'rodasmaximo51@gmail.com';
-            if (isCEO) return 'DESPLEGAR SERVIDOR (MODO DIOS: ∞ RAM)';
-            return `DESPLEGAR SERVIDOR (${window.userPlan?.ram || '8GB'} RAM)`;
-        };
-
-        const javaSoftwares = `
-            <optgroup label="Vanilla Oficial">
-                <option value="vanilla">Vanilla</option>
-                <option value="snapshot">Snapshot</option>
-            </optgroup>
-            <optgroup label="Para Plugins">
-                <option value="paper">Paper/Bukkit</option>
-                <option value="spigot">Spigot/Bukkit</option>
-                <option value="purpur">Purpur/Bukkit</option>
-            </optgroup>
-            <optgroup label="Para Mods">
-                <option value="fabric">Fabric</option>
-                <option value="quilt">Quilt</option>
-                <option value="neoforge">NeoForge</option>
-                <option value="forge">Forge</option>
-            </optgroup>
-            <optgroup label="Híbrido (Mods + Plugins)">
-                <option value="arclight">Arclight</option>
-            </optgroup>
-        `;
-
-        const bedrockSoftwares = `
-            <optgroup label="Bedrock Oficial">
-                <option value="bedrock">Bedrock Oficial (LATEST)</option>
-                <option value="preview">Bedrock Preview</option>
-            </optgroup>
-            <optgroup label="Para Plugins">
-                <option value="pocketmine">PocketMine-MP</option>
-            </optgroup>
-        `;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const softwareSelect = document.getElementById('software-select');
-            const mcVersion = document.getElementById('mc-version-select');
-            const softwareMsg = document.getElementById('software-msg');
-            const btnSubmit = document.getElementById('btn-submit-create');
-            const installTypeSelect = document.getElementById('install-type');
-            const cfContainer = document.getElementById('cf-modpack-container');
-            const urlContainer = document.getElementById('url-modpack-container');
-            const configMotorContainer = document.getElementById('config-motor-container');
-            const autoConfigMsg = document.getElementById('auto-config-msg');
-            const modpackWarningMsg = document.getElementById('modpack-warning-msg');
-
-            softwareSelect.innerHTML = javaSoftwares;
-
-            installTypeSelect.addEventListener('change', (e) => {
-                cfContainer.classList.add('hidden');
-                urlContainer.classList.add('hidden');
-                modpackWarningMsg.classList.add('hidden');
-
-                const isModpack = e.target.value === 'cf_modpack' || e.target.value === 'url_modpack';
-                const isCEO = auth.currentUser && auth.currentUser.email === 'rodasmaximo51@gmail.com';
-
-                if (isModpack && !window.userPlan.fileManager && !isCEO) {
-                    configMotorContainer.classList.add('hidden');
-                    autoConfigMsg.classList.add('hidden');
-                    modpackWarningMsg.classList.remove('hidden');
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerText = "REQUIERE PLAN ORO O SUPERIOR";
-                    return;
-                }
-
-                if (e.target.value === 'clean') {
-                    configMotorContainer.classList.remove('hidden');
-                    autoConfigMsg.classList.add('hidden');
-                    updateSoftwareMsg();
-                } else if (e.target.value === 'url_modpack') {
-                    configMotorContainer.classList.remove('hidden');
-                    autoConfigMsg.classList.add('hidden');
-                    urlContainer.classList.remove('hidden');
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerText = getDeployText();
-                } else {
-                    configMotorContainer.classList.add('hidden');
-                    autoConfigMsg.classList.remove('hidden');
-                    cfContainer.classList.remove('hidden');
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerText = "SELECCIONA UN MODPACK ARRIBA";
-                }
-            });
-
-            document.getElementById('server-edition').addEventListener('change', (e) => {
-                const isBedrock = e.target.value === 'bedrock';
-                softwareSelect.innerHTML = isBedrock ? bedrockSoftwares : javaSoftwares;
-                document.getElementById('version-section').style.display = isBedrock ? 'none' : 'block';
-                document.getElementById('modpack-section').style.display = isBedrock ? 'none' : 'block';
-                if (isBedrock) {
-                    installTypeSelect.value = 'clean';
-                    installTypeSelect.dispatchEvent(new Event('change'));
-                }
-                updateSoftwareMsg();
-            });
-
-            function updateSoftwareMsg() {
-                if (installTypeSelect.value === 'cf_modpack') return;
-                const val = softwareSelect.value || '';
-                const ver = mcVersion.value || '';
-                const isBedrock = document.getElementById('server-edition').value === 'bedrock';
-
-                if (isBedrock) {
-                    softwareMsg.innerHTML = '<i data-feather="check"></i> Configuración lista para Bedrock.';
-                    softwareMsg.className = 'text-[10px] text-green-400 font-bold flex items-center gap-1 mt-1';
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerText = getDeployText();
-                } else {
-                    const esVersionBloqueada = (ver.startsWith('26.') || ver === 'LATEST');
-                    const esMotorDeMods = val && ['forge', 'fabric', 'quilt', 'neoforge', 'arclight'].includes(val);
-
-                    if (esVersionBloqueada && esMotorDeMods) {
-                        softwareMsg.innerHTML = '<i data-feather="lock"></i> BLOQUEO: Selecciona una versión específica para usar mods.';
-                        softwareMsg.className = 'text-[10px] text-red-500 font-bold flex items-center gap-1 mt-1';
-                        btnSubmit.disabled = true;
-                        btnSubmit.innerText = "VERSIÓN NO COMPATIBLE";
-                    } else {
-                        softwareMsg.innerHTML = '<i data-feather="check"></i> Configuración válida.';
-                        softwareMsg.className = 'text-[10px] text-green-400 font-bold flex items-center gap-1 mt-1';
-                        btnSubmit.disabled = false;
-                        btnSubmit.innerText = getDeployText();
-                    }
-                }
-                feather.replace();
-            }
-
-            softwareSelect.addEventListener('change', updateSoftwareMsg);
-            mcVersion.addEventListener('change', updateSoftwareMsg);
-            updateSoftwareMsg();
-
-            window.buscarModpacksCF = async () => {
-                const btn = document.getElementById('btn-cf-search');
-                const input = document.getElementById('cf-search-input').value;
-                const resDiv = document.getElementById('cf-results');
-
-                if (btn) btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i>';
-                feather.replace();
-                resDiv.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Buscando modpacks en CurseForge...</p>';
-
-                try {
-                    const token = await auth.currentUser.getIdToken();
-                    let fetchUrl = `${API_URL}/api/curseforge/search?classId=4471&pageSize=50&sortField=5`;
-                    if (input && input.trim() !== '') {
-                        fetchUrl += `&searchFilter=${encodeURIComponent(input.trim())}`;
-                    }
-
-                    const res = await fetch(fetchUrl, {
-                        headers: { 'Authorization': 'Bearer ' + token }
-                    });
-
-                    if (!res.ok) {
-                        const errTxt = await res.text();
-                        throw new Error(`Error en el servidor o CurseForge no responde. (HTTP ${res.status}: ${errTxt})`);
-                    }
-
-                    const data = await res.json();
-
-                    resDiv.innerHTML = '';
-                    let found = 0;
-                    const searchTerm = input.trim().toLowerCase();
-                    const matchingMods = (data.data || []).filter(mod => {
-                        if (!searchTerm) return true;
-                        return `${mod.name || ''} ${mod.slug || ''}`.toLowerCase().includes(searchTerm);
-                    });
-
-                    if (matchingMods.length > 0) {
-                        matchingMods.forEach(mod => {
-                            found++;
-                            const icon = (mod.logo && mod.logo.url) ? mod.logo.url : "/img/favicon.ico";
-
-                            const hasServerPack = mod.latestFiles && mod.latestFiles.some(f => f.isServerPack === true);
-
-                            const badgeHtml = hasServerPack
-                                ? `<span class="text-[9px] bg-green-600/20 text-green-400 border border-green-600/50 px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1 shadow-sm"><i data-feather="server" class="w-3 h-3"></i> Server Pack Oficial</span>`
-                                : `<span class="text-[9px] bg-red-600/20 text-red-400 border border-red-600/50 px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1 shadow-sm"><i data-feather="x-circle" class="w-3 h-3"></i> Incompatible (Solo Cliente)</span>`;
-
-                            const clickAttr = hasServerPack ? `onclick="window.seleccionarModpack('${mod.id}', this)"` : `onclick="alert('Este modpack no posee archivos configurados para servidor (Server Pack). Solo puede instalarse en clientes.')"`;
-                            const opacityClass = hasServerPack ? '' : 'opacity-60 grayscale cursor-not-allowed';
-
-                            resDiv.innerHTML += `
-                                <div ${clickAttr} class="modpack-card flex gap-3 p-3 bg-[#161616] border border-[#333] rounded-lg hover:border-indigo-500 transition-colors ${opacityClass} ${hasServerPack ? 'cursor-pointer' : ''}">
-                                    <img src="${icon}" class="w-12 h-12 rounded object-cover shadow-md">
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="text-sm font-bold text-white truncate" title="${mod.name.replace(/'/g, "\\'")}">${mod.name}</h4>
-                                        <div class="flex items-center gap-2 mt-1">
-                                            ${badgeHtml}
-                                            <span class="text-[10px] text-gray-500 font-mono"><i data-feather="download" class="w-3 h-3 inline text-indigo-400"></i> ${mod.downloadCount.toLocaleString()}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    }
-                    if (found === 0) {
-                        resDiv.innerHTML = '<div class="text-center py-4"><i data-feather="x-circle" class="w-8 h-8 text-red-400 mx-auto mb-2 opacity-50"></i><p class="text-xs text-red-400">No se encontraron resultados.</p></div>';
-                    }
-                } catch (e) {
-                    console.error("Error CurseForge:", e);
-                    resDiv.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Error al buscar en CurseForge.<br><span class="text-[10px] text-gray-500">${e.message}</span></p>`;
-                }
-                if (btn) btn.innerHTML = '<i data-feather="search" class="w-4 h-4"></i>';
-                feather.replace();
-            };
-
-            window.seleccionarModpack = async (id, el) => {
-                document.querySelectorAll('.modpack-card').forEach(c => {
-                    c.classList.remove('border-indigo-500', 'bg-indigo-900/30');
-                    if (!c.classList.contains('grayscale')) {
-                        c.classList.add('border-[#333]', 'bg-[#161616]');
-                    }
-                });
-                el.classList.remove('border-[#333]', 'bg-[#161616]');
-                el.classList.add('border-indigo-500', 'bg-indigo-900/30');
-                document.getElementById('selected-cf-id').value = id;
-
-                configMotorContainer.classList.remove('hidden');
-                autoConfigMsg.classList.add('hidden');
-
-                softwareSelect.innerHTML = '<option value="Server Pack">Modpack / Server Pack Oficial</option>';
-
-                mcVersion.innerHTML = '<option value="">Obteniendo versiones desde CurseForge...</option>';
-                btnSubmit.disabled = true;
-                btnSubmit.innerText = "CARGANDO VERSIONES...";
-
-                try {
-                    const token = await auth.currentUser.getIdToken();
-                    const res = await fetch(`${API_URL}/api/curseforge/files?modId=${id}`, {
-                        headers: { 'Authorization': 'Bearer ' + token }
-                    });
-
-                    if (!res.ok) {
-                        const errTxt = await res.text();
-                        throw new Error(`Fallo al conectar con la base de datos. (HTTP ${res.status}: ${errTxt})`);
-                    }
-
-                    const data = await res.json();
-
-                    mcVersion.innerHTML = '';
-                    let foundVersions = 0;
-
-                    if (data.data && data.data.length > 0) {
-                        data.data.forEach(f => {
-                            if (f.isServerPack === true) {
-                                foundVersions++;
-                                const type = f.releaseType === 1 ? 'RELEASE' : (f.releaseType === 2 ? 'BETA' : 'ALPHA');
-                                const mcVer = f.gameVersions.find(v => v.match(/^1\.\d/)) || "Auto";
-
-                                mcVersion.innerHTML += `<option value="${f.id}" data-mc="${mcVer}">${f.displayName} | MC ${mcVer} (${type})</option>`;
-                            }
-                        });
-
-                        if (foundVersions > 0) {
-                            btnSubmit.disabled = false;
-                            btnSubmit.innerText = getDeployText();
-                        } else {
-                            mcVersion.innerHTML = '<option value="">No hay Server Packs en estas versiones.</option>';
-                            btnSubmit.innerText = "SIN VERSIONES COMPATIBLES";
-                        }
-                    } else {
-                        mcVersion.innerHTML = '<option value="">No hay versiones disponibles.</option>';
-                        btnSubmit.innerText = "SIN VERSIONES";
-                    }
-                } catch (e) {
-                    console.error("Error versiones:", e);
-                    mcVersion.innerHTML = '<option value="">Error de conexión con la API.</option>';
-                    btnSubmit.innerText = "ERROR DE CONEXIÓN";
-                }
-            };
-
-            window.cerrarSesion = () => {
-                signOut(auth).then(() => {
-                    window.location.href = '/index.html';
-                }).catch((error) => {
-                    console.error("Error cerrando sesión:", error);
-                });
-            };
-
-            onAuthStateChanged(auth, async (user) => {
-                if (!user) {
-                    await auth.authStateReady();
-                    user = auth.currentUser;
-                }
-                if (!user) {
-                    window.location.href = '/index.html';
-                    return;
-                }
-                try {
-                    const isCEO = user.email === 'rodasmaximo51@gmail.com';
-
-                    if (isCEO) {
-                        document.getElementById('ceo-badge')?.classList.remove('hidden');
-                        window.userPlan = { name: 'Plan ProServers CEO', maxServers: 'ilimitado', ram: '∞', ramNum: 9999, fileManager: true };
-                    }
-
-                    const token = await user.getIdToken();
-
-                    const verifyRes = await fetch(`${API_URL}/api/user/status?uid=${user.uid}`, {
-                        headers: { 'Authorization': 'Bearer ' + token }
-                    });
-                    if (!verifyRes.ok) throw new Error("Backend caído al verificar status");
-                    const verifyData = await verifyRes.json();
-
-                    if (!isCEO) {
-                        if (verifyData.plan) {
-                            window.userPlan = verifyData.plan;
-                            window.userPlan.ramNum = parseInt(window.userPlan.ram.replace(/[^0-9]/g, '')) || 8;
-                        } else if (verifyData.status === 'premium') {
-                            window.userPlan = { name: 'Plan Hierro', maxServers: 2, ram: '12GB', ramNum: 12, fileManager: false };
-                        }
-                    }
-
-                    installTypeSelect.dispatchEvent(new Event('change'));
-
-                    if (btnSubmit && btnSubmit.disabled === false) btnSubmit.innerText = getDeployText();
-
-                    await loadUserServers(user.uid, isCEO);
-
-                    if (!isCEO && (verifyData.status === 'expired' || verifyData.status === 'suspended' || verifyData.status === 'banned')) {
-                        document.getElementById('servers-list-container').innerHTML = '';
-                        const form = document.getElementById('view-create');
-                        form.innerHTML = `
-                            <div class="col-span-1 lg:col-span-2 glass p-10 text-center flex flex-col items-center justify-center border-red-500/50 shadow-[0_0_30px_rgba(220,38,38,0.2)]">
-                                <i data-feather="slash" class="w-20 h-20 text-red-600 mb-6"></i>
-                                <h2 class="text-3xl font-bold font-['Cinzel'] text-red-500 mb-2">${verifyData.status === 'banned' ? 'ERRADICADO DEL SISTEMA' : 'Suscripción Suspendida'}</h2>
-                                <p class="text-gray-300 mb-6 max-w-lg text-sm">${verifyData.status === 'banned' ? 'El sistema de seguridad ha detectado un intento de evasión de límites (Multicuentas / Abuso de IPs). Todos tus servidores han sido destruidos y tu acceso ha sido revocado permanentemente.' : 'Tu plan actual ha caducado. Renueva tu suscripción para seguir desplegando infraestructura.'}</p>
-                                ${verifyData.status !== 'banned' ? `<button onclick="window.location.href='/planes.html'" class="bg-indigo-600 hover:bg-indigo-500 px-8 py-3 rounded-lg text-white font-bold uppercase tracking-wider transition-colors shadow-[0_0_15px_rgba(79,70,229,0.4)]">Ver Planes de Pago</button>` : `<button onclick="window.cerrarSesion()" class="bg-red-700 hover:bg-red-600 px-8 py-3 rounded-lg text-white font-bold uppercase tracking-wider transition-colors">Salir</button>`}
-                            </div>
-                        `;
-                        feather.replace();
-                    }
-                } catch (error) {
-                    console.error("Error validando permisos:", error);
-                }
-            });
-
-            async function loadUserServers(uid, isCEO) {
-                try {
-                    const token = await auth.currentUser.getIdToken();
-                    const res = await fetch(`${API_URL}/api/project/check?uid=${uid}`, {
-                        headers: { 'Authorization': 'Bearer ' + token }
-                    });
-                    if (!res.ok) throw new Error("Backend caído al cargar servidores");
-                    const data = await res.json();
-
-                    const list = document.getElementById('servers-list-container');
-                    const limitMsg = document.getElementById('limit-msg');
-
-                    let count = data.exists ? data.servers.length : 0;
-
-                    let planName = window.userPlan.name;
-                    let maxLimit = window.userPlan.maxServers;
-                    let isLimitReached = maxLimit !== 'ilimitado' && count >= maxLimit && !isCEO;
-                    let limitLabel = maxLimit === 'ilimitado' || isCEO ? '∞' : maxLimit;
-
-                    if (isLimitReached) {
-                        if (btnSubmit) {
-                            btnSubmit.disabled = true;
-                            btnSubmit.innerHTML = `LÍMITE ALCANZADO (${planName.toUpperCase()})`;
-                        }
-                        if (limitMsg) {
-                            limitMsg.innerText = `Has alcanzado el límite de ${maxLimit} servidor(es) de tu ${planName}.`;
-                            limitMsg.classList.remove('hidden');
-                        }
-                    } else {
-                        if (limitMsg) limitMsg.classList.add('hidden');
-                    }
-
-                    if (data.exists && count > 0) {
-                        let html = `<h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Tus Servidores Activos (${planName}: ${count}/${limitLabel})</h3><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
-                        data.servers.forEach(s => {
-                            const safeEdition = s.edition ? s.edition.toLowerCase() : 'java';
-                            let versionLabel = 'Auto';
-                            if (safeEdition === 'bedrock') {
-                                versionLabel = s.software ? s.software.toUpperCase() : 'UNKNOWN';
-                            } else {
-                                versionLabel = s.version || 'Auto';
-                            }
-                            const projName = s.projectName || 'Servidor Sin Nombre';
-
-                            html += `<div class="glass p-5 flex flex-col justify-between border border-[#333]">
-                                <div>
-                                    <h4 class="font-bold text-white text-lg">${projName}</h4>
-                                    <p class="text-xs text-gray-400 mb-4">${safeEdition.toUpperCase()} - ${versionLabel}</p>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="window.enterServer('${encodeURIComponent(JSON.stringify(s))}')" class="bg-green-600 hover:bg-green-500 transition-colors px-4 py-2 rounded text-xs font-bold text-white flex-1 shadow-lg">ENTRAR</button>
-                                    <button onclick="window.deleteServer('${s.id}')" class="bg-[#222] border border-[#444] hover:border-red-500 hover:bg-red-600/20 hover:text-red-500 transition-colors px-3 py-2 rounded text-xs text-white" title="Borrar Servidor"><i data-feather="trash-2" class="w-4 h-4"></i></button>
-                                </div>
-                            </div>`;
-                        });
-                        list.innerHTML = html + '</div><hr class="border-[#333] my-8">';
-                    }
-                    feather.replace();
-                } catch (e) {
-                    console.error("Error cargando servidores:", e);
-                }
-            }
-
-            window.enterServer = (s) => {
-                sessionStorage.setItem('selectedServer', decodeURIComponent(s));
-                window.location.href = '/index.html';
-            };
-
-            window.deleteServer = async (id) => {
-                if (!confirm('⚠️ ¿Estás seguro? Eliminarás tu servidor y todo tu progreso se perderá permanentemente. Liberará 1 ranura en tu plan.')) return;
-                const token = await auth.currentUser.getIdToken();
-                await fetch(`${API_URL}/api/project/delete`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ uid: auth.currentUser.uid, serverId: id })
-                });
-                window.location.reload();
-            };
-
-            document.getElementById('view-create')?.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (btnSubmit && btnSubmit.disabled) return;
-
-                const installType = document.getElementById('install-type').value;
-                const edition = document.getElementById('server-edition').value;
-                const isCEO = auth.currentUser && auth.currentUser.email === 'rodasmaximo51@gmail.com';
-
-                if ((installType === 'cf_modpack' || installType === 'url_modpack') && !window.userPlan.fileManager && !isCEO) {
-                    alert("Violación de seguridad: Tu plan actual no soporta Modpacks porque no tiene el Gestor de Archivos activado. Mejora al Plan Oro o superior.");
-                    return;
-                }
-
-                if (edition === 'java') {
-                    if (installType === 'cf_modpack' && !document.getElementById('selected-cf-id').value) {
-                        alert("Por favor, busca y selecciona un Modpack de la lista.");
-                        return;
-                    }
-                    if (installType === 'url_modpack' && !document.getElementById('modpack-url-input').value) {
-                        alert("Por favor, ingresa una URL válida del ZIP del Modpack.");
-                        return;
-                    }
-                }
-
-                const overlay = document.getElementById('loading-overlay');
-                const loadingTitle = document.getElementById('loading-title');
-                const loadingDesc = document.getElementById('loading-desc');
-                const loadingStep = document.getElementById('loading-step');
-                const loadingBar = document.getElementById('loading-bar');
-                const loadingPct = document.getElementById('loading-pct');
-                const spinner = document.getElementById('loading-spinner');
-
-                overlay.classList.add('active');
-                btnSubmit.disabled = true;
-
-                if (installType === 'cf_modpack') {
-                    loadingTitle.innerText = "ACOPLANDO CURSEFORGE";
-                    loadingTitle.className = "mt-8 text-3xl font-bold font-['Cinzel'] text-indigo-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.6)] tracking-widest";
-                    loadingDesc.innerText = "Descargando versión específica y construyendo mods...";
-                    loadingBar.className = "bg-gradient-to-r from-indigo-600 to-indigo-400 h-full w-0 transition-all duration-300 shadow-[0_0_10px_rgba(99,102,241,0.8)]";
-                    spinner.style.borderTopColor = "#6366f1";
-                } else if (installType === 'url_modpack') {
-                    loadingTitle.innerText = "IMPORTANDO DESDE LA NUBE";
-                    loadingTitle.className = "mt-8 text-3xl font-bold font-['Cinzel'] text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)] tracking-widest";
-                    loadingDesc.innerText = "Extrayendo ZIP remoto en la raíz del servidor...";
-                    loadingBar.className = "bg-gradient-to-r from-blue-600 to-blue-400 h-full w-0 transition-all duration-300 shadow-[0_0_10px_rgba(59,130,246,0.8)]";
-                    spinner.style.borderTopColor = "#3b82f6";
-                } else {
-                    loadingTitle.innerText = "DESPLEGANDO NODO LIMPIO";
-                    loadingTitle.className = "mt-8 text-3xl font-bold font-['Cinzel'] text-green-400 drop-shadow-[0_0_15px_rgba(76,175,80,0.6)] tracking-widest";
-                    loadingDesc.innerText = "Generando contenedor y asignando recursos...";
-                    loadingBar.className = "bg-gradient-to-r from-green-600 to-green-400 h-full w-0 transition-all duration-300 shadow-[0_0_10px_rgba(76,175,80,0.8)]";
-                    spinner.style.borderTopColor = "#4ade80";
-                }
-
-                let finalSoftware = softwareSelect.value || 'vanilla';
-                let finalVersion = edition === 'java' ? (mcVersion.value || 'LATEST') : 'LATEST';
-                let curseforgeFileId = null;
-
-                if (installType === 'cf_modpack') {
-                    finalSoftware = 'Server Pack';
-                    curseforgeFileId = mcVersion.value;
-
-                    const selectedOption = mcVersion.options[mcVersion.selectedIndex];
-                    finalVersion = selectedOption ? selectedOption.getAttribute('data-mc') : 'Auto';
-                }
-
-                const payload = {
-                    uid: auth.currentUser.uid,
-                    email: auth.currentUser.email,
-                    projectName: document.getElementById('custom-name').value,
-                    motd: document.getElementById('custom-motd').value || "Professional Server",
-                    edition: edition,
-                    software: finalSoftware,
-                    version: finalVersion,
-                    curseforgeFileId: curseforgeFileId
-                };
-
-                if (edition === 'java') {
-                    if (installType === 'cf_modpack') {
-                        payload.curseforgeModpackId = document.getElementById('selected-cf-id').value;
-                    } else if (installType === 'url_modpack') {
-                        payload.modpackUrl = document.getElementById('modpack-url-input').value;
-                    }
-                }
-
-                try {
-                    const token = await auth.currentUser.getIdToken();
-
-                    const response = await fetch(`${API_URL}/api/project/create`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                        body: JSON.stringify(payload)
-                    });
-
-                    let responseData = null;
-                    const contentType = response.headers.get("content-type");
-
-                    if (contentType && contentType.includes("application/json")) {
-                        responseData = await response.json();
-                    }
-
-                    if (!response.ok) {
-                        let msgError = "El servidor denegó la petición o está en mantenimiento.";
-                        if (responseData && (responseData.message || responseData.error)) {
-                            msgError = responseData.message || responseData.error;
-                        } else if (!contentType || !contentType.includes("application/json")) {
-                            msgError = `Error ${response.status}: El servidor respondió con HTML en lugar de datos (Fallo de Red/502).`;
-                        }
-
-                        if (isCEO) {
-                            alert("⚠️ Error detectado (Modo CEO): " + msgError + "\n\nEvitando bloqueo por ser Administrador.");
-                        } else {
-                            alert("⚠️ Acción denegada: " + msgError);
-                            if (msgError.toLowerCase().includes("expulsado") || response.status === 403) {
-                                window.location.reload();
-                            }
-                        }
-
-                        overlay.classList.remove('active');
-                        btnSubmit.disabled = false;
-                        btnSubmit.innerText = getDeployText();
-                        return;
-                    }
-
-                    if (responseData && responseData.success) {
-                        const serverId = responseData.server.id;
-
-                        let fallos = 0;
-                        const inicioDeploy = Date.now();
-                        const abortarDeploy = (msg) => {
-                            clearInterval(statusInterval);
-                            alert(msg);
-                            overlay.classList.remove('active');
-                            btnSubmit.disabled = false;
-                            btnSubmit.innerText = getDeployText();
-                        };
-                        const statusInterval = setInterval(async () => {
-                            if (Date.now() - inicioDeploy > 15 * 60 * 1000) {
-                                return abortarDeploy("El despliegue tarda demasiado. Revisa el estado de tus servidores en unos minutos.");
-                            }
-                            try {
-                                const tk = await auth.currentUser.getIdToken();
-                                const statRes = await fetch(`${API_URL}/api/project/deploy-status?serverId=${serverId}`, {
-                                    headers: { 'Authorization': 'Bearer ' + tk }
-                                });
-                                if (!statRes.ok) {
-                                    if (++fallos >= 10) abortarDeploy("No se pudo leer el estado del despliegue (HTTP " + statRes.status + ").");
-                                    return;
-                                }
-                                fallos = 0;
-                                const statData = await statRes.json();
-
-                                loadingStep.innerText = statData.step;
-                                if (statData.pct > 0) {
-                                    loadingBar.style.width = statData.pct + '%';
-                                    loadingPct.innerText = statData.pct + '%';
-                                }
-
-                                if (statData.done) {
-                                    clearInterval(statusInterval);
-
-                                    if (statData.error) {
-                                        alert("FALLO EN EL SERVIDOR:\n\n" + statData.error);
-                                        overlay.classList.remove('active');
-                                        btnSubmit.disabled = false;
-                                    } else {
-                                        loadingBar.style.width = '100%';
-                                        loadingPct.innerText = '100%';
-                                        loadingStep.innerText = "¡Infraestructura Lista!";
-
-                                        setTimeout(() => {
-                                            responseData.server.version = finalVersion;
-                                            sessionStorage.setItem('selectedServer', JSON.stringify(responseData.server));
-                                            window.location.href = '/index.html';
-                                        }, 1200);
-                                    }
-                                }
-                            } catch (errStatus) {
-                                console.error("Error leyendo estado del backend:", errStatus);
-                                if (++fallos >= 10) abortarDeploy("Se perdió la conexión con el servidor durante el despliegue.");
-                            }
-                        }, 2000);
-
-                    } else {
-                        alert("Error: " + (responseData ? responseData.message : "No se pudo desplegar."));
-                        overlay.classList.remove('active');
-                        btnSubmit.disabled = false;
-                    }
-                } catch (err) {
-                    console.error("Error crítico:", err);
-                    alert("Aviso de Sistema: " + err.message);
-                    overlay.classList.remove('active');
-                    btnSubmit.disabled = false;
-                }
-            });
-
-            feather.replace();
-        }); // FIN DOMContentLoaded
-    </script>
+    <aside class="sticky">
+      <section class="panel">
+        <header class="panel-h"><span class="idx"><i data-feather="terminal"></i></span><div><h2>Resumen de despliegue</h2><p>Revisá antes de lanzar.</p></div></header>
+        <div class="panel-b">
+          <dl class="sum">
+            <div><dt>Nombre</dt><dd id="s-name">—</dd></div>
+            <div><dt>Edición</dt><dd id="s-ed">—</dd></div>
+            <div><dt>Motor</dt><dd id="s-eng">—</dd></div>
+            <div><dt>Versión</dt><dd id="s-ver">—</dd></div>
+            <div><dt>Contenido</dt><dd id="s-src">Limpio</dd></div>
+            <div><dt>Red</dt><dd id="s-net">—</dd></div>
+            <div><dt>Hardware</dt><dd>Según tu plan</dd></div>
+          </dl>
+          <button type="submit" class="btn pri block" id="btn-deploy" disabled style="margin-top:16px"><i data-feather="send"></i>Desplegar servidor</button>
+          <p class="hint" id="deploy-hint" style="margin-top:10px;text-align:center">Completá el nombre para continuar.</p>
+        </div>
+      </section>
+    </aside>
+  </form>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="ft">
+      <div class="about">
+        <a href="/crear.html" class="brand"><img src="/img/favicon.ico" alt="">ProServers</a>
+        <p>Hosting de Minecraft sobre contenedores Docker aislados. Java y Bedrock, modpacks y túneles listos en minutos.</p>
+        <div class="socials">
+          <a class="soc" href="#" data-pending="true" aria-label="Instagram" title="Instagram"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/instagram.svg)"></i></a>
+          <a class="soc" href="#" data-pending="true" aria-label="TikTok" title="TikTok"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/tiktok.svg)"></i></a>
+          <a class="soc" href="#" data-pending="true" aria-label="YouTube" title="YouTube"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/youtube.svg)"></i></a>
+          <a class="soc" href="#" data-pending="true" aria-label="Telegram" title="Telegram"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/telegram.svg)"></i></a>
+          <a class="soc" href="#" data-pending="true" aria-label="Discord" title="Discord"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/discord.svg)"></i></a>
+        </div>
+      </div>
+      <div><h4>Plataforma</h4><ul><li><a href="/crear.html">Desplegar servidor</a></li><li><a href="/planes.html">Planes y precios</a></li><li><a href="/perfil.html">Mi perfil</a></li></ul></div>
+      <div><h4>Soporte</h4><ul><li><button type="button" data-support>Centro de ayuda</button></li><li><button type="button" data-support>Abrir un ticket</button></li><li><a href="#status">Estado del sistema</a></li></ul></div>
+      <div id="status"><h4>Estado</h4>
+        <span class="chip am" id="sys-status"><span class="dot pulse"></span>Verificando…</span>
+        <ul style="margin-top:14px;font-size:12.5px" class="mono">
+          <li id="st-api" style="color:var(--mu)">API · …</li>
+          <li id="st-node" style="color:var(--mu)">Daemon · …</li>
+        </ul>
+      </div>
+    </div>
+    <div class="ft-b"><span>© <span id="year"></span> ProServers. Todos los derechos reservados.</span><span class="mono">Minecraft es marca de Mojang AB. No afiliado.</span></div>
+    <div class="mega" aria-hidden="true">PROSERVERS</div>
+  </div>
+</footer>
+
+<!-- Overlay de despliegue -->
+<div class="ov" id="ov" role="dialog" aria-modal="true" aria-labelledby="ov-title">
+  <section class="panel">
+    <div class="panel-b" style="display:grid;gap:18px">
+      <div style="display:flex;gap:16px;align-items:center">
+        <div class="ring"></div>
+        <div style="min-width:0"><h2 id="ov-title" style="font-size:19px;letter-spacing:-.02em">Desplegando infraestructura</h2><p class="hint mono" id="ov-step">Enviando orden al daemon…</p></div>
+      </div>
+      <div class="prog"><i id="ov-bar"></i></div>
+      <div style="display:flex;justify-content:space-between" class="mono hint"><span id="ov-pct">0%</span><span id="ov-time">00:00 / 15:00</span></div>
+      <div class="log" id="ov-log"></div>
+      <button type="button" class="btn block hidden" id="ov-close">Cerrar</button>
+    </div>
+  </section>
+</div>
+
+<dialog id="confirm-dlg">
+  <h3>Eliminar servidor</h3>
+  <p>Se destruye el contenedor y <b>todo el progreso del mundo</b>. Esta acción no se puede deshacer.</p>
+  <form method="dialog" class="row"><button class="btn" value="no">Cancelar</button><button class="btn danger" value="yes">Eliminar</button></form>
+</dialog>
+
+<aside class="drawer" id="drawer" aria-label="Centro de ayuda">
+  <header class="panel-h"><span class="idx"><i data-feather="life-buoy"></i></span><div><h2>Centro de ayuda</h2><p>Un administrador te responde por acá.</p></div><button type="button" class="btn" id="drawer-x" style="margin-left:auto;padding:8px" aria-label="Cerrar"><i data-feather="x"></i></button></header>
+  <div class="msgs" id="msgs"><div class="bub">Contanos qué necesitás: dudas de planes, errores de despliegue o configuración.</div></div>
+  <form id="support-form"><input class="inp" id="support-in" maxlength="2000" placeholder="Escribí tu consulta…" required><button class="btn pri" aria-label="Enviar"><i data-feather="send"></i></button></form>
+</aside>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script type="module">
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+
+const app = getApps().length ? getApp() : initializeApp({
+  apiKey: "AIzaSyAg-wvhB7iaHOF5UOSsOOOz6le1ZutVmMM",
+  authDomain: "proffesional-server.firebaseapp.com",
+  projectId: "proffesional-server",
+  storageBucket: "proffesional-server.firebasestorage.app",
+  messagingSenderId: "833822850667",
+  appId: "1:833822850667:web:3c03219c6822116edbfb2e",
+  measurementId: "G-8SZ528Y5NZ"
+});
+const auth = getAuth(app);
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const icons = () => feather.replace();
+let toastT;
+const toast = (msg, err = false) => {
+  const t = $('toast');
+  t.className = 'toast on' + (err ? ' err' : '');
+  t.innerHTML = `<i data-feather="${err ? 'alert-triangle' : 'check-circle'}"></i>${esc(msg)}`;
+  icons(); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 5000);
+};
+
+/* ===== API autenticada ===== */
+async function api(path, opts = {}) {
+  const token = await auth.currentUser.getIdToken();
+  const res = await fetch(path, { ...opts, headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, ...(opts.headers || {}) } });
+  const data = (res.headers.get('content-type') || '').includes('application/json') ? await res.json().catch(() => null) : null;
+  if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+  return data;
+}
+
+/* ===== Catálogo de motores ===== */
+const ENGINES = {
+  java: [
+    { id: 'vanilla', name: 'Vanilla', desc: 'Servidor oficial de Mojang, sin modificaciones.', src: 'mojang' },
+    { id: 'paper', name: 'Paper', desc: 'Alto rendimiento y plugins Bukkit/Spigot.', src: 'paper' },
+    { id: 'purpur', name: 'Purpur', desc: 'Fork de Paper con configuración extendida.', src: 'purpur' },
+    { id: 'forge', name: 'Forge', desc: 'El cargador de mods clásico.', src: 'mojang' },
+    { id: 'fabric', name: 'Fabric', desc: 'Mods livianos y actualizaciones rápidas.', src: 'fabric' },
+  ],
+  bedrock: [
+    { id: 'bedrock', name: 'Bedrock Oficial', desc: 'Bedrock Dedicated Server de Mojang.', src: 'bedrock' },
+  ],
+};
+const NET = { java: { port: '25565/tcp', image: 'itzg/minecraft-server' }, bedrock: { port: '19132/udp', image: 'itzg/minecraft-bedrock-server' } };
+const RELEASE = /^\d+\.\d+(\.\d+)?$/;
+const verCache = {};
+
+async function fetchVersions(src) {
+  if (verCache[src]) return verCache[src];
+  const j = (u) => fetch(u).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+  let list;
+  if (src === 'bedrock') list = [];
+  else if (src === 'paper') list = Object.values((await j('https://fill.papermc.io/v3/projects/paper')).versions).flat();
+  else if (src === 'purpur') list = (await j('https://api.purpurmc.org/v2/purpur')).versions.slice().reverse();
+  else if (src === 'fabric') list = (await j('https://meta.fabricmc.net/v2/versions/game')).filter(v => v.stable).map(v => v.version);
+  else list = (await j('https://piston-meta.mojang.com/mc/game/version_manifest_v2.json')).versions.filter(v => v.type === 'release').map(v => v.id);
+  return (verCache[src] = [...new Set(list.filter(v => RELEASE.test(v)))]);
+}
+
+/* ===== Estado del formulario ===== */
+const S = { edition: 'java', engine: 'vanilla', source: 'none', pack: null, packFile: '', urlOk: false };
+const NAME_RE = /^[\p{L}\p{N} _.-]{3,32}$/u;
+
+function renderEngines() {
+  $('engines').innerHTML = ENGINES[S.edition].map(e => `
+    <button type="button" class="eng" role="radio" data-eng="${e.id}" aria-checked="${e.id === S.engine}">
+      <code>${e.id.toUpperCase()}</code><b>${e.name}</b><span>${e.desc}</span>
+    </button>`).join('');
+  const n = NET[S.edition];
+  $('portline').innerHTML = `<span class="chip ok"><span class="dot"></span>${n.port}</span><span class="chip">Túnel Playit.gg</span><span class="chip">Volumen persistente</span>`;
+  $('f-image').value = n.image + ':latest';
+}
+
+async function loadVersions() {
+  const sel = $('f-version');
+  const eng = ENGINES[S.edition].find(e => e.id === S.engine);
+  if (S.edition === 'bedrock') {
+    sel.innerHTML = '<option value="LATEST">LATEST · estable</option><option value="PREVIEW">PREVIEW · beta</option>';
+    $('ver-hint').textContent = 'Bedrock se actualiza automáticamente al iniciar.';
+    return sync();
+  }
+  sel.disabled = true;
+  sel.innerHTML = '<option>Cargando versiones…</option>';
+  $('ver-hint').textContent = '';
+  try {
+    const vs = await fetchVersions(eng.src);
+    sel.innerHTML = `<option value="LATEST">LATEST · ${esc(vs[0] || 'última estable')}</option>` + vs.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    $('ver-hint').textContent = `${vs.length} versiones disponibles, sincronizadas en vivo.`;
+  } catch {
+    sel.innerHTML = '<option value="LATEST">LATEST · última estable</option>';
+    $('ver-hint').textContent = 'No se pudo consultar el catálogo; se usará la última estable.';
+  }
+  sel.disabled = false;
+  sync();
+}
+
+function setEdition(ed) {
+  if (S.edition === ed) return;
+  S.edition = ed;
+  S.engine = ENGINES[ed][0].id;
+  $('edition').dataset.v = ed;
+  document.querySelectorAll('#edition button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ed === ed)));
+  const java = ed === 'java';
+  document.querySelectorAll('.tabs button[data-src]:not([data-src="none"])').forEach(b => b.disabled = !java);
+  $('url-box').classList.toggle('hidden', !java);
+  if (!java) { setSource('none'); $('f-url').value = ''; validateUrl(); }
+  renderEngines(); loadVersions();
+}
+
+function setSource(src) {
+  S.source = src; S.pack = null; S.packFile = '';
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.src === src)));
+  $('src-none').classList.toggle('hidden', src !== 'none');
+  $('src-search').classList.toggle('hidden', src === 'none');
+  $('pack-file-wrap').classList.add('hidden');
+  $('packs').innerHTML = '';
+  if (src !== 'none') { $('f-url').value = ''; validateUrl(); searchPacks(); }
+  sync();
+}
+
+/* ===== Modpacks ===== */
+let searchSeq = 0;
+async function searchPacks() {
+  const q = $('pack-q').value.trim();
+  const seq = ++searchSeq;
+  const box = $('packs');
+  box.innerHTML = '<div class="skeleton"></div>'.repeat(4);
+  try {
+    let items;
+    if (S.source === 'curseforge') {
+      const qs = new URLSearchParams({ classId: '4471', sortField: '2', sortOrder: 'desc', pageSize: '24', ...(q && { searchFilter: q }) });
+      const d = await api(`/api/curseforge/search?${qs}`);
+      items = (d?.data || []).map(m => ({ id: String(m.id), slug: m.slug, title: m.name, desc: m.summary, icon: m.logo?.thumbnailUrl, dl: m.downloadCount }));
+    } else {
+      const d = await api(`/api/modrinth/search?${new URLSearchParams({ query: q })}`);
+      items = (d?.hits || []).map(m => ({ id: m.slug, slug: m.slug, title: m.title, desc: m.description, icon: m.icon_url, dl: m.downloads }));
+    }
+    if (seq !== searchSeq) return;
+    box._items = items;
+    box.innerHTML = items.length ? items.map((m, i) => `
+      <button type="button" class="pack" role="radio" aria-checked="false" data-i="${i}">
+        <img src="${esc(m.icon || '/img/logo-minecraft.ico')}" alt="" loading="lazy">
+        <div><b>${esc(m.title)}</b><p>${esc(m.desc)}</p><small>${Number(m.dl || 0).toLocaleString('es-AR')} descargas</small></div>
+      </button>`).join('') : `<div class="empty" style="grid-column:1/-1"><i data-feather="search"></i>Sin resultados para “${esc(q)}”.</div>`;
+  } catch (e) {
+    if (seq !== searchSeq) return;
+    box.innerHTML = `<div class="empty" style="grid-column:1/-1"><i data-feather="wifi-off"></i>No se pudo consultar el catálogo: ${esc(e.message)}</div>`;
+  }
+  icons();
+}
+
+async function pickPack(i) {
+  const m = $('packs')._items[i];
+  S.pack = m; S.packFile = '';
+  document.querySelectorAll('.pack').forEach(p => p.setAttribute('aria-checked', String(p.dataset.i === String(i))));
+  const sel = $('pack-file');
+  $('pack-file-wrap').classList.remove('hidden');
+  sel.innerHTML = '<option value="">Cargando versiones…</option>';
+  sel.disabled = true;
+  sync();
+  try {
+    let files;
+    if (S.source === 'curseforge') {
+      const d = await api(`/api/curseforge/files?modId=${encodeURIComponent(m.id)}`);
+      files = (d?.data || []).map(f => ({ id: String(f.id), label: `${f.displayName} · ${(f.gameVersions || []).filter(v => RELEASE.test(v)).join(', ')}` }));
+    } else {
+      const d = await api(`/api/modrinth/versions?slug=${encodeURIComponent(m.slug)}`);
+      files = (d || []).map(v => ({ id: v.id, label: `${v.version_number} · ${(v.game_versions || []).join(', ')} · ${(v.loaders || []).join('/')}` }));
+    }
+    if (S.pack !== m) return;
+    sel.innerHTML = `<option value="">Última versión publicada</option>` + files.map(f => `<option value="${esc(f.id)}">${esc(f.label)}</option>`).join('');
+  } catch {
+    sel.innerHTML = '<option value="">Última versión publicada</option>';
+  }
+  sel.disabled = false;
+}
+
+/* ===== URL externa (validación local; el daemon revalida) ===== */
+function validateUrl() {
+  const v = $('f-url').value.trim(), hint = $('url-hint');
+  S.urlOk = false;
+  $('f-url').classList.remove('bad'); hint.className = 'hint'; hint.textContent = '';
+  if (!v) return sync();
+  let u; try { u = new URL(v); } catch { u = null; }
+  const err = !u ? 'URL mal formada.' : u.protocol !== 'https:' ? 'Solo se aceptan enlaces HTTPS.' : !/\.zip$/i.test(u.pathname) && !u.search ? 'El enlace debe apuntar a un .zip.' : '';
+  if (err) { $('f-url').classList.add('bad'); hint.className = 'hint err'; hint.textContent = err; }
+  else { S.urlOk = true; hint.textContent = 'Formato válido. El daemon verificará el destino al desplegar.'; if (S.source !== 'none') setSource('none'); }
+  sync();
+}
+
+/* ===== Resumen y pasos ===== */
+function sync() {
+  const name = $('f-name').value.trim();
+  const nameOk = NAME_RE.test(name);
+  const eng = ENGINES[S.edition].find(e => e.id === S.engine);
+  const urlVal = $('f-url').value.trim();
+  const srcOk = (S.source === 'none' || !!S.pack) && (!urlVal || S.urlOk);
+  $('s-name').textContent = name || '—';
+  $('s-ed').textContent = S.edition === 'java' ? 'Java' : 'Bedrock';
+  $('s-eng').textContent = S.pack ? (S.source === 'curseforge' ? 'AUTO_CURSEFORGE' : 'Modrinth') : eng?.name || '—';
+  $('s-ver').textContent = S.source !== 'none' && S.pack ? 'Definida por el pack' : ($('f-version').value || 'LATEST');
+  $('s-src').textContent = S.pack ? `${S.source === 'curseforge' ? 'CF' : 'MR'} · ${S.pack.title}` : urlVal && S.urlOk ? 'ZIP externo' : 'Limpio';
+  $('s-net').textContent = NET[S.edition].port;
+  $('src-chip').textContent = S.pack ? 'Modpack' : urlVal && S.urlOk ? 'URL' : 'Limpio';
+  $('src-chip').className = 'chip' + (S.pack || S.urlOk ? ' vi' : '');
+  $('st-1').classList.toggle('done', nameOk);
+  $('st-2').classList.toggle('done', !!eng && !$('f-version').disabled);
+  $('st-3').classList.toggle('done', nameOk && srcOk);
+  const ready = nameOk && srcOk && !$('f-version').disabled && !deploying;
+  $('btn-deploy').disabled = !ready;
+  $('deploy-hint').textContent = !nameOk ? 'Completá un nombre válido para continuar.' : S.source !== 'none' && !S.pack ? 'Elegí un modpack de la lista o volvé a instalación limpia.' : urlVal && !S.urlOk ? 'Corregí la URL externa.' : 'Todo listo para desplegar.';
+}
+
+/* ===== Flota del usuario ===== */
+const STATUS = { running: ['ok', 'En línea'], deploying: ['am', 'Desplegando'], error: ['rd', 'Error'], stopped: ['', 'Detenido'], frozen: ['vi', 'Congelado'] };
+async function loadFleet() {
+  try {
+    const d = await api('/api/project/check');
+    const list = d?.exists ? d.servers : [];
+    $('fleet-sec').classList.toggle('hidden', !list.length);
+    $('fleet-count').textContent = `${list.length} ${list.length === 1 ? 'servidor' : 'servidores'}`;
+    $('fleet').innerHTML = list.map((s, i) => {
+      const [cls, lbl] = STATUS[s.status] || ['', s.status || 'Desconocido'];
+      const ed = (s.edition || 'java').toLowerCase();
+      return `<article class="panel srv">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:start">
+          <h3>${esc(s.name || s.projectName || s.id)}</h3><span class="chip ${cls}"><span class="dot"></span>${esc(lbl)}</span>
+        </div>
+        <div class="meta"><span class="chip">${esc(ed)}</span><span class="chip">${esc(s.software || 'vanilla')}</span><span class="chip">${esc(s.version || 'LATEST')}</span>${s.port ? `<span class="chip mono">:${esc(s.port)}</span>` : ''}</div>
+        <div class="act"><button type="button" class="btn pri" data-enter="${i}"><i data-feather="log-in"></i>Entrar</button><button type="button" class="btn danger" data-del="${esc(s.id)}" aria-label="Eliminar"><i data-feather="trash-2"></i></button></div>
+      </article>`;
+    }).join('');
+    $('fleet')._list = list;
+    icons();
+  } catch (e) {
+    toast('No se pudo cargar tu flota: ' + e.message, true);
+  }
+}
+
+/* ===== Despliegue con progreso en vivo ===== */
+let deploying = false;
+const MAX_MS = 15 * 60 * 1000;
+function ovLog(text, cls = '') {
+  const log = $('ov-log');
+  if (log.lastElementChild?.dataset.t === text) return;
+  const row = document.createElement('div');
+  row.dataset.t = text;
+  row.innerHTML = `<span class="k">${new Date().toLocaleTimeString('es-AR')}</span> <span class="${cls}">${esc(text)}</span>`;
+  log.appendChild(row); log.scrollTop = log.scrollHeight;
+}
+function ovProgress(pct, step) {
+  $('ov-bar').style.width = pct + '%'; $('ov-pct').textContent = pct + '%';
+  if (step) { $('ov-step').textContent = step; ovLog(step); }
+}
+function ovFail(msg) {
+  $('ov').classList.add('err');
+  $('ov-title').textContent = 'El despliegue falló';
+  $('ov-step').textContent = msg;
+  ovLog(msg, 'e');
+  $('ov-close').classList.remove('hidden');
+  deploying = false; sync(); loadFleet();
+}
+
+async function deploy(e) {
+  e.preventDefault();
+  sync();
+  if ($('btn-deploy').disabled) return;
+  const urlVal = $('f-url').value.trim();
+  const payload = {
+    projectName: $('f-name').value.trim(),
+    motd: $('f-motd').value.trim() || 'Professional Server',
+    edition: S.edition,
+    software: S.engine,
+    version: $('f-version').value || 'LATEST',
+  };
+  if (S.pack && S.source === 'curseforge') Object.assign(payload, { software: 'Server Pack', version: 'LATEST', cfSlug: S.pack.slug, curseforgeFileId: $('pack-file').value || null });
+  if (S.pack && S.source === 'modrinth') Object.assign(payload, { software: 'modrinth', version: 'LATEST', modrinthSlug: S.pack.slug, modrinthVersion: $('pack-file').value || null });
+  if (urlVal && S.urlOk) payload.modpackUrl = urlVal;
+
+  deploying = true; sync();
+  $('ov').className = 'ov on'; $('ov-log').innerHTML = ''; $('ov-close').classList.add('hidden');
+  $('ov-title').textContent = 'Desplegando infraestructura';
+  ovProgress(4, payload.modpackUrl ? 'Validando enlace externo y enviando orden…' : 'Enviando orden al daemon…');
+
+  const t0 = Date.now();
+  const clock = setInterval(() => {
+    const s = Math.floor((Date.now() - t0) / 1000);
+    $('ov-time').textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')} / 15:00`;
+  }, 1000);
+  const stop = () => clearInterval(clock);
+
+  let server;
+  try {
+    server = (await api('/api/project/create', { method: 'POST', body: JSON.stringify(payload) }))?.server;
+    if (!server?.id) throw new Error('El daemon no devolvió el servidor creado.');
+  } catch (err) { stop(); return ovFail(err.message); }
+  ovLog(`ID asignado: mc-${server.id}`);
+
+  let fails = 0;
+  while (true) {
+    await new Promise(r => setTimeout(r, 2000));
+    if (Date.now() - t0 > MAX_MS) { stop(); return ovFail('Se superaron los 15 minutos. Revisá el estado en tu flota en unos minutos.'); }
+    try {
+      const st = await api(`/api/project/deploy-status?serverId=${encodeURIComponent(server.id)}`);
+      fails = 0;
+      ovProgress(st.pct || 0, st.step);
+      if (st.done) {
+        stop();
+        if (st.error) return ovFail(st.error);
+        $('ov-title').textContent = 'Infraestructura lista';
+        ovLog('Redirigiendo al panel del servidor…');
+        server.version = payload.version;
+        sessionStorage.setItem('selectedServer', JSON.stringify(server));
+        return setTimeout(() => location.href = '/index.html', 1200);
+      }
+    } catch (err) {
+      if (++fails >= 10) { stop(); return ovFail('Se perdió la conexión con el daemon: ' + err.message); }
+    }
+  }
+}
+
+/* ===== Soporte ===== */
+let supportAfter = 0, supportPoll;
+async function pullSupport() {
+  try {
+    const d = await api(`/api/support/messages?after=${supportAfter}`);
+    for (const m of d?.messages || []) {
+      supportAfter = Math.max(supportAfter, m.id);
+      $('msgs').insertAdjacentHTML('beforeend', `<div class="bub">${esc(m.mensaje)}</div>`);
+    }
+  } catch { /* reintenta en el próximo ciclo */ }
+}
+function openSupport(open) {
+  $('drawer').classList.toggle('on', open);
+  clearInterval(supportPoll);
+  if (open) { pullSupport(); supportPoll = setInterval(pullSupport, 15000); $('support-in').focus(); }
+}
+
+/* ===== Estado del sistema (footer) ===== */
+async function systemStatus() {
+  const check = (u, h) => fetch(u, { headers: h }).then(r => r.ok).catch(() => false);
+  const token = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+  const [node, api_] = await Promise.all([check('/ping'), token ? check('/api/user/status', { Authorization: 'Bearer ' + token, Accept: 'application/json' }) : false]);
+  const mark = (id, label, ok) => { $(id).textContent = `${label} · ${ok ? 'operativo' : 'sin respuesta'}`; $(id).style.color = ok ? '#6ee7b7' : '#fca5a5'; };
+  mark('st-api', 'API', api_); mark('st-node', 'Daemon', node);
+  const all = node && api_;
+  $('sys-status').className = 'chip ' + (all ? 'ok' : 'rd');
+  $('sys-status').innerHTML = `<span class="dot${all ? ' pulse' : ''}"></span>${all ? 'All Systems Operational' : 'Servicio degradado'}`;
+}
+
+/* ===== Eventos ===== */
+$('year').textContent = new Date().getFullYear();
+$('edition').addEventListener('click', e => { const b = e.target.closest('[data-ed]'); if (b) setEdition(b.dataset.ed); });
+$('engines').addEventListener('click', e => {
+  const b = e.target.closest('[data-eng]'); if (!b || b.dataset.eng === S.engine) return;
+  S.engine = b.dataset.eng;
+  document.querySelectorAll('.eng').forEach(x => x.setAttribute('aria-checked', String(x === b)));
+  loadVersions();
+});
+$('f-version').addEventListener('change', sync);
+$('f-name').addEventListener('input', () => {
+  const v = $('f-name').value.trim(), bad = v.length > 0 && !NAME_RE.test(v);
+  $('f-name').classList.toggle('bad', bad);
+  $('name-hint').className = 'hint' + (bad ? ' err' : '');
+  sync();
+});
+$('f-motd').addEventListener('input', () => { $('motd-count').textContent = `${$('f-motd').value.length}/59`; });
+document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('[data-src]'); if (b && !b.disabled && b.dataset.src !== S.source) setSource(b.dataset.src); });
+$('pack-go').addEventListener('click', searchPacks);
+$('pack-q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); searchPacks(); } });
+$('packs').addEventListener('click', e => { const b = e.target.closest('.pack'); if (b) pickPack(Number(b.dataset.i)); });
+$('f-url').addEventListener('input', validateUrl);
+$('deploy-form').addEventListener('submit', deploy);
+$('ov-close').addEventListener('click', () => $('ov').className = 'ov');
+$('fleet').addEventListener('click', e => {
+  const enter = e.target.closest('[data-enter]'), del = e.target.closest('[data-del]');
+  if (enter) { sessionStorage.setItem('selectedServer', JSON.stringify($('fleet')._list[Number(enter.dataset.enter)])); location.href = '/index.html'; }
+  if (del) {
+    const dlg = $('confirm-dlg');
+    dlg.returnValue = ''; dlg.showModal();
+    dlg.addEventListener('close', async () => {
+      if (dlg.returnValue !== 'yes') return;
+      try { await api('/api/project/delete', { method: 'POST', body: JSON.stringify({ serverId: del.dataset.del }) }); toast('Servidor eliminado.'); loadFleet(); }
+      catch (err) { toast('No se pudo eliminar: ' + err.message, true); }
+    }, { once: true });
+  }
+});
+document.querySelectorAll('[data-support]').forEach(b => b.addEventListener('click', () => openSupport(true)));
+$('drawer-x').addEventListener('click', () => openSupport(false));
+$('support-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('support-in').value.trim(); if (!msg) return;
+  $('msgs').insertAdjacentHTML('beforeend', `<div class="bub me">${esc(msg)}</div>`);
+  $('support-in').value = '';
+  try { const d = await api('/api/support/chat', { method: 'POST', body: JSON.stringify({ message: msg }) }); if (d?.reply) $('msgs').insertAdjacentHTML('beforeend', `<div class="bub">${esc(d.reply)}</div>`); }
+  catch (err) { toast('No se pudo enviar: ' + err.message, true); }
+  $('msgs').scrollTop = $('msgs').scrollHeight;
+});
+document.querySelectorAll('[data-pending="true"]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); toast('Muy pronto: estamos preparando este canal.'); }));
+$('btn-logout').addEventListener('click', async () => { await signOut(auth); location.href = '/index.html'; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') openSupport(false); });
+
+/* ===== Arranque: esperar la sesión antes de decidir (sin bucles) ===== */
+renderEngines(); icons(); sync();
+await auth.authStateReady();
+if (!auth.currentUser) {
+  location.replace('/index.html');
+} else {
+  loadVersions();
+  api('/api/user/status').then(d => {
+    if (['ceo', 'admin', 'soporte'].includes(d?.role)) {
+      $('nav-admin').classList.remove('hidden');
+      $('role-chip').textContent = d.role; $('role-chip').classList.remove('hidden');
+    }
+  }).catch(() => {});
+  loadFleet();
+  systemStatus(); setInterval(systemStatus, 60000);
+}
+</script>
 </body>
-
 </html>

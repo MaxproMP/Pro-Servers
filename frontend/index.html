@@ -2012,7 +2012,7 @@
             };
 
             function populateDashboard(element, config) {
-                const nombreDelServer = config.projectName || "Servidor Local";
+                const nombreDelServer = config.name || config.projectName || "Servidor Local";
                 const safeEdition = config.edition ? config.edition.toLowerCase() : 'java';
                 let versionServer = 'Auto';
                 if (safeEdition === 'bedrock') {
