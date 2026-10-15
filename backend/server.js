@@ -145,13 +145,27 @@ function getDockerImage(edition, software) {
 }
 
 // === HELPER: Variables de entorno para el contenedor ===
-// Límites de hardware del plan (los envía Laravel desde SQL Server). Sin plan: valores históricos.
+// Límites de hardware del plan (los envía Laravel desde SQL Server).
+// La RAM nunca supera 16 GB ni la RAM física del host menos una reserva: un heap mayor
+// que la memoria real hace fallar a la JVM con "Not enough space (errno=12)".
+const RAM_TOPE_DURO_MB = 16384;
+const RAM_RESERVA_HOST_MB = 1024;
+const RAM_FALLBACK_MB = 2048;
+
+function topeRamMb() {
+    const hostMb = Math.floor(os.totalmem() / 1048576);
+    return Math.max(1024, Math.min(RAM_TOPE_DURO_MB, hostMb - RAM_RESERVA_HOST_MB));
+}
+
 function limitesDePlan(plan) {
-    const memoryMb = Number.isInteger(plan?.memoria_mb) && plan.memoria_mb > 0 ? plan.memoria_mb : 1024;
+    const pedidaMb = Number(plan?.memoria_mb);
+    const valida = Number.isFinite(pedidaMb) && pedidaMb >= 512; // 0 en Docker = sin límite
+    const memoryMb = Math.min(valida ? Math.floor(pedidaMb) : RAM_FALLBACK_MB, topeRamMb());
     const pedidos = Number(plan?.cpu_cores) > 0 ? Number(plan.cpu_cores) : 1;
     return {
         plan: plan?.nombre || null,
         memoryMb,
+        memoriaPlanMb: valida ? Math.floor(pedidaMb) : null, // lo contratado, para auditar el recorte
         cpuCores: Math.min(pedidos, os.cpus().length), // Docker rechaza más CPUs de las que tiene el host
         storageGb: Number(plan?.almacenamiento_gb) > 0 ? Number(plan.almacenamiento_gb) : null, // informativo: no se aplica cuota de disco
         heapMb: Math.max(512, Math.floor(memoryMb * 0.8)), // la JVM deja margen para memoria fuera del heap
@@ -202,7 +216,9 @@ function getServerEnv(payload, port, limites) {
             env.push(`GENERIC_PACK=${payload.modpackUrl}`);
         }
 
-        env.push(`MEMORY=${limites.heapMb}M`);
+        // Xms bajo: la JVM no reserva todo el heap al arrancar (varios servidores comparten el host).
+        env.push(`INIT_MEMORY=${Math.min(1024, limites.heapMb)}M`);
+        env.push(`MAX_MEMORY=${limites.heapMb}M`);
         env.push('ONLINE_MODE=FALSE');
     }
 
@@ -296,7 +312,7 @@ async function validarUrlPack(rawUrl) {
 
 // --- Health Check ---
 app.get('/ping', (req, res) => {
-    res.json({ status: '🟢 Demonio Node.js en línea, blindado y esperando órdenes.' });
+    res.json({ status: '🟢 Demonio Node.js en línea, blindado y esperando órdenes.', ramTopeMb: topeRamMb(), cpuTope: os.cpus().length });
 });
 
 // ============================================================

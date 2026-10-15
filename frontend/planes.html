@@ -65,27 +65,31 @@ h1 em{font-style:normal;background:linear-gradient(90deg,#34d399,#a78bfa);-webki
 .cycle-note{font:500 12px 'JetBrains Mono',monospace;color:var(--mu);margin-top:10px;min-height:18px}
 
 /* --- Rack (Locker Room) --- */
-.stage{perspective:1600px;padding:10px 0 56px}
-.rack{position:relative;max-width:980px;margin:0 auto;padding:22px 46px;border-radius:18px;
-  background:linear-gradient(180deg,#0d1017,#07090d);border:1px solid var(--bd2);
-  box-shadow:0 60px 120px -60px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.06);
-  transform-style:preserve-3d;transition:transform .8s cubic-bezier(.2,.8,.2,1)}
-@media(min-width:1024px){.rack{transform:rotateY(-9deg) rotateX(3deg)}.stage:hover .rack{transform:rotateY(-4deg) rotateX(1deg)}}
-.rack::before,.rack::after{content:"";position:absolute;top:16px;bottom:16px;width:26px;border-radius:6px;
-  background:radial-gradient(circle,#1d222d 3px,transparent 3.5px) center top/26px 22px repeat-y,linear-gradient(90deg,#11141b,#171b24,#11141b);border:1px solid var(--bd)}
-.rack::before{left:12px}.rack::after{right:12px}
-.rack-h{display:flex;justify-content:space-between;align-items:center;font:600 11px 'JetBrains Mono',monospace;color:var(--mu);letter-spacing:.12em;padding:0 4px 14px}
-.slots{display:grid;gap:10px;transform-style:preserve-3d}
-@media(max-width:640px){.rack{padding:16px 30px}.rack::before,.rack::after{width:16px;background-size:16px 22px}.rack::before{left:6px}.rack::after{right:6px}}
+/* Rack flotante: sin caja; la orientación la mueve JS con inercia (--rx/--ry). */
+.stage{position:relative;perspective:1700px;padding:10px 0 72px}
+.stage::after{content:"";position:absolute;left:10%;right:10%;bottom:20px;height:90px;pointer-events:none;
+  background:radial-gradient(50% 50% at 50% 50%,rgba(139,92,246,.18),rgba(16,185,129,.06) 50%,transparent 75%);filter:blur(12px)}
+.rack{--rx:3deg;--ry:-9deg;position:relative;max-width:960px;margin:0 auto;transform-style:preserve-3d;transform:rotateX(var(--rx)) rotateY(var(--ry));will-change:transform}
+@media(max-width:1023px){.rack{transform:none}}
+.rack-h{display:flex;justify-content:space-between;align-items:center;font:600 11px 'JetBrains Mono',monospace;color:var(--mu);letter-spacing:.12em;padding:0 6px 16px}
+.slots{display:grid;gap:12px;transform-style:preserve-3d}
+@keyframes float{0%,100%{translate:0 0 0}50%{translate:0 -4px 6px}}
 
 .ch{--c:#10B981;position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;width:100%;text-align:left;
-  padding:16px 18px;border-radius:12px;border:1px solid var(--bd);
-  background:linear-gradient(180deg,#141823,#0d1018);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 24px -16px #000;
-  transform:translateZ(0);transition:transform .45s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s;outline:none}
-.ch::before{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .35s;
-  box-shadow:0 0 0 1px var(--c),0 0 28px -4px var(--c),inset 0 0 20px -12px var(--c)}
-.ch:hover,.ch:focus-visible{transform:translateZ(46px) translateX(-10px);border-color:transparent;box-shadow:0 30px 50px -24px #000}
+  padding:16px 18px;border-radius:14px;border:1px solid var(--bd);
+  background:linear-gradient(180deg,rgba(22,26,37,.92),rgba(12,14,21,.92));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 40px -26px #000;
+  animation:float 6s ease-in-out infinite;animation-delay:calc(var(--i,0) * -.8s);
+  transform:translateZ(0);transition:transform .7s cubic-bezier(.34,1.56,.64,1),border-color .3s,box-shadow .5s;outline:none}
+.ch::before{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .4s;
+  box-shadow:0 0 0 1px var(--c),0 0 34px -2px color-mix(in srgb,var(--c) 70%,transparent),inset 0 0 24px -12px var(--c)}
+.ch::after{content:"";position:absolute;left:18px;right:18px;bottom:-1px;height:1px;opacity:.5;background:linear-gradient(90deg,transparent,var(--c),transparent);transition:opacity .4s}
+.ch:hover,.ch:focus-visible{transform:translateZ(64px) translateX(-14px) scale(1.012);border-color:transparent;box-shadow:0 40px 70px -30px #000,0 0 60px -30px var(--c)}
 .ch:hover::before,.ch:focus-visible::before{opacity:1}
+.ch:hover::after,.ch:focus-visible::after{opacity:1}
+.ch.ent{--c:#F59E0B;background:linear-gradient(120deg,rgba(245,158,11,.1),rgba(12,14,21,.92) 45%);border-style:dashed;border-color:rgba(245,158,11,.35)}
+.ch.ent .price b{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;color:#fcd34d}
+.cap{color:var(--am)}
 .ch .u{font:700 10px 'JetBrains Mono',monospace;color:var(--mu);writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.14em}
 .ch .face{display:grid;gap:8px;min-width:0}
 .ch .name{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;letter-spacing:-.02em}
@@ -94,7 +98,7 @@ h1 em{font-style:normal;background:linear-gradient(90deg,#34d399,#a78bfa);-webki
 .ch .tag{font-size:12px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ch .vent{height:6px;border-radius:3px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 3px,transparent 3px 7px);max-width:340px}
 .ch .peek{display:flex;flex-wrap:wrap;gap:6px;max-height:0;opacity:0;overflow:hidden;transition:max-height .4s,opacity .3s}
-.ch:hover .peek,.ch:focus-visible .peek{max-height:60px;opacity:1}
+.ch:hover .peek,.ch:focus-visible .peek{max-height:60px;opacity:1;transition:max-height .5s cubic-bezier(.34,1.3,.64,1),opacity .4s .05s}
 .ch .peek span{font:600 11px 'JetBrains Mono',monospace;padding:3px 8px;border-radius:6px;border:1px solid color-mix(in srgb,var(--c) 45%,transparent);color:color-mix(in srgb,var(--c) 70%,#fff);background:color-mix(in srgb,var(--c) 10%,transparent)}
 .ch .price{text-align:right;display:grid;gap:2px}
 .ch .price b{font:700 22px 'JetBrains Mono',monospace;letter-spacing:-.02em;transition:opacity .2s}
@@ -159,6 +163,15 @@ footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:lin
 .soc:hover{color:#fff;border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.12);transform:translateY(-2px)}
 .ft-b{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:20px 0 28px;border-top:1px solid var(--bd);font-size:12px;color:var(--mu)}
 .mega{font-weight:800;letter-spacing:-.05em;font-size:clamp(48px,13vw,170px);line-height:.8;text-align:center;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.07);user-select:none;padding-top:8px;overflow:hidden;white-space:nowrap}
+.ent-list{list-style:none;display:grid;gap:10px;margin-top:22px}
+.ent-list li{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#c3c8d4}
+.ent-list svg.feather{color:var(--am);margin-top:3px}
+textarea.inp{width:100%;min-height:130px;resize:vertical;background:var(--sf2);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;color:var(--tx);font:500 14px/1.5 'Plus Jakarta Sans',sans-serif;outline:none;transition:.2s}
+textarea.inp:focus{border-color:rgba(245,158,11,.55);box-shadow:0 0 0 3px rgba(245,158,11,.12)}
+.btn.amb{color:#1a1203;background:linear-gradient(135deg,#fcd34d,#f59e0b);box-shadow:0 14px 34px -14px rgba(245,158,11,.8)}
+.btn.amb:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.cap-note{font-size:11.5px;color:#fcd34d;margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;letter-spacing:0}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -238,13 +251,33 @@ footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:lin
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-name">
   <article class="card" id="card">
     <button type="button" class="x" id="sh-x" aria-label="Cerrar"><i data-feather="x"></i></button>
-    <div class="card-in">
+    <div class="card-in hidden" id="ent-in">
+      <div>
+        <div class="k"><span class="dot"></span>U·EXT · A medida</div>
+        <h2 id="ent-name" style="color:#F59E0B">Enterprise</h2>
+        <p class="tagline">Para comunidades grandes, redes de servidores o proyectos que necesitan recursos exclusivos. Armamos la configuración y el presupuesto según tu caso.</p>
+        <ul class="ent-list">
+          <li><i data-feather="sliders"></i>RAM, CPU y almacenamiento dimensionados a tu proyecto.</li>
+          <li><i data-feather="server"></i>Nodo dedicado exclusivo bajo pedido.</li>
+          <li><i data-feather="file-text"></i>Presupuesto personalizado antes de contratar.</li>
+          <li><i data-feather="life-buoy"></i>Seguimiento directo del equipo de soporte por ticket.</li>
+        </ul>
+      </div>
+      <form class="buy" id="ent-form">
+        <div class="k" style="color:#fcd34d"><i data-feather="message-square"></i>Solicitar presupuesto</div>
+        <label class="fine" style="text-align:left" for="ent-msg">Contanos qué necesitás: jugadores, modpacks, cantidad de servidores, plazos.</label>
+        <textarea class="inp" id="ent-msg" maxlength="1800" required placeholder="Ej: red de 3 servidores Paper para ~200 jugadores, con un modpack Forge aparte…"></textarea>
+        <button type="submit" class="btn amb" id="ent-send"><i data-feather="send"></i>Enviar solicitud</button>
+        <p class="fine" id="ent-status">Se abre un ticket real; te respondemos desde el Centro de ayuda.</p>
+      </form>
+    </div>
+    <div class="card-in" id="plan-in">
       <div>
         <div class="k"><span class="dot"></span><span id="sh-unit"></span></div>
         <h2 id="sh-name"></h2>
         <p class="tagline" id="sh-tag"></p>
         <dl class="specs">
-          <div class="spec"><dt><i data-feather="cpu"></i>RAM dedicada</dt><dd id="sh-ram"></dd></div>
+          <div class="spec"><dt><i data-feather="cpu"></i>RAM entregada</dt><dd id="sh-ram"></dd></div>
           <div class="spec"><dt><i data-feather="zap"></i>Núcleos CPU</dt><dd id="sh-cpu"></dd></div>
           <div class="spec"><dt><i data-feather="hard-drive"></i>Almacenamiento</dt><dd id="sh-disk"></dd></div>
           <div class="spec"><dt><i data-feather="globe"></i>Red</dt><dd style="font-size:16px">Playit.gg</dd></div>
@@ -316,22 +349,35 @@ const quote = (base, m) => {
 const gb = (mb) => Number((mb / 1024).toFixed(1));
 
 let PLANS = [], months = 1, open = null;
+// Tope seguro de RAM del nodo (lo informa el daemon en /ping). Sin dato: tope duro de 16 GB.
+let CAP_MB = 16384, CPU_CAP = Infinity;
+const ramReal = (p) => Math.min(p.ram, CAP_MB);
+const cpuReal = (p) => Math.min(p.cpu, CPU_CAP);
 
 function renderRack() {
-  $('rack-count').textContent = `${PLANS.length} U`;
+  $('rack-count').textContent = `${PLANS.length + 1} U`;
   $('slots').innerHTML = PLANS.map((p, i) => {
-    const L = lookOf(p), q = quote(p.base, months);
-    return `<button type="button" class="ch" style="--c:${L.c}" data-i="${i}" aria-label="Ver plan ${esc(L.title)}">
+    const L = lookOf(p), q = quote(p.base, months), capped = p.ram > CAP_MB;
+    return `<button type="button" class="ch" style="--c:${L.c};--i:${i}" data-i="${i}" aria-label="Ver plan ${esc(L.title)}">
       <span class="u">U${String(i + 1).padStart(2, '0')}</span>
       <span class="face">
         <span class="name"><span class="led${i === PLANS.length - 1 ? ' blink' : ''}"></span>${esc(L.title)}</span>
         <span class="tag">${esc(L.tag)}</span>
         <span class="vent"></span>
-        <span class="peek"><span>${gb(p.ram)} GB RAM</span><span>${p.cpu} vCPU</span><span>${p.disk} GB</span><span>PLAYIT.GG</span></span>
+        <span class="peek"><span${capped ? ' class="cap" title="Tope seguro del nodo"' : ''}>${capped ? 'HASTA ' : ''}${gb(ramReal(p))} GB RAM</span><span${p.cpu > CPU_CAP ? ' class="cap" title="Tope del nodo"' : ''}>${p.cpu > CPU_CAP ? 'HASTA ' : ''}${cpuReal(p)} vCPU</span><span>${p.disk} GB</span><span>PLAYIT.GG</span></span>
       </span>
       <span class="price"><b data-price>${money(q.perMonth)}</b><small>USD / mes</small><i>${months > 1 ? `${money(q.total)} cada ${months} meses` : '&nbsp;'}</i></span>
     </button>`;
-  }).join('');
+  }).join('') + `<button type="button" class="ch ent" style="--i:${PLANS.length}" data-ent aria-label="Ver plan Enterprise a medida">
+      <span class="u">U·EXT</span>
+      <span class="face">
+        <span class="name"><span class="led blink"></span>Enterprise</span>
+        <span class="tag">Nodos dedicados y recursos a medida para comunidades grandes.</span>
+        <span class="vent"></span>
+        <span class="peek"><span>NODO DEDICADO</span><span>RECURSOS A MEDIDA</span><span>PRESUPUESTO</span></span>
+      </span>
+      <span class="price"><b>A medida</b><small>Presupuesto personalizado</small><i>&nbsp;</i></span>
+    </button>`;
 }
 
 function setCycle(m) {
@@ -355,8 +401,10 @@ function fillSheet() {
   $('sh-name').textContent = L.title;
   $('sh-name').style.color = L.c;
   $('sh-tag').textContent = L.tag;
-  $('sh-ram').innerHTML = `${gb(p.ram)} <small>GB</small>`;
-  $('sh-cpu').innerHTML = `${p.cpu} <small>vCPU</small>`;
+  $('sh-ram').innerHTML = `${gb(ramReal(p))} <small>GB</small>` + (p.ram > CAP_MB
+    ? `<div class="cap-note">Tope seguro del nodo actual. El plan figura con ${gb(p.ram)} GB.</div>` : '');
+  $('sh-cpu').innerHTML = `${cpuReal(p)} <small>vCPU</small>` + (p.cpu > CPU_CAP
+    ? `<div class="cap-note">Núcleos del nodo actual. El plan figura con ${p.cpu}.</div>` : '');
   $('sh-disk').innerHTML = `${p.disk} <small>GB</small>`;
   $('sh-total').innerHTML = `${money(q.total)} <small>USD</small>`;
   $('sh-per').textContent = months > 1 ? `Equivale a ${money(q.perMonth)} USD por mes` : 'Se renueva cada mes';
@@ -366,18 +414,60 @@ function fillSheet() {
 }
 
 let lastFocus;
-function openSheet(i) {
-  open = PLANS[i]; lastFocus = document.activeElement;
-  fillSheet();
+function showSheet(ent) {
+  lastFocus = document.activeElement;
+  $('ent-in').classList.toggle('hidden', !ent);
+  $('plan-in').classList.toggle('hidden', ent);
   $('sheet').classList.add('on');
   document.body.style.overflow = 'hidden';
+}
+function openSheet(i) {
+  open = PLANS[i];
+  fillSheet(); showSheet(false);
   $('sh-buy').focus();
+}
+async function openEnterprise() {
+  open = null;
+  $('card').style.setProperty('--c', '#F59E0B');
+  showSheet(true);
+  await auth.authStateReady();
+  const logged = !!auth.currentUser;
+  $('ent-msg').disabled = !logged;
+  $('ent-send').innerHTML = logged ? '<i data-feather="send"></i>Enviar solicitud' : '<i data-feather="log-in"></i>Iniciar sesión para solicitar';
+  $('ent-send').disabled = false;
+  feather.replace();
+  (logged ? $('ent-msg') : $('ent-send')).focus();
 }
 function closeSheet() {
   open = null;
   $('sheet').classList.remove('on');
   document.body.style.overflow = '';
   lastFocus?.focus();
+}
+
+async function sendEnterprise(e) {
+  e.preventDefault();
+  await auth.authStateReady();
+  if (!auth.currentUser) return location.href = '/index.html';
+  const msg = $('ent-msg').value.trim();
+  if (msg.length < 10) { $('ent-status').textContent = 'Contanos un poco más (mínimo 10 caracteres).'; return; }
+  $('ent-send').disabled = true;
+  $('ent-status').textContent = 'Enviando…';
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const r = await fetch('/api/support/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ message: `[Enterprise] Solicitud de presupuesto a medida\n\n${msg}` }),
+    });
+    const d = await r.json().catch(() => null);
+    if (!r.ok || !d?.success) throw new Error(d?.message || d?.error || 'HTTP ' + r.status);
+    $('ent-msg').value = '';
+    $('ent-status').textContent = 'Solicitud enviada. Seguí la respuesta en el Centro de ayuda.';
+  } catch (err) {
+    $('ent-status').textContent = 'No se pudo enviar: ' + err.message;
+  }
+  $('ent-send').disabled = false;
 }
 
 async function buy() {
@@ -410,7 +500,16 @@ async function loadPlans() {
 }
 
 async function systemStatus(apiOk) {
-  const node = await fetch('/ping').then(r => r.ok).catch(() => false);
+  const ping = await fetch('/ping', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  const node = !!ping;
+  const cap = Number(ping?.ramTopeMb);
+  const cpu = Number(ping?.cpuTope);
+  if ((cap > 0 && cap !== CAP_MB) || (cpu > 0 && cpu !== CPU_CAP)) {
+    if (cap > 0) CAP_MB = cap;
+    if (cpu > 0) CPU_CAP = cpu;
+    if (PLANS.length) renderRack();
+    if (open) fillSheet();
+  }
   const mark = (id, label, ok) => { $(id).textContent = `${label} · ${ok ? 'operativo' : 'sin respuesta'}`; $(id).style.color = ok ? '#6ee7b7' : '#fca5a5'; };
   mark('st-api', 'API', apiOk); mark('st-node', 'Nodos', node);
   const all = apiOk && node;
@@ -423,11 +522,34 @@ $('year').textContent = new Date().getFullYear();
 document.querySelectorAll('.cycle').forEach(c => c.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b) setCycle(Number(b.dataset.m)); }));
 $('slots').addEventListener('click', e => {
   if (e.target.closest('#retry')) return loadPlans();
+  if (e.target.closest('[data-ent]')) return openEnterprise();
   const ch = e.target.closest('.ch'); if (ch) openSheet(Number(ch.dataset.i));
 });
 $('sh-x').addEventListener('click', closeSheet);
 $('sheet').addEventListener('mousedown', e => { if (e.target === $('sheet')) closeSheet(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && open) closeSheet(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('sheet').classList.contains('on')) closeSheet(); });
+$('ent-form').addEventListener('submit', sendEnterprise);
+
+/* Parallax con inercia: el rack persigue al cursor con interpolación (sin tirones). */
+(() => {
+  const stage = document.querySelector('.stage'), rack = document.querySelector('.rack');
+  const BASE = { x: 3, y: -9 }, cur = { ...BASE }, tgt = { ...BASE };
+  const fine = matchMedia('(min-width:1024px) and (pointer:fine)'), calm = matchMedia('(prefers-reduced-motion:reduce)');
+  let raf = 0;
+  const tick = () => {
+    cur.x += (tgt.x - cur.x) * 0.07; cur.y += (tgt.y - cur.y) * 0.07;
+    rack.style.setProperty('--rx', cur.x.toFixed(3) + 'deg'); rack.style.setProperty('--ry', cur.y.toFixed(3) + 'deg');
+    raf = Math.abs(tgt.x - cur.x) + Math.abs(tgt.y - cur.y) > 0.01 ? requestAnimationFrame(tick) : 0;
+  };
+  const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+  stage.addEventListener('pointermove', e => {
+    if (!fine.matches || calm.matches) return;
+    const r = stage.getBoundingClientRect();
+    const nx = (e.clientX - r.left) / r.width - 0.5, ny = (e.clientY - r.top) / r.height - 0.5;
+    tgt.y = BASE.y + nx * 12; tgt.x = BASE.x - ny * 6; kick();
+  });
+  stage.addEventListener('pointerleave', () => { Object.assign(tgt, BASE); kick(); });
+})();
 $('sh-buy').addEventListener('click', buy);
 document.querySelectorAll('[data-pending="true"]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); toast('Muy pronto: estamos preparando este canal.'); }));
 
