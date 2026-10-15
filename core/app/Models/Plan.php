@@ -14,7 +14,8 @@ class Plan extends Model
         'precio_mensual', 
         'memoria_mb', 
         'cpu_cores', 
-        'almacenamiento_gb'
+        'almacenamiento_gb',
+        'max_jugadores',
     ];
 
     public function suscripciones(): HasMany

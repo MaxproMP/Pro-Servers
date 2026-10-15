@@ -10,7 +10,7 @@ class NodeProxyController extends Controller
 {
     private string $nodeUrl = 'http://minecraft-panel-backend:3000';
 
-    /** @return array{nombre: string, memoria_mb: int, cpu_cores: int, almacenamiento_gb: int}|null */
+    /** @return array{nombre: string, memoria_mb: int, cpu_cores: int, almacenamiento_gb: int, max_jugadores: int|null}|null */
     private function limitesDelPlan($cliente): ?array
     {
         $plan = $cliente->suscripcionActiva()->with('plan')->first()?->plan;
@@ -20,6 +20,7 @@ class NodeProxyController extends Controller
             'memoria_mb' => (int) $plan->memoria_mb,
             'cpu_cores' => (int) $plan->cpu_cores,
             'almacenamiento_gb' => (int) $plan->almacenamiento_gb,
+            'max_jugadores' => $plan->max_jugadores === null ? null : (int) $plan->max_jugadores,
         ] : null;
     }
 

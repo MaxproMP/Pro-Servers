@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\NodeProxyController;
 use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\SupportController;
+use App\Http\Controllers\Api\TrialController;
 use App\Http\Controllers\Api\TwoFactorController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\CheckoutController;
@@ -57,6 +58,8 @@ Route::middleware('firebase.auth')->group(function () {
     
     // Pagos
     Route::post('/checkout/{pasarela}', [CheckoutController::class, 'crearPago']);
+    Route::get('/trial/status', [TrialController::class, 'status']);
+    Route::post('/trial/start', [TrialController::class, 'start'])->middleware('throttle:5,1');
     Route::post('/payments/{pagoId}/refund', [RefundController::class, 'solicitarReembolso']);
     Route::get('/admin/refunds', [RefundController::class, 'historial']);
 

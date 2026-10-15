@@ -289,7 +289,7 @@ final class ClientController extends AdminController
             'estado' => $c->trashed() ? 'eliminado' : $c->estado,
             'created_at' => $c->created_at?->toIso8601String(),
             'plan' => $sub?->plan ? ['id' => $sub->plan->id, 'nombre' => $sub->plan->nombre] : null,
-            'suscripcion' => $sub ? ['id' => $sub->id, 'estado' => $sub->estado, 'fecha_vencimiento' => $sub->fecha_vencimiento?->toIso8601String()] : null,
+            'suscripcion' => $sub ? ['id' => $sub->id, 'estado' => $sub->estado, 'en_prueba' => $sub->enPrueba(), 'fecha_vencimiento' => $sub->fecha_vencimiento?->toIso8601String()] : null,
             'server' => $sub?->server ? ['id' => $sub->server->id, 'status' => $sub->server->status, 'port' => $sub->server->port] : null,
             'pagos_count' => (int) ($pagos[$c->id] ?? 0),
             'tickets_count' => (int) ($tickets[$c->id]->n ?? 0),

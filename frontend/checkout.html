@@ -235,61 +235,21 @@
                     </div>
                 </div>
 
-                <!-- PANEL EXCLUSIVO: VERIFICACIÓN ANTI-FRAUDE (PRUEBA GRATIS) -->
+                <!-- PANEL EXCLUSIVO: PRUEBA GRATIS (sin tarjeta, una por cuenta) -->
                 <div id="trial-verification-panel"
-                    class="glass-panel p-6 border border-red-500/30 hidden shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+                    class="glass-panel p-6 border border-emerald-500/30 hidden shadow-[0_0_20px_rgba(16,185,129,0.1)]">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-sm uppercase tracking-widest text-red-400 font-bold flex items-center gap-2">
-                            <i data-feather="shield" class="w-5 h-5"></i> Verificación Anti-Fraude
+                        <h2 class="text-sm uppercase tracking-widest text-emerald-400 font-bold flex items-center gap-2">
+                            <i data-feather="gift" class="w-5 h-5"></i> Prueba gratis de 15 días
                         </h2>
-                        <span
-                            class="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-mono flex items-center gap-1">
-                            <i data-feather="credit-card" class="w-3 h-3"></i> $1 USD Hold
-                        </span>
+                        <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-mono">$0.00</span>
                     </div>
-                    <p class="text-xs text-gray-400 mb-6">Para activar la prueba de 15 días a $0.00, necesitamos validar
-                        que eres un humano real. Ingresa tu tarjeta; haremos un cargo temporal de verificación de $1 USD
-                        que será <b>reembolsado automáticamente</b> al instante.</p>
-
-                    <div class="space-y-4">
-                        <div class="relative">
-                            <label class="text-xs text-gray-400 uppercase font-bold mb-1 block">Número de
-                                Tarjeta</label>
-                            <input type="text" id="card-number" class="input-dark pr-16 font-mono tracking-widest"
-                                placeholder="4506 5212 0000 0000" maxlength="19" oninput="formatCard(this)">
-                            <div id="card-brand"
-                                class="absolute top-9 right-3 text-xs font-bold font-mono text-white uppercase bg-[#222] px-2 py-1 rounded hidden">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-xs text-gray-400 uppercase font-bold mb-1 block">Expiración</label>
-                                <input type="text" id="card-exp" class="input-dark font-mono text-center"
-                                    placeholder="MM/AA" maxlength="5" oninput="formatExp(this)">
-                            </div>
-                            <div>
-                                <label
-                                    class="text-xs text-gray-400 uppercase font-bold mb-1 block flex items-center gap-1">
-                                    CVC <i data-feather="info" class="w-3 h-3 text-gray-500"
-                                        title="Código de 3 o 4 dígitos al reverso"></i>
-                                </label>
-                                <input type="password" id="card-cvc" class="input-dark font-mono text-center"
-                                    placeholder="123" maxlength="4">
-                            </div>
-                        </div>
-
-                        <div id="security-warning"
-                            class="hidden bg-red-950/50 border border-red-500/50 text-red-400 text-xs p-3 rounded-lg flex items-center gap-2 font-bold mt-2">
-                            <i data-feather="alert-triangle" class="w-4 h-4 shrink-0"></i>
-                            <span id="warning-text">Error en los datos de la tarjeta.</span>
-                        </div>
-
-                        <button onclick="procesarPruebaGratis()" id="btn-pay-trial"
-                            class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3.5 rounded-xl transition-colors uppercase text-[11px] tracking-wider shadow-lg shadow-red-950/50 mt-4 flex items-center justify-center gap-2">
-                            <i data-feather="lock" class="w-4 h-4"></i> Activar Prueba (Validar Tarjeta)
-                        </button>
-                    </div>
+                    <p class="text-xs text-gray-400 mb-6">Sin tarjeta y sin cobro. Una prueba por cuenta: se activa al instante sobre este plan y vence sola a los 15 días. Si te gusta, contratás desde Planes.</p>
+                    <div id="trial-msg" class="hidden text-xs p-3 rounded-lg mb-4 font-bold"></div>
+                    <button onclick="procesarPruebaGratis()" id="btn-pay-trial"
+                        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-colors uppercase text-[11px] tracking-wider shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2">
+                        <i data-feather="zap" class="w-4 h-4"></i> Activar prueba gratis
+                    </button>
                 </div>
 
             </div>
@@ -452,15 +412,15 @@
         // CAPTURAMOS EL TOKEN CSRF DE LARAVEL PARA LAS COMPRAS
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        // DICCIONARIO DE PLANES CON TODOS TUS NOMBRES OFICIALES
-        const PLANES = {
-            'redstone': { name: 'Plan Redstone', ram: 8, slots: 10, price: 6, color: 'text-red-500' },
-            'hierro': { name: 'Plan Hierro', ram: 12, slots: 20, price: 9, color: 'text-gray-300' },
-            'cobre': { name: 'Plan Cobre', ram: 16, slots: 40, price: 12, color: 'text-amber-600' },
-            'oro': { name: 'Plan Oro', ram: 16, slots: 40, price: 15, color: 'text-yellow-500' },
-            'diamante': { name: 'Plan Diamante', ram: 32, slots: 100, price: 25, color: 'text-cyan-400' },
-            'netherite': { name: 'Plan Netherite', ram: 64, slots: 250, price: 45, color: 'text-purple-500' },
-            'ghost-warrior': { name: 'Ghost Warrior', ram: 128, slots: 'Ilimitados', price: 85, color: 'text-blue-500' }
+        // Identidad visual por plan; precio, RAM y jugadores vienen de SQL Server (/api/plans).
+        const ESTILO = {
+            'redstone': { name: 'Plan Redstone', color: 'text-red-500' },
+            'hierro': { name: 'Plan Hierro', color: 'text-gray-300' },
+            'cobre': { name: 'Plan Cobre', color: 'text-amber-600' },
+            'oro': { name: 'Plan Oro', color: 'text-yellow-500' },
+            'diamante': { name: 'Plan Diamante', color: 'text-cyan-400' },
+            'netherite': { name: 'Plan Netherite', color: 'text-purple-500' },
+            'ghost-warrior': { name: 'Ghost Warrior', color: 'text-blue-500' }
         };
 
         let currentPlan = null;
@@ -476,14 +436,23 @@
         const urlParams = new URLSearchParams(window.location.search);
         const isTrial = urlParams.get('trial') === 'true';
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             feather.replace();
 
             const planSlug = urlParams.get('plan') || 'hierro';
             const cicloParam = parseInt(urlParams.get('ciclo')) || 1;
 
             planSlugFinal = planSlug;
-            currentPlan = PLANES[planSlug];
+            try {
+                const r = await fetch('/api/plans', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+                const p = r.ok ? (await r.json()).planes.find(x => x.nombre === planSlug) : null;
+                if (p) currentPlan = {
+                    ...(ESTILO[planSlug] || { name: planSlug, color: 'text-emerald-400' }),
+                    ram: Number((Number(p.memoria_mb) / 1024).toFixed(1)),
+                    slots: p.max_jugadores === null ? 'Ilimitados' : Number(p.max_jugadores),
+                    price: Number(p.precio_mensual),
+                };
+            } catch (e) { currentPlan = null; }
 
             if (!currentPlan) {
                 alert("Plan inválido. Redirigiendo...");
@@ -494,7 +463,7 @@
             document.getElementById('plan-name').innerText = currentPlan.name;
             document.getElementById('plan-name').className = `text-xl font-bold font-['Cinzel'] ${currentPlan.color}`;
             document.getElementById('plan-ram').innerHTML = `<i data-feather="cpu" class="w-3 h-3 inline"></i> ${currentPlan.ram} GB RAM`;
-            document.getElementById('plan-slots').innerHTML = `<i data-feather="users" class="w-3 h-3 inline"></i> ${currentPlan.slots} Slots`;
+            document.getElementById('plan-slots').innerHTML = `<i data-feather="users" class="w-3 h-3 inline"></i> ${currentPlan.slots} jugadores`;
             document.getElementById('plan-base-price').innerText = `$${currentPlan.price.toFixed(2)}`;
 
             document.getElementById('ticket-plan-name').innerText = currentPlan.name;
@@ -541,35 +510,6 @@
             });
         });
 
-        // FUNCIONES DE FORMATEO DE TARJETA (SÓLO USADAS EN PRUEBA)
-        window.formatCard = (input) => {
-            let val = input.value.replace(/\D/g, '');
-            input.value = val.replace(/(\d{4})(?=\d)/g, '$1 ');
-            const brandEl = document.getElementById('card-brand');
-            const bin = val.substring(0, 6);
-            input.classList.remove('input-error');
-
-            if (bin.length < 4) { brandEl.classList.add('hidden'); return; }
-
-            brandEl.classList.remove('hidden', 'bg-blue-600', 'bg-orange-600', 'bg-blue-400');
-            if (/^4/.test(bin)) { brandEl.innerText = 'VISA'; brandEl.classList.add('bg-blue-600'); }
-            else if (/^5[1-5]/.test(bin) || /^2[2-7]/.test(bin) || /^5212/.test(bin)) { brandEl.innerText = 'MASTERCARD'; brandEl.classList.add('bg-orange-600'); }
-            else if (/^3[47]/.test(bin)) { brandEl.innerText = 'AMEX'; brandEl.classList.add('bg-blue-400'); }
-            else { brandEl.innerText = 'TARJETA'; brandEl.classList.add('bg-[#333]'); }
-        };
-
-        window.formatExp = (input) => {
-            let val = input.value.replace(/\D/g, '');
-            if (val.length >= 3) input.value = val.substring(0, 2) + '/' + val.substring(2, 4);
-            else input.value = val;
-            input.classList.remove('input-error');
-        };
-
-        document.getElementById('card-cvc').addEventListener('input', function () {
-            this.value = this.value.replace(/\D/g, '');
-            this.classList.remove('input-error');
-        });
-
         // LÓGICA DE PRECIOS REGULARES
         window.selectCycle = (months, discountPct, element) => {
             if (isTrial) return; // Si es prueba, no hace nada
@@ -596,24 +536,15 @@
             const input = document.getElementById('promo-input').value.toUpperCase().trim();
             const msg = document.getElementById('promo-msg');
 
-            const cuponesValidos = { 'MAXPRO': 100, 'NAVIDAD50': 50, 'BIENVENIDA20': 20, 'WEARIEST': 15 };
-
+            // Los cupones aún no existen en el backend: no se muestra un descuento que no se cobraría.
+            promoDiscount = 0;
             if (input === '') {
-                promoDiscount = 0;
                 msg.classList.add('hidden');
                 calculateTotal();
                 return;
             }
-
-            if (cuponesValidos[input]) {
-                promoDiscount = cuponesValidos[input];
-                msg.innerText = `¡Cupón aplicado! Se descontará un ${promoDiscount}% extra.`;
-                msg.className = "text-[10px] mt-2 font-bold text-indigo-400";
-            } else {
-                promoDiscount = 0;
-                msg.innerText = "Código inválido o expirado.";
-                msg.className = "text-[10px] mt-2 text-red-500 font-bold";
-            }
+            msg.innerText = "Los códigos promocionales todavía no están disponibles.";
+            msg.className = "text-[10px] mt-2 text-amber-400 font-bold";
             msg.classList.remove('hidden');
             calculateTotal();
         };
@@ -665,78 +596,37 @@
         // ==========================================
         // PROCESADOR EXCLUSIVO DE LA PRUEBA GRATIS
         // ==========================================
-        window.procesarPruebaGratis = () => {
-            if (estaBloqueado) return;
-
-            const cardNumberEl = document.getElementById('card-number');
-            const cardExpEl = document.getElementById('card-exp');
-            const cardCvcEl = document.getElementById('card-cvc');
-            const warningBox = document.getElementById('security-warning');
-            const warningText = document.getElementById('warning-text');
+        window.procesarPruebaGratis = async () => {
             const btn = document.getElementById('btn-pay-trial');
-
-            const cardNumber = cardNumberEl.value.replace(/\s/g, '');
-            const cardExp = cardExpEl.value;
-            const cardCvc = cardCvcEl.value;
-
-            let hasError = false;
-
-            if (cardNumber.length < 15) { cardNumberEl.classList.add('input-error'); hasError = true; }
-            if (cardExp.length !== 5) { cardExpEl.classList.add('input-error'); hasError = true; }
-            if (cardCvc.length < 3) { cardCvcEl.classList.add('input-error'); hasError = true; }
-
-            if (hasError) {
-                intentosFallidos++;
-                warningBox.classList.remove('hidden');
-
-                if (intentosFallidos >= 3) {
-                    estaBloqueado = true;
-                    warningText.innerText = "Múltiples intentos fallidos. Sistema bloqueado temporalmente por seguridad.";
-                    btn.disabled = true;
-
-                    let segundos = 30;
-                    let timer = setInterval(() => {
-                        segundos--;
-                        btn.innerHTML = `<i data-feather="lock" class="w-4 h-4"></i> Bloqueado (${segundos}s)`;
-                        feather.replace();
-
-                        if (segundos <= 0) {
-                            clearInterval(timer);
-                            estaBloqueado = false;
-                            intentosFallidos = 0;
-                            btn.disabled = false;
-                            btn.innerHTML = '<i data-feather="lock" class="w-4 h-4"></i> Activar Prueba (Validar Tarjeta)';
-                            warningBox.classList.add('hidden');
-                            feather.replace();
-                        }
-                    }, 1000);
-                } else {
-                    warningText.innerText = `Datos inválidos. Intento ${intentosFallidos} de 3.`;
-                }
-                return;
-            }
-
-            warningBox.classList.add('hidden');
+            const msg = document.getElementById('trial-msg');
+            const show = (text, ok) => {
+                msg.textContent = text;
+                msg.className = 'text-xs p-3 rounded-lg mb-4 font-bold ' + (ok ? 'bg-emerald-950/50 border border-emerald-500/50 text-emerald-300' : 'bg-red-950/50 border border-red-500/50 text-red-400');
+            };
             btn.disabled = true;
-            btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i> Contactando al banco...';
+            btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i> Activando...';
             feather.replace();
-
-            // Simulamos la verificación segura de Stripe/Mercado Pago
-            setTimeout(() => {
-                btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i> Procesando retención ($1 USD)...';
+            try {
+                await auth.authStateReady();
+                if (!auth.currentUser) return window.location.href = '/index.html';
+                const res = await fetch('/api/trial/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer ' + await auth.currentUser.getIdToken() },
+                    body: JSON.stringify({ plan_nombre: planSlugFinal })
+                });
+                const data = await res.json().catch(() => null);
+                if (!res.ok || !data?.success) throw new Error(data?.message || `Error ${res.status}`);
+                const hasta = new Date(data.suscripcion.trial_ends_at).toLocaleDateString('es-AR');
+                show(`Prueba activada hasta el ${hasta}. Te llevamos a desplegar tu servidor…`, true);
+                btn.innerHTML = '<i data-feather="check" class="w-4 h-4"></i> Prueba activada';
                 feather.replace();
-
-                setTimeout(() => {
-                    alert(`✅ ¡Identidad Confirmada!\n\nSe hizo un hold exitoso de $1.00 USD en tu tarjeta y el banco autorizó el reverso automático.\n\nTu infraestructura está desbloqueada por 15 días.\nRedirigiendo a tu panel...`);
-                    btn.innerHTML = '<i data-feather="check" class="w-4 h-4"></i> ¡Prueba Activada!';
-                    btn.classList.replace('bg-red-600', 'bg-green-600');
-                    btn.classList.replace('hover:bg-red-500', 'hover:bg-green-500');
-                    feather.replace();
-                    window.location.href = '/index.html';
-
-                    // Nota futura: Acá deberíamos pegarle a un endpoint de Laravel que le active el rango de prueba en la base de datos a ese usuario.
-                }, 1800);
-            }, 2500);
+                setTimeout(() => window.location.href = '/crear.html', 1600);
+            } catch (e) {
+                show(e.message, false);
+                btn.disabled = false;
+                btn.innerHTML = '<i data-feather="zap" class="w-4 h-4"></i> Activar prueba gratis';
+                feather.replace();
+            }
         };
 
         // ==========================================
@@ -767,7 +657,7 @@
                     },
                     body: JSON.stringify({
                         email: user.email,
-                        plan_nombre: currentPlan.name,
+                        plan_nombre: planSlugFinal,
                         ciclo_meses: selectedMonths
                     })
                 });

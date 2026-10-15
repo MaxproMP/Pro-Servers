@@ -31,7 +31,8 @@ it('al crear un servidor envía los límites del plan en SQL y descarta los del 
         ->assertOk();
 
     Http::assertSent(fn ($r) => str_contains($r->url(), '/api/project/create')
-        && $r['plan']['memoria_mb'] === 16384 && $r['plan']['cpu_cores'] === 4 && $r['plan']['almacenamiento_gb'] === 80);
+        && $r['plan']['memoria_mb'] === 32768 && $r['plan']['cpu_cores'] === 4 && $r['plan']['almacenamiento_gb'] === 80
+        && $r['plan']['max_jugadores'] === 50);
 });
 
 it('sin plan activo no envía límites y Node usa los valores por defecto', function () {

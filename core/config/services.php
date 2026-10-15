@@ -39,6 +39,12 @@ return [
 
     'ceo_email' => env('CEO_EMAIL', 'rodasmaximo51@gmail.com'),
 
+    // Prueba gratis: una sola por cuenta, sin cobro, solo en planes de entrada.
+    'trial' => [
+        'dias' => 15,
+        'planes' => ['redstone', 'hierro', 'cobre'],
+    ],
+
     'daemon' => [
         'secret' => env('NODE_SECRET_KEY'),
     ],

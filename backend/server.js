@@ -151,6 +151,16 @@ function getDockerImage(edition, software) {
 const RAM_TOPE_DURO_MB = 16384;
 const RAM_RESERVA_HOST_MB = 1024;
 const RAM_FALLBACK_MB = 2048;
+// Jugadores máximos: los fija el plan (null en SQL = ilimitado, acotado a un techo técnico).
+const JUGADORES_SIN_PLAN = 20;
+const JUGADORES_TECHO = 1000;
+
+function jugadoresDePlan(plan) {
+    if (!plan) return JUGADORES_SIN_PLAN;
+    if (plan.max_jugadores === null) return JUGADORES_TECHO; // null explícito = ilimitado
+    const n = Number(plan.max_jugadores);
+    return Number.isInteger(n) && n >= 1 ? Math.min(n, JUGADORES_TECHO) : JUGADORES_SIN_PLAN;
+}
 
 function topeRamMb() {
     const hostMb = Math.floor(os.totalmem() / 1048576);
@@ -166,6 +176,7 @@ function limitesDePlan(plan) {
         plan: plan?.nombre || null,
         memoryMb,
         memoriaPlanMb: valida ? Math.floor(pedidaMb) : null, // lo contratado, para auditar el recorte
+        maxPlayers: jugadoresDePlan(plan),
         cpuCores: Math.min(pedidos, os.cpus().length), // Docker rechaza más CPUs de las que tiene el host
         storageGb: Number(plan?.almacenamiento_gb) > 0 ? Number(plan.almacenamiento_gb) : null, // informativo: no se aplica cuota de disco
         heapMb: Math.max(512, Math.floor(memoryMb * 0.8)), // la JVM deja margen para memoria fuera del heap
@@ -177,6 +188,7 @@ function getServerEnv(payload, port, limites) {
         'EULA=TRUE',
         `MOTD=${payload.motd || 'Professional Server'}`,
         `SERVER_PORT=${port}`,
+        `MAX_PLAYERS=${limites.maxPlayers}`,
     ];
 
     if (payload.edition === 'bedrock') {

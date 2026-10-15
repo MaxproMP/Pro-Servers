@@ -22,6 +22,7 @@ final class PlanAdminController extends AdminController
             'memoria_mb' => 'sometimes|integer|gt:0',
             'cpu_cores' => 'sometimes|integer|gt:0',
             'almacenamiento_gb' => 'sometimes|integer|gt:0',
+            'max_jugadores' => 'sometimes|nullable|integer|between:1,1000',
             'visible' => 'sometimes|boolean',
         ]);
 
@@ -35,6 +36,13 @@ final class PlanAdminController extends AdminController
     /** Catálogo público: solo planes visibles. */
     public function publico(): JsonResponse
     {
-        return response()->json(['planes' => Plan::where('visible', true)->orderBy('precio_mensual')->get(['id', 'nombre', 'precio_mensual', 'memoria_mb', 'cpu_cores', 'almacenamiento_gb'])]);
+        $prueba = config('services.trial.planes');
+
+        return response()->json([
+            'trial_dias' => (int) config('services.trial.dias'),
+            'planes' => Plan::where('visible', true)->orderBy('precio_mensual')
+                ->get(['id', 'nombre', 'precio_mensual', 'memoria_mb', 'cpu_cores', 'almacenamiento_gb', 'max_jugadores'])
+                ->map(fn (Plan $p) => $p->toArray() + ['prueba' => in_array($p->nombre, $prueba, true)]),
+        ]);
     }
 }

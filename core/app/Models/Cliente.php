@@ -87,7 +87,7 @@ class Cliente extends Authenticatable
     public function suscripcionActiva()
     {
         return $this->hasOne(Suscripcion::class, 'cliente_id')
-            ->where('estado', 'activa')
-            ->latest();
+            ->vigentes()
+            ->latest('id');
     }
 }

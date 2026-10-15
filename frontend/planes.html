@@ -12,15 +12,12 @@
 <style>
 :root{
   --bg:#050609; --sf:#0B0D13; --sf2:#10131b; --bd:rgba(255,255,255,.08); --bd2:rgba(255,255,255,.16);
-  --tx:#e6e8ee; --mu:#8b93a7; --ok:#10B981; --vi:#8B5CF6; --rd:#EF4444; --am:#F59E0B; --r:14px;
+  --tx:#e6e8ee; --mu:#8b93a7; --ok:#10B981; --vi:#8B5CF6; --rd:#EF4444; --am:#F59E0B; --r:16px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--tx);font:15px/1.55 'Plus Jakarta Sans',system-ui,sans-serif;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(900px 520px at 80% -10%,rgba(139,92,246,.13),transparent 60%),radial-gradient(760px 520px at -10% 40%,rgba(16,185,129,.08),transparent 60%)}
-body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;
-  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:48px 48px;
-  mask-image:linear-gradient(to bottom,#000,transparent 70%)}
+  background:radial-gradient(900px 520px at 80% -10%,rgba(139,92,246,.12),transparent 60%),radial-gradient(760px 520px at -10% 40%,rgba(16,185,129,.07),transparent 60%)}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
@@ -50,12 +47,13 @@ svg.feather{width:16px;height:16px;stroke-width:2;flex:none}
 @keyframes pulse{50%{opacity:.35}}
 
 /* --- Hero + ciclo --- */
-.hero{padding:48px 0 28px;display:grid;gap:26px}
-@media(min-width:1024px){.hero{grid-template-columns:1.1fr 1fr;align-items:end;padding:68px 0 36px}}
+.hero{padding:52px 0 32px;display:grid;gap:26px}
+@media(min-width:1024px){.hero{grid-template-columns:1.1fr 1fr;align-items:end;padding:72px 0 40px}}
 .eyebrow{font:600 12px 'JetBrains Mono',monospace;color:var(--ok);letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
 h1{font-size:clamp(34px,6vw,60px);line-height:1.02;letter-spacing:-.035em;font-weight:800;margin-top:14px}
 h1 em{font-style:normal;background:linear-gradient(90deg,#34d399,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
 .lead{color:var(--mu);max-width:54ch;margin-top:14px}
+.trial-banner{display:inline-flex;align-items:center;gap:10px;margin-top:18px;padding:10px 14px;border-radius:12px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.08);color:#a7f3d0;font-size:13.5px;font-weight:600}
 .cycle{position:relative;display:grid;grid-template-columns:repeat(4,1fr);background:rgba(11,13,19,.8);border:1px solid var(--bd);border-radius:14px;padding:4px;backdrop-filter:blur(16px)}
 .cycle .knob{position:absolute;top:4px;bottom:4px;left:4px;width:calc(25% - 2px);border-radius:10px;background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(139,92,246,.2));border:1px solid var(--bd2);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
 .cycle button{position:relative;z-index:1;padding:11px 4px;border-radius:10px;display:grid;justify-items:center;gap:2px;font-size:13px;font-weight:700;color:var(--mu);transition:color .2s}
@@ -64,89 +62,65 @@ h1 em{font-style:normal;background:linear-gradient(90deg,#34d399,#a78bfa);-webki
 .cycle button small:empty::before{content:"base";color:var(--mu)}
 .cycle-note{font:500 12px 'JetBrains Mono',monospace;color:var(--mu);margin-top:10px;min-height:18px}
 
-/* --- Rack (Locker Room) --- */
-/* Rack flotante: sin caja; la orientación la mueve JS con inercia (--rx/--ry). */
-.stage{position:relative;perspective:1700px;padding:10px 0 72px}
-.stage::after{content:"";position:absolute;left:10%;right:10%;bottom:20px;height:90px;pointer-events:none;
-  background:radial-gradient(50% 50% at 50% 50%,rgba(139,92,246,.18),rgba(16,185,129,.06) 50%,transparent 75%);filter:blur(12px)}
-.rack{--rx:3deg;--ry:-9deg;position:relative;max-width:960px;margin:0 auto;transform-style:preserve-3d;transform:rotateX(var(--rx)) rotateY(var(--ry));will-change:transform}
-@media(max-width:1023px){.rack{transform:none}}
-.rack-h{display:flex;justify-content:space-between;align-items:center;font:600 11px 'JetBrains Mono',monospace;color:var(--mu);letter-spacing:.12em;padding:0 6px 16px}
-.slots{display:grid;gap:12px;transform-style:preserve-3d}
-@keyframes float{0%,100%{translate:0 0 0}50%{translate:0 -4px 6px}}
-
-.ch{--c:#10B981;position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;width:100%;text-align:left;
-  padding:16px 18px;border-radius:14px;border:1px solid var(--bd);
-  background:linear-gradient(180deg,rgba(22,26,37,.92),rgba(12,14,21,.92));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 40px -26px #000;
-  animation:float 6s ease-in-out infinite;animation-delay:calc(var(--i,0) * -.8s);
-  transform:translateZ(0);transition:transform .7s cubic-bezier(.34,1.56,.64,1),border-color .3s,box-shadow .5s;outline:none}
-.ch::before{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .4s;
-  box-shadow:0 0 0 1px var(--c),0 0 34px -2px color-mix(in srgb,var(--c) 70%,transparent),inset 0 0 24px -12px var(--c)}
-.ch::after{content:"";position:absolute;left:18px;right:18px;bottom:-1px;height:1px;opacity:.5;background:linear-gradient(90deg,transparent,var(--c),transparent);transition:opacity .4s}
-.ch:hover,.ch:focus-visible{transform:translateZ(64px) translateX(-14px) scale(1.012);border-color:transparent;box-shadow:0 40px 70px -30px #000,0 0 60px -30px var(--c)}
-.ch:hover::before,.ch:focus-visible::before{opacity:1}
-.ch:hover::after,.ch:focus-visible::after{opacity:1}
-.ch.ent{--c:#F59E0B;background:linear-gradient(120deg,rgba(245,158,11,.1),rgba(12,14,21,.92) 45%);border-style:dashed;border-color:rgba(245,158,11,.35)}
-.ch.ent .price b{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;color:#fcd34d}
-.cap{color:var(--am)}
-.ch .u{font:700 10px 'JetBrains Mono',monospace;color:var(--mu);writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.14em}
-.ch .face{display:grid;gap:8px;min-width:0}
-.ch .name{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;letter-spacing:-.02em}
-.ch .led{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c);flex:none}
-.ch .led.blink{animation:pulse 1.6s infinite}
-.ch .tag{font-size:12px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ch .vent{height:6px;border-radius:3px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 3px,transparent 3px 7px);max-width:340px}
-.ch .peek{display:flex;flex-wrap:wrap;gap:6px;max-height:0;opacity:0;overflow:hidden;transition:max-height .4s,opacity .3s}
-.ch:hover .peek,.ch:focus-visible .peek{max-height:60px;opacity:1;transition:max-height .5s cubic-bezier(.34,1.3,.64,1),opacity .4s .05s}
-.ch .peek span{font:600 11px 'JetBrains Mono',monospace;padding:3px 8px;border-radius:6px;border:1px solid color-mix(in srgb,var(--c) 45%,transparent);color:color-mix(in srgb,var(--c) 70%,#fff);background:color-mix(in srgb,var(--c) 10%,transparent)}
-.ch .price{text-align:right;display:grid;gap:2px}
-.ch .price b{font:700 22px 'JetBrains Mono',monospace;letter-spacing:-.02em;transition:opacity .2s}
-.ch .price small{font:500 11px 'JetBrains Mono',monospace;color:var(--mu)}
-.ch .price i{font:600 10.5px 'JetBrains Mono',monospace;color:var(--ok);font-style:normal}
-@media(max-width:640px){.ch{grid-template-columns:1fr auto;gap:10px;padding:14px}.ch .u,.ch .vent{display:none}.ch .price b{font-size:18px}.ch .peek{max-height:60px;opacity:1}}
-.rack-f{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:14px 4px 0;font:500 11px 'JetBrains Mono',monospace;color:var(--mu)}
-.skel{height:88px;border-radius:12px;background:linear-gradient(90deg,#10131b,#171b25,#10131b);background-size:200% 100%;animation:sk 1.2s infinite}
+/* --- Bento Grid de Power Cards --- */
+.bento{display:grid;gap:14px;padding-bottom:64px}
+@media(min-width:720px){.bento{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1100px){.bento{grid-template-columns:repeat(6,minmax(0,1fr))}.pc{grid-column:span 2}.pc.w3{grid-column:span 3}.pc.full{grid-column:1/-1}}
+@media(min-width:720px) and (max-width:1099px){.pc.full{grid-column:1/-1}}
+.pc{--c:#10B981;position:relative;display:flex;flex-direction:column;gap:18px;padding:22px;border-radius:var(--r);
+  background:linear-gradient(180deg,rgba(17,20,29,.86),rgba(10,12,18,.86));border:1px solid var(--bd);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  transition:border-color .35s,box-shadow .45s,transform .45s cubic-bezier(.2,.8,.2,1);overflow:hidden}
+.pc::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:.55;transition:opacity .35s}
+.pc::after{content:"";position:absolute;width:260px;height:260px;right:-120px;top:-140px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 22%,transparent),transparent 70%);pointer-events:none;opacity:.6;transition:opacity .4s}
+.pc:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--c) 55%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 25%,transparent),0 24px 60px -30px color-mix(in srgb,var(--c) 60%,transparent)}
+.pc:hover::before{opacity:1}.pc:hover::after{opacity:1}
+.pc-h{display:flex;align-items:center;gap:10px}
+.pc-h .led{width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c);flex:none}
+.pc-h h2{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.pc-h .badge{margin-left:auto}
+.badge-trial{font:700 10.5px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;border-radius:999px;color:#04120c;background:linear-gradient(135deg,#6ee7b7,#10b981);box-shadow:0 0 18px -4px rgba(16,185,129,.8)}
+.badge-used{font:600 10.5px 'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid var(--bd);color:var(--mu)}
+.pc .tag{color:var(--mu);font-size:13.5px;margin-top:-8px}
+.price{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.price b{font:700 40px 'JetBrains Mono',monospace;letter-spacing:-.04em;line-height:1;transition:opacity .2s}
+.price span{font:500 12px 'JetBrains Mono',monospace;color:var(--mu)}
+.price i{flex-basis:100%;font:600 11.5px 'JetBrains Mono',monospace;color:var(--ok);font-style:normal;min-height:16px}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.spec{border:1px solid var(--bd);border-radius:12px;padding:10px 12px;background:rgba(255,255,255,.02)}
+.spec dt{font:600 10px 'JetBrains Mono',monospace;color:var(--mu);letter-spacing:.1em;text-transform:uppercase;display:flex;gap:6px;align-items:center}
+.spec dt svg.feather{width:12px;height:12px}
+.spec dd{font:700 17px 'JetBrains Mono',monospace;margin-top:4px;letter-spacing:-.02em}
+.spec dd small{font-size:11px;color:var(--mu);font-weight:500;letter-spacing:0}
+.spec .node{display:block;font:500 10.5px 'JetBrains Mono',monospace;color:#fcd34d;margin-top:3px;letter-spacing:0}
+.spec.players{border-color:color-mix(in srgb,var(--c) 35%,transparent);background:color-mix(in srgb,var(--c) 7%,transparent)}
+.meta{display:flex;flex-wrap:wrap;gap:6px}
+.acts{display:grid;gap:8px;margin-top:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px;border-radius:12px;font-weight:800;font-size:13.5px;transition:.2s;width:100%}
+.btn.pri{color:#fff;background:color-mix(in srgb,var(--c) 22%,#11141c);border:1px solid color-mix(in srgb,var(--c) 55%,transparent)}
+.btn.pri:hover{background:color-mix(in srgb,var(--c) 34%,#11141c)}
+.btn.trial{color:#04120c;background:linear-gradient(135deg,#34d399,#10b981);box-shadow:0 12px 30px -14px rgba(16,185,129,.8)}
+.btn.trial:hover{filter:brightness(1.07)}
+.btn.amb{color:#1a1203;background:linear-gradient(135deg,#fcd34d,#f59e0b);box-shadow:0 14px 34px -14px rgba(245,158,11,.8)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.skel{min-height:380px;border-radius:var(--r);background:linear-gradient(90deg,#0d1017,#151923,#0d1017);background-size:200% 100%;animation:sk 1.2s infinite}
 @keyframes sk{to{background-position:-200% 0}}
-.state{display:grid;justify-items:center;gap:10px;text-align:center;padding:40px 16px;color:var(--mu);font-size:14px}
-.state svg.feather{width:24px;height:24px}
+.state{grid-column:1/-1;display:grid;justify-items:center;gap:10px;text-align:center;padding:48px 16px;color:var(--mu);border:1px dashed var(--bd2);border-radius:var(--r)}
 
-/* --- Ficha a pantalla completa --- */
-.sheet{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:rgba(3,4,6,.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);opacity:0;pointer-events:none;transition:opacity .35s}
-.sheet.on{opacity:1;pointer-events:auto}
-.card{--c:#10B981;position:relative;width:min(980px,100%);max-height:calc(100vh - 32px);overflow:auto;border-radius:20px;border:1px solid var(--bd2);
-  background:linear-gradient(160deg,color-mix(in srgb,var(--c) 10%,#0B0D13),#07090d 55%);box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 30%,transparent),0 50px 120px -40px color-mix(in srgb,var(--c) 45%,transparent);
-  transform:translateY(24px) scale(.97);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
-.sheet.on .card{transform:none}
-.card-in{display:grid;gap:28px;padding:28px}
-@media(min-width:860px){.card-in{grid-template-columns:1.15fr 1fr;padding:40px}}
-.x{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;border:1px solid var(--bd2);background:rgba(0,0,0,.3);z-index:2}
-.x:hover{border-color:rgba(255,255,255,.35)}
-.card .k{font:600 11px 'JetBrains Mono',monospace;letter-spacing:.14em;color:color-mix(in srgb,var(--c) 75%,#fff);text-transform:uppercase;display:flex;gap:8px;align-items:center}
-.card h2{font-size:clamp(38px,7vw,68px);font-weight:800;letter-spacing:-.04em;line-height:.95;margin:12px 0 10px}
-.card .tagline{color:var(--mu);max-width:42ch}
-.specs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px}
-.spec{border:1px solid var(--bd);border-radius:12px;padding:14px;background:rgba(255,255,255,.02)}
-.spec dt{font:600 10.5px 'JetBrains Mono',monospace;color:var(--mu);letter-spacing:.1em;text-transform:uppercase;display:flex;gap:6px;align-items:center}
-.spec dd{font:700 22px 'JetBrains Mono',monospace;margin-top:6px;letter-spacing:-.02em}
-.spec dd small{font-size:12px;color:var(--mu);font-weight:500}
-.spec.wide{grid-column:1/-1}
-.spec.wide dd{font:600 14px 'Plus Jakarta Sans',sans-serif;letter-spacing:0}
-.buy{display:grid;gap:16px;align-content:start;border:1px solid var(--bd);border-radius:16px;padding:22px;background:rgba(5,6,9,.55)}
-.buy .total{font:700 clamp(40px,6vw,56px) 'JetBrains Mono',monospace;letter-spacing:-.04em;line-height:1}
-.buy .total small{font-size:15px;color:var(--mu);font-weight:500;letter-spacing:0}
-.rows{display:grid;font-size:13px}
-.rows div{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--bd)}
-.rows div:last-child{border:0}
-.rows dt{color:var(--mu)}
-.rows dd{font-family:'JetBrains Mono',monospace}
-.rows .save dd{color:var(--ok)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 18px;border-radius:12px;font-weight:800;font-size:14px;transition:.2s}
-.btn.pri{color:#04120c;background:linear-gradient(135deg,#34d399,#10b981);box-shadow:0 14px 34px -14px rgba(16,185,129,.8)}
-.btn.pri:hover{filter:brightness(1.08);transform:translateY(-1px)}
-.fine{font-size:11.5px;color:var(--mu);text-align:center}
+/* Enterprise */
+.pc.ent{--c:#F59E0B;background:linear-gradient(120deg,rgba(245,158,11,.09),rgba(10,12,18,.9) 50%);border-style:dashed;border-color:rgba(245,158,11,.35)}
+.ent-in{display:grid;gap:22px}
+@media(min-width:900px){.ent-in{grid-template-columns:1.2fr 1fr;align-items:start}}
+.ent-list{list-style:none;display:grid;gap:10px;margin-top:4px}
+.ent-list li{display:flex;gap:10px;font-size:14px;color:#c3c8d4}
+.ent-list svg.feather{color:var(--am);margin-top:3px}
+.ent-big{font:700 34px 'Plus Jakarta Sans',sans-serif;color:#fcd34d;letter-spacing:-.03em}
+.ent-form{display:grid;gap:10px;padding:16px;border:1px solid var(--bd);border-radius:14px;background:rgba(5,6,9,.55)}
+textarea.inp{width:100%;min-height:110px;resize:vertical;background:var(--sf2);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;color:var(--tx);font:500 14px/1.5 'Plus Jakarta Sans',sans-serif;outline:none;transition:.2s}
+textarea.inp:focus{border-color:rgba(245,158,11,.55);box-shadow:0 0 0 3px rgba(245,158,11,.12)}
+.fine{font-size:11.5px;color:var(--mu)}
+.disclaimer{font-size:12px;color:var(--mu);max-width:80ch;margin:-40px 0 56px}
 
-/* --- Toast / Footer --- */
+/* Toast / Footer */
 .toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);z-index:80;opacity:0;transition:.3s;max-width:calc(100% - 32px);display:flex;gap:10px;align-items:center;padding:12px 16px;border-radius:12px;background:#11141c;border:1px solid var(--bd2);font-size:13px}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:linear-gradient(to bottom,rgba(11,13,19,.4),#030406)}
@@ -163,15 +137,6 @@ footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:lin
 .soc:hover{color:#fff;border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.12);transform:translateY(-2px)}
 .ft-b{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:20px 0 28px;border-top:1px solid var(--bd);font-size:12px;color:var(--mu)}
 .mega{font-weight:800;letter-spacing:-.05em;font-size:clamp(48px,13vw,170px);line-height:.8;text-align:center;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.07);user-select:none;padding-top:8px;overflow:hidden;white-space:nowrap}
-.ent-list{list-style:none;display:grid;gap:10px;margin-top:22px}
-.ent-list li{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#c3c8d4}
-.ent-list svg.feather{color:var(--am);margin-top:3px}
-textarea.inp{width:100%;min-height:130px;resize:vertical;background:var(--sf2);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;color:var(--tx);font:500 14px/1.5 'Plus Jakarta Sans',sans-serif;outline:none;transition:.2s}
-textarea.inp:focus{border-color:rgba(245,158,11,.55);box-shadow:0 0 0 3px rgba(245,158,11,.12)}
-.btn.amb{color:#1a1203;background:linear-gradient(135deg,#fcd34d,#f59e0b);box-shadow:0 14px 34px -14px rgba(245,158,11,.8)}
-.btn.amb:hover{filter:brightness(1.06);transform:translateY(-1px)}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.cap-note{font-size:11.5px;color:#fcd34d;margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;letter-spacing:0}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -193,8 +158,9 @@ textarea.inp:focus{border-color:rgba(245,158,11,.55);box-shadow:0 0 0 3px rgba(2
   <section class="hero">
     <div>
       <div class="eyebrow"><span class="dot pulse"></span>Escala de rendimiento</div>
-      <h1>Elegí tu chasis.<br><em>Escalá cuando quieras.</em></h1>
-      <p class="lead">Cada plan es un contenedor Docker aislado con RAM, CPU y almacenamiento dedicados. Pasá el cursor por el rack para inspeccionarlo y hacé clic para ver la ficha completa.</p>
+      <h1>Un plan para cada mundo.<br><em>Escalá cuando quieras.</em></h1>
+      <p class="lead">Contenedores Docker aislados con RAM, CPU y almacenamiento dedicados, y un límite de jugadores claro en cada plan.</p>
+      <div class="trial-banner" id="trial-banner"><i data-feather="gift"></i><span>15 días de prueba gratis en planes de entrada · sin tarjeta</span></div>
     </div>
     <div>
       <div class="cycle" id="cycle" role="radiogroup" aria-label="Ciclo de facturación">
@@ -208,15 +174,10 @@ textarea.inp:focus{border-color:rgba(245,158,11,.55);box-shadow:0 0 0 3px rgba(2
     </div>
   </section>
 
-  <section class="stage" aria-label="Rack de planes">
-    <div class="rack">
-      <div class="rack-h"><span>PS-RACK-01 · LOCKER ROOM</span><span id="rack-count">— U</span></div>
-      <div class="slots" id="slots">
-        <div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div>
-      </div>
-      <div class="rack-f"><span>Precios en USD · catálogo en vivo</span><span id="rack-sync">Sincronizando…</span></div>
-    </div>
+  <section class="bento" id="bento" aria-label="Planes">
+    <div class="skel"></div><div class="skel"></div><div class="skel"></div>
   </section>
+  <p class="disclaimer" id="disclaimer"></p>
 </main>
 
 <footer>
@@ -248,63 +209,6 @@ textarea.inp:focus{border-color:rgba(245,158,11,.55);box-shadow:0 0 0 3px rgba(2
   </div>
 </footer>
 
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-name">
-  <article class="card" id="card">
-    <button type="button" class="x" id="sh-x" aria-label="Cerrar"><i data-feather="x"></i></button>
-    <div class="card-in hidden" id="ent-in">
-      <div>
-        <div class="k"><span class="dot"></span>U·EXT · A medida</div>
-        <h2 id="ent-name" style="color:#F59E0B">Enterprise</h2>
-        <p class="tagline">Para comunidades grandes, redes de servidores o proyectos que necesitan recursos exclusivos. Armamos la configuración y el presupuesto según tu caso.</p>
-        <ul class="ent-list">
-          <li><i data-feather="sliders"></i>RAM, CPU y almacenamiento dimensionados a tu proyecto.</li>
-          <li><i data-feather="server"></i>Nodo dedicado exclusivo bajo pedido.</li>
-          <li><i data-feather="file-text"></i>Presupuesto personalizado antes de contratar.</li>
-          <li><i data-feather="life-buoy"></i>Seguimiento directo del equipo de soporte por ticket.</li>
-        </ul>
-      </div>
-      <form class="buy" id="ent-form">
-        <div class="k" style="color:#fcd34d"><i data-feather="message-square"></i>Solicitar presupuesto</div>
-        <label class="fine" style="text-align:left" for="ent-msg">Contanos qué necesitás: jugadores, modpacks, cantidad de servidores, plazos.</label>
-        <textarea class="inp" id="ent-msg" maxlength="1800" required placeholder="Ej: red de 3 servidores Paper para ~200 jugadores, con un modpack Forge aparte…"></textarea>
-        <button type="submit" class="btn amb" id="ent-send"><i data-feather="send"></i>Enviar solicitud</button>
-        <p class="fine" id="ent-status">Se abre un ticket real; te respondemos desde el Centro de ayuda.</p>
-      </form>
-    </div>
-    <div class="card-in" id="plan-in">
-      <div>
-        <div class="k"><span class="dot"></span><span id="sh-unit"></span></div>
-        <h2 id="sh-name"></h2>
-        <p class="tagline" id="sh-tag"></p>
-        <dl class="specs">
-          <div class="spec"><dt><i data-feather="cpu"></i>RAM entregada</dt><dd id="sh-ram"></dd></div>
-          <div class="spec"><dt><i data-feather="zap"></i>Núcleos CPU</dt><dd id="sh-cpu"></dd></div>
-          <div class="spec"><dt><i data-feather="hard-drive"></i>Almacenamiento</dt><dd id="sh-disk"></dd></div>
-          <div class="spec"><dt><i data-feather="globe"></i>Red</dt><dd style="font-size:16px">Playit.gg</dd></div>
-          <div class="spec wide"><dt><i data-feather="box"></i>Compatibilidad</dt><dd>Java y Bedrock · todas las versiones</dd></div>
-        </dl>
-      </div>
-      <div class="buy">
-        <div class="cycle" id="sh-cycle" role="radiogroup" aria-label="Ciclo de facturación">
-          <span class="knob"></span>
-          <button type="button" role="radio" data-m="1" aria-checked="true">1m<small></small></button>
-          <button type="button" role="radio" data-m="3" aria-checked="false">3m<small>-10%</small></button>
-          <button type="button" role="radio" data-m="6" aria-checked="false">6m<small>-15%</small></button>
-          <button type="button" role="radio" data-m="12" aria-checked="false">12m<small>-20%</small></button>
-        </div>
-        <div><div class="total" id="sh-total"></div><p class="fine" style="text-align:left;margin-top:6px" id="sh-per"></p></div>
-        <dl class="rows">
-          <div><dt>Precio base</dt><dd id="sh-base"></dd></div>
-          <div><dt>Ciclo</dt><dd id="sh-months"></dd></div>
-          <div class="save"><dt>Ahorro</dt><dd id="sh-save"></dd></div>
-        </dl>
-        <button type="button" class="btn pri" id="sh-buy"><i data-feather="lock"></i>Contratar plan</button>
-        <p class="fine">El cobro se procesa en el checkout con la pasarela que elijas.</p>
-      </div>
-    </div>
-  </article>
-</div>
-
 <div class="toast" id="toast" role="status"></div>
 
 <script type="module">
@@ -326,15 +230,15 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'
 let toastT;
 const toast = (msg) => { const t = $('toast'); t.innerHTML = `<i data-feather="info"></i>${esc(msg)}`; feather.replace(); t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 4000); };
 
-/* Identidad visual por plan (los números vienen siempre de SQL Server vía /api/plans). */
+/* Identidad visual por plan; los números salen de SQL Server vía /api/plans. */
 const LOOK = {
-  'redstone':      { title: 'Redstone',      c: '#EF4444', tag: 'El punto de partida para tu primer mundo.' },
-  'hierro':        { title: 'Hierro',        c: '#CBD5E1', tag: 'Estabilidad para grupos de amigos.' },
-  'cobre':         { title: 'Cobre',         c: '#D97706', tag: 'Más memoria para plugins y comunidades en crecimiento.' },
-  'oro':           { title: 'Oro',           c: '#EAB308', tag: 'Equilibrio ideal para modpacks medianos.' },
-  'diamante':      { title: 'Diamante',      c: '#22D3EE', tag: 'Potencia para modpacks pesados y redes activas.' },
-  'netherite':     { title: 'Netherite',     c: '#A855F7', tag: 'Infraestructura de alto rendimiento para servidores grandes.' },
-  'ghost-warrior': { title: 'Ghost Warrior', c: '#3B82F6', tag: 'El tope de la escala: recursos máximos sin compromisos.' },
+  'redstone':      { title: 'Redstone',      c: '#EF4444', tag: 'Ideal para jugar con un amigo.' },
+  'hierro':        { title: 'Hierro',        c: '#CBD5E1', tag: 'Para tu grupo de amigos.' },
+  'cobre':         { title: 'Cobre',         c: '#D97706', tag: 'Comunidades chicas con plugins.' },
+  'oro':           { title: 'Oro',           c: '#EAB308', tag: 'Modpacks medianos y comunidades activas.' },
+  'diamante':      { title: 'Diamante',      c: '#22D3EE', tag: 'Modpacks pesados y redes en crecimiento.' },
+  'netherite':     { title: 'Netherite',     c: '#A855F7', tag: 'Servidores grandes de alto rendimiento.' },
+  'ghost-warrior': { title: 'Ghost Warrior', c: '#3B82F6', tag: 'El tope de la escala, sin límite de jugadores.' },
 };
 const lookOf = (p) => LOOK[p.nombre] || { title: p.nombre.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), c: '#10B981', tag: 'Plan personalizado.' };
 
@@ -342,107 +246,96 @@ const lookOf = (p) => LOOK[p.nombre] || { title: p.nombre.replace(/[-_]/g, ' ').
 const DISC = { 1: 0, 3: 10, 6: 15, 12: 20 };
 const NOTE = { 1: 'Facturación mensual, sin descuento.', 3: 'Un pago cada 3 meses · ahorrás 10%.', 6: 'Un pago cada 6 meses · ahorrás 15%.', 12: 'Un pago anual · ahorrás 20%.' };
 const money = (n) => '$' + n.toFixed(2);
-const quote = (base, m) => {
-  const gross = base * m, total = Math.round(gross * (1 - DISC[m] / 100) * 100) / 100;
-  return { total, perMonth: total / m, save: Math.round((gross - total) * 100) / 100 };
-};
+const quote = (base, m) => { const total = Math.round(base * m * (1 - DISC[m] / 100) * 100) / 100; return { total, perMonth: total / m }; };
 const gb = (mb) => Number((mb / 1024).toFixed(1));
 
-let PLANS = [], months = 1, open = null;
-// Tope seguro de RAM del nodo (lo informa el daemon en /ping). Sin dato: tope duro de 16 GB.
-let CAP_MB = 16384, CPU_CAP = Infinity;
-const ramReal = (p) => Math.min(p.ram, CAP_MB);
-const cpuReal = (p) => Math.min(p.cpu, CPU_CAP);
+let PLANS = [], months = 1, TRIAL_DIAS = 15;
+let TRIAL = null;           // null = sin sesión (se ofrece), true/false = elegibilidad real de la cuenta
+let CAP_MB = 16384, CPU_CAP = Infinity; // capacidad real del nodo actual (/ping)
 
-function renderRack() {
-  $('rack-count').textContent = `${PLANS.length + 1} U`;
-  $('slots').innerHTML = PLANS.map((p, i) => {
-    const L = lookOf(p), q = quote(p.base, months), capped = p.ram > CAP_MB;
-    return `<button type="button" class="ch" style="--c:${L.c};--i:${i}" data-i="${i}" aria-label="Ver plan ${esc(L.title)}">
-      <span class="u">U${String(i + 1).padStart(2, '0')}</span>
-      <span class="face">
-        <span class="name"><span class="led${i === PLANS.length - 1 ? ' blink' : ''}"></span>${esc(L.title)}</span>
-        <span class="tag">${esc(L.tag)}</span>
-        <span class="vent"></span>
-        <span class="peek"><span${capped ? ' class="cap" title="Tope seguro del nodo"' : ''}>${capped ? 'HASTA ' : ''}${gb(ramReal(p))} GB RAM</span><span${p.cpu > CPU_CAP ? ' class="cap" title="Tope del nodo"' : ''}>${p.cpu > CPU_CAP ? 'HASTA ' : ''}${cpuReal(p)} vCPU</span><span>${p.disk} GB</span><span>PLAYIT.GG</span></span>
-      </span>
-      <span class="price"><b data-price>${money(q.perMonth)}</b><small>USD / mes</small><i>${months > 1 ? `${money(q.total)} cada ${months} meses` : '&nbsp;'}</i></span>
-    </button>`;
-  }).join('') + `<button type="button" class="ch ent" style="--i:${PLANS.length}" data-ent aria-label="Ver plan Enterprise a medida">
-      <span class="u">U·EXT</span>
-      <span class="face">
-        <span class="name"><span class="led blink"></span>Enterprise</span>
-        <span class="tag">Nodos dedicados y recursos a medida para comunidades grandes.</span>
-        <span class="vent"></span>
-        <span class="peek"><span>NODO DEDICADO</span><span>RECURSOS A MEDIDA</span><span>PRESUPUESTO</span></span>
-      </span>
-      <span class="price"><b>A medida</b><small>Presupuesto personalizado</small><i>&nbsp;</i></span>
-    </button>`;
+function card(p, i) {
+  const L = lookOf(p), q = quote(p.base, months);
+  const ramCapped = p.ram > CAP_MB, cpuCapped = p.cpu > CPU_CAP;
+  const players = p.players === null ? '∞' : p.players;
+  const trialOffer = p.prueba && TRIAL !== false;
+  const wide = i >= 3 ? ' w3' : '';
+  return `<article class="pc${wide}" style="--c:${L.c}">
+    <div class="pc-h"><span class="led"></span><h2>${esc(L.title)}</h2>
+      ${p.prueba ? (TRIAL === false ? '<span class="badge badge-used">Prueba usada</span>' : `<span class="badge badge-trial">${TRIAL_DIAS} días gratis</span>`) : ''}
+    </div>
+    <p class="tag">${esc(L.tag)}</p>
+    <div class="price"><b data-price>${money(q.perMonth)}</b><span>USD / mes</span><i>${months > 1 ? `${money(q.total)} cada ${months} meses` : ''}</i></div>
+    <dl class="specs">
+      <div class="spec players"><dt><i data-feather="users"></i>Jugadores</dt><dd>${p.players === null ? 'Ilimitados' : `hasta ${players}`}</dd></div>
+      <div class="spec"><dt><i data-feather="cpu"></i>RAM</dt><dd>${gb(p.ram)} <small>GB</small></dd>${ramCapped ? `<span class="node">nodo actual: hasta ${gb(CAP_MB)} GB</span>` : ''}</div>
+      <div class="spec"><dt><i data-feather="zap"></i>vCPU</dt><dd>${p.cpu}</dd>${cpuCapped ? `<span class="node">nodo actual: hasta ${CPU_CAP}</span>` : ''}</div>
+      <div class="spec"><dt><i data-feather="hard-drive"></i>Disco</dt><dd>${p.disk} <small>GB</small></dd></div>
+    </dl>
+    <div class="meta"><span class="chip">Playit.gg</span><span class="chip">Java + Bedrock</span></div>
+    <div class="acts">
+      ${trialOffer ? `<button type="button" class="btn trial" data-trial="${esc(p.nombre)}"><i data-feather="gift"></i>Probar ${TRIAL_DIAS} días gratis</button>` : ''}
+      <button type="button" class="btn pri" data-buy="${esc(p.nombre)}"><i data-feather="lock"></i>Contratar ${esc(L.title)}</button>
+    </div>
+  </article>`;
+}
+
+const ENTERPRISE = `<article class="pc full ent">
+  <div class="ent-in">
+    <div style="display:grid;gap:14px">
+      <div class="pc-h"><span class="led"></span><h2>Enterprise</h2><span class="badge chip am">A medida</span></div>
+      <p class="tag" style="margin:0">Para comunidades grandes, redes de servidores o proyectos que necesitan recursos exclusivos.</p>
+      <div class="ent-big">Presupuesto a medida</div>
+      <ul class="ent-list">
+        <li><i data-feather="sliders"></i>Configuraciones desde 256 GB de RAM y jugadores ilimitados, a cotizar.</li>
+        <li><i data-feather="server"></i>Nodo dedicado exclusivo bajo pedido.</li>
+        <li><i data-feather="file-text"></i>Presupuesto personalizado antes de contratar.</li>
+        <li><i data-feather="life-buoy"></i>Seguimiento directo del equipo de soporte por ticket.</li>
+      </ul>
+    </div>
+    <form class="ent-form" id="ent-form">
+      <label class="fine" for="ent-msg">Contanos qué necesitás: jugadores, modpacks, cantidad de servidores, plazos.</label>
+      <textarea class="inp" id="ent-msg" maxlength="1800" placeholder="Ej: red de 3 servidores Paper para ~300 jugadores, con un modpack Forge aparte…"></textarea>
+      <button type="submit" class="btn amb" id="ent-send"><i data-feather="send"></i>Solicitar presupuesto</button>
+      <p class="fine" id="ent-status">Se abre un ticket real; te respondemos desde el Centro de ayuda.</p>
+    </form>
+  </div>
+</article>`;
+
+function render() {
+  if (!PLANS.length) {
+    $('bento').innerHTML = '<div class="state"><i data-feather="inbox"></i>No hay planes publicados en este momento.</div>' + ENTERPRISE;
+  } else {
+    const draft = $('ent-msg')?.value || '', typing = document.activeElement?.id === 'ent-msg';
+    $('bento').innerHTML = PLANS.map(card).join('') + ENTERPRISE;
+    $('ent-msg').value = draft;
+    if (typing) $('ent-msg').focus();
+  }
+  const capped = PLANS.some(p => p.ram > CAP_MB || p.cpu > CPU_CAP);
+  $('disclaimer').textContent = capped
+    ? `Transparencia: el nodo actual entrega hasta ${gb(CAP_MB)} GB de RAM y ${CPU_CAP} vCPU por servidor. Los planes que figuran por encima de ese valor reciben el máximo del nodo hasta que se amplíe la infraestructura.`
+    : '';
+  $('trial-banner').classList.toggle('hidden', TRIAL === false || !PLANS.some(p => p.prueba));
+  feather.replace();
 }
 
 function setCycle(m) {
   months = m;
   const idx = [1, 3, 6, 12].indexOf(m);
-  document.querySelectorAll('.cycle').forEach(c => {
-    c.querySelector('.knob').style.transform = `translateX(${idx * 100}%)`;
-    c.querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(Number(b.dataset.m) === m)));
-  });
+  $('cycle').querySelector('.knob').style.transform = `translateX(${idx * 100}%)`;
+  $('cycle').querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(Number(b.dataset.m) === m)));
   $('cycle-note').textContent = NOTE[m];
   $('cycle-note').style.color = m > 1 ? '#6ee7b7' : '';
   document.querySelectorAll('[data-price]').forEach(el => el.style.opacity = 0);
-  setTimeout(renderRack, 180);
-  if (open) fillSheet();
+  setTimeout(render, 160);
 }
 
-function fillSheet() {
-  const p = open, L = lookOf(p), q = quote(p.base, months);
-  $('card').style.setProperty('--c', L.c);
-  $('sh-unit').textContent = `U${String(PLANS.indexOf(p) + 1).padStart(2, '0')} · Plan`;
-  $('sh-name').textContent = L.title;
-  $('sh-name').style.color = L.c;
-  $('sh-tag').textContent = L.tag;
-  $('sh-ram').innerHTML = `${gb(ramReal(p))} <small>GB</small>` + (p.ram > CAP_MB
-    ? `<div class="cap-note">Tope seguro del nodo actual. El plan figura con ${gb(p.ram)} GB.</div>` : '');
-  $('sh-cpu').innerHTML = `${cpuReal(p)} <small>vCPU</small>` + (p.cpu > CPU_CAP
-    ? `<div class="cap-note">Núcleos del nodo actual. El plan figura con ${p.cpu}.</div>` : '');
-  $('sh-disk').innerHTML = `${p.disk} <small>GB</small>`;
-  $('sh-total').innerHTML = `${money(q.total)} <small>USD</small>`;
-  $('sh-per').textContent = months > 1 ? `Equivale a ${money(q.perMonth)} USD por mes` : 'Se renueva cada mes';
-  $('sh-base').textContent = `${money(p.base)} / mes`;
-  $('sh-months').textContent = `${months} ${months === 1 ? 'mes' : 'meses'}`;
-  $('sh-save').textContent = q.save > 0 ? `-${money(q.save)} (${DISC[months]}%)` : '—';
-}
-
-let lastFocus;
-function showSheet(ent) {
-  lastFocus = document.activeElement;
-  $('ent-in').classList.toggle('hidden', !ent);
-  $('plan-in').classList.toggle('hidden', ent);
-  $('sheet').classList.add('on');
-  document.body.style.overflow = 'hidden';
-}
-function openSheet(i) {
-  open = PLANS[i];
-  fillSheet(); showSheet(false);
-  $('sh-buy').focus();
-}
-async function openEnterprise() {
-  open = null;
-  $('card').style.setProperty('--c', '#F59E0B');
-  showSheet(true);
+async function goCheckout(plan, trial) {
   await auth.authStateReady();
-  const logged = !!auth.currentUser;
-  $('ent-msg').disabled = !logged;
-  $('ent-send').innerHTML = logged ? '<i data-feather="send"></i>Enviar solicitud' : '<i data-feather="log-in"></i>Iniciar sesión para solicitar';
-  $('ent-send').disabled = false;
-  feather.replace();
-  (logged ? $('ent-msg') : $('ent-send')).focus();
-}
-function closeSheet() {
-  open = null;
-  $('sheet').classList.remove('on');
-  document.body.style.overflow = '';
-  lastFocus?.focus();
+  if (!auth.currentUser) {
+    toast('Iniciá sesión para continuar. Te llevamos al acceso…');
+    return setTimeout(() => location.href = '/index.html', 1400);
+  }
+  location.href = `/checkout.html?plan=${encodeURIComponent(plan)}&ciclo=${months}` + (trial ? '&trial=true' : '');
 }
 
 async function sendEnterprise(e) {
@@ -454,10 +347,9 @@ async function sendEnterprise(e) {
   $('ent-send').disabled = true;
   $('ent-status').textContent = 'Enviando…';
   try {
-    const token = await auth.currentUser.getIdToken();
     const r = await fetch('/api/support/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: 'Bearer ' + token },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: 'Bearer ' + await auth.currentUser.getIdToken() },
       body: JSON.stringify({ message: `[Enterprise] Solicitud de presupuesto a medida\n\n${msg}` }),
     });
     const d = await r.json().catch(() => null);
@@ -470,105 +362,68 @@ async function sendEnterprise(e) {
   $('ent-send').disabled = false;
 }
 
-async function buy() {
-  await auth.authStateReady();
-  if (!auth.currentUser) {
-    toast('Iniciá sesión para contratar. Te llevamos al acceso…');
-    return setTimeout(() => location.href = '/index.html', 1400);
-  }
-  location.href = `/checkout.html?plan=${encodeURIComponent(open.nombre)}&ciclo=${months}`;
-}
-
 /* Catálogo en vivo: lo que se edita en Overwatch se refleja acá. */
 async function loadPlans() {
   try {
     const r = await fetch('/api/plans', { headers: { Accept: 'application/json' }, cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const { planes } = await r.json();
-    PLANS = planes.map(p => ({ nombre: p.nombre, base: Number(p.precio_mensual), ram: Number(p.memoria_mb), cpu: Number(p.cpu_cores), disk: Number(p.almacenamiento_gb) }));
-    if (open) { open = PLANS.find(p => p.nombre === open.nombre) || null; open ? fillSheet() : closeSheet(); }
-    if (!PLANS.length) {
-      $('slots').innerHTML = '<div class="state"><i data-feather="inbox"></i>No hay planes publicados en este momento.</div>';
-    } else renderRack();
-    $('rack-sync').textContent = `Sincronizado ${new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`;
+    const d = await r.json();
+    TRIAL_DIAS = Number(d.trial_dias) || 15;
+    PLANS = d.planes.map(p => ({
+      nombre: p.nombre, base: Number(p.precio_mensual), ram: Number(p.memoria_mb), cpu: Number(p.cpu_cores),
+      disk: Number(p.almacenamiento_gb), players: p.max_jugadores === null ? null : Number(p.max_jugadores), prueba: !!p.prueba,
+    }));
+    render();
     return true;
   } catch {
-    if (!PLANS.length) $('slots').innerHTML = `<div class="state"><i data-feather="wifi-off"></i>No pudimos cargar el catálogo de planes.<button type="button" class="chip" id="retry">Reintentar</button></div>`;
-    $('rack-sync').textContent = 'Sin conexión con el catálogo';
+    if (!PLANS.length) $('bento').innerHTML = '<div class="state"><i data-feather="wifi-off"></i>No pudimos cargar el catálogo de planes.<button type="button" class="chip" id="retry">Reintentar</button></div>';
+    feather.replace();
     return false;
-  } finally { feather.replace(); }
+  }
 }
 
 async function systemStatus(apiOk) {
   const ping = await fetch('/ping', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
-  const node = !!ping;
-  const cap = Number(ping?.ramTopeMb);
-  const cpu = Number(ping?.cpuTope);
+  const cap = Number(ping?.ramTopeMb), cpu = Number(ping?.cpuTope);
   if ((cap > 0 && cap !== CAP_MB) || (cpu > 0 && cpu !== CPU_CAP)) {
     if (cap > 0) CAP_MB = cap;
     if (cpu > 0) CPU_CAP = cpu;
-    if (PLANS.length) renderRack();
-    if (open) fillSheet();
+    if (PLANS.length) render();
   }
   const mark = (id, label, ok) => { $(id).textContent = `${label} · ${ok ? 'operativo' : 'sin respuesta'}`; $(id).style.color = ok ? '#6ee7b7' : '#fca5a5'; };
-  mark('st-api', 'API', apiOk); mark('st-node', 'Nodos', node);
-  const all = apiOk && node;
+  mark('st-api', 'API', apiOk); mark('st-node', 'Nodos', !!ping);
+  const all = apiOk && !!ping;
   $('sys-status').className = 'chip ' + (all ? 'ok' : 'rd');
   $('sys-status').innerHTML = `<span class="dot${all ? ' pulse' : ''}"></span>${all ? 'All Systems Operational' : 'Servicio degradado'}`;
 }
 
 /* ===== Eventos ===== */
 $('year').textContent = new Date().getFullYear();
-document.querySelectorAll('.cycle').forEach(c => c.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b) setCycle(Number(b.dataset.m)); }));
-$('slots').addEventListener('click', e => {
+$('cycle').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b) setCycle(Number(b.dataset.m)); });
+$('bento').addEventListener('click', e => {
   if (e.target.closest('#retry')) return loadPlans();
-  if (e.target.closest('[data-ent]')) return openEnterprise();
-  const ch = e.target.closest('.ch'); if (ch) openSheet(Number(ch.dataset.i));
+  const t = e.target.closest('[data-trial]'), b = e.target.closest('[data-buy]');
+  if (t) goCheckout(t.dataset.trial, true);
+  if (b) goCheckout(b.dataset.buy, false);
 });
-$('sh-x').addEventListener('click', closeSheet);
-$('sheet').addEventListener('mousedown', e => { if (e.target === $('sheet')) closeSheet(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('sheet').classList.contains('on')) closeSheet(); });
-$('ent-form').addEventListener('submit', sendEnterprise);
-
-/* Parallax con inercia: el rack persigue al cursor con interpolación (sin tirones). */
-(() => {
-  const stage = document.querySelector('.stage'), rack = document.querySelector('.rack');
-  const BASE = { x: 3, y: -9 }, cur = { ...BASE }, tgt = { ...BASE };
-  const fine = matchMedia('(min-width:1024px) and (pointer:fine)'), calm = matchMedia('(prefers-reduced-motion:reduce)');
-  let raf = 0;
-  const tick = () => {
-    cur.x += (tgt.x - cur.x) * 0.07; cur.y += (tgt.y - cur.y) * 0.07;
-    rack.style.setProperty('--rx', cur.x.toFixed(3) + 'deg'); rack.style.setProperty('--ry', cur.y.toFixed(3) + 'deg');
-    raf = Math.abs(tgt.x - cur.x) + Math.abs(tgt.y - cur.y) > 0.01 ? requestAnimationFrame(tick) : 0;
-  };
-  const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
-  stage.addEventListener('pointermove', e => {
-    if (!fine.matches || calm.matches) return;
-    const r = stage.getBoundingClientRect();
-    const nx = (e.clientX - r.left) / r.width - 0.5, ny = (e.clientY - r.top) / r.height - 0.5;
-    tgt.y = BASE.y + nx * 12; tgt.x = BASE.x - ny * 6; kick();
-  });
-  stage.addEventListener('pointerleave', () => { Object.assign(tgt, BASE); kick(); });
-})();
-$('sh-buy').addEventListener('click', buy);
+$('bento').addEventListener('submit', e => { if (e.target.id === 'ent-form') sendEnterprise(e); });
 document.querySelectorAll('[data-pending="true"]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); toast('Muy pronto: estamos preparando este canal.'); }));
 
 /* ===== Arranque ===== */
 feather.replace();
 const ciclo = Number(new URLSearchParams(location.search).get('ciclo'));
-loadPlans().then(ok => { if (DISC[ciclo] !== undefined) setCycle(ciclo); systemStatus(ok); });
+loadPlans().then(ok => { if (DISC[ciclo] !== undefined && ciclo !== 1) setCycle(ciclo); systemStatus(ok); });
 setInterval(() => loadPlans().then(systemStatus), 60000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) loadPlans(); });
 
 await auth.authStateReady();
 if (auth.currentUser) {
   $('nav-login').classList.add('hidden');
   $('nav-perfil').classList.remove('hidden');
-  auth.currentUser.getIdToken()
-    .then(t => fetch('/api/user/status', { headers: { Authorization: 'Bearer ' + t, Accept: 'application/json' } }))
-    .then(r => r.ok ? r.json() : null)
-    .then(d => { if (['ceo', 'admin', 'soporte'].includes(d?.role)) $('nav-admin').classList.remove('hidden'); })
-    .catch(() => {});
+  const h = { Authorization: 'Bearer ' + await auth.currentUser.getIdToken(), Accept: 'application/json' };
+  fetch('/api/user/status', { headers: h }).then(r => r.ok ? r.json() : null)
+    .then(d => { if (['ceo', 'admin', 'soporte'].includes(d?.role)) $('nav-admin').classList.remove('hidden'); }).catch(() => {});
+  fetch('/api/trial/status', { headers: h }).then(r => r.ok ? r.json() : null)
+    .then(d => { if (d && typeof d.elegible === 'boolean') { TRIAL = d.elegible; render(); } }).catch(() => {});
 }
 </script>
 </body>

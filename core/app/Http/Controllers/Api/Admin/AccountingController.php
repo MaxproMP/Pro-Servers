@@ -19,7 +19,7 @@ final class AccountingController extends AdminController
     public function summary(): JsonResponse
     {
         $completados = Pago::where('estado', 'completado');
-        $activas = Suscripcion::where('estado', 'activa')->whereHas('cliente')->with('plan')->get();
+        $activas = Suscripcion::pagas()->whereHas('cliente')->with('plan')->get();
         $procesados = AuditoriaReembolso::where('estado_auditoria', 'procesado');
 
         $mes = Pago::where('estado', 'completado')

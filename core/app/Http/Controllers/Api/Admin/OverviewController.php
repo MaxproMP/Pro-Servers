@@ -19,7 +19,7 @@ final class OverviewController extends AdminController
     /** Métricas reales de SQL Server (3FN) y MongoDB. El soporte no recibe cifras financieras. */
     public function stats(): JsonResponse
     {
-        $activas = Suscripcion::where('estado', 'activa')->whereHas('cliente');
+        $activas = Suscripcion::vigentes()->whereHas('cliente');
         $total = Cliente::count();
         $conPlan = (clone $activas)->distinct()->count('cliente_id');
 
@@ -71,7 +71,7 @@ final class OverviewController extends AdminController
             ];
         })->values();
 
-        $subs = (clone $activas)->with('plan')->get();
+        $subs = Suscripcion::pagas()->whereHas('cliente')->with('plan')->get(); // las pruebas no suman MRR
         $reembolsos = AuditoriaReembolso::where('estado_auditoria', 'procesado');
 
         return [
