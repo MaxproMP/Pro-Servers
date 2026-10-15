@@ -232,7 +232,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:lin
     <a href="/crear.html" class="brand"><img src="/img/favicon.ico" alt="">ProServers <small>DEPLOY</small></a>
     <nav class="nav">
       <span id="role-chip" class="chip vi hidden"></span>
-      <a href="/admin.html" id="nav-admin" class="hidden"><i data-feather="shield"></i><span class="lbl">Overwatch</span></a>
+      <a href="/admin.html" id="nav-admin" class="hidden"><i data-feather="shield"></i><span class="lbl">PanelAdmin</span></a>
       <a href="/planes.html"><i data-feather="layers"></i><span class="lbl">Planes</span></a>
       <a href="/perfil.html"><i data-feather="user"></i><span class="lbl">Perfil</span></a>
       <button type="button" id="btn-logout" title="Cerrar sesión"><i data-feather="log-out"></i><span class="lbl">Salir</span></button>
@@ -283,20 +283,14 @@ footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:lin
           <div class="seg" id="edition" data-v="java" role="group" aria-label="Edición">
             <span class="knob"></span>
             <button type="button" data-ed="java" aria-pressed="true"><i data-feather="monitor"></i><div><b>Java Edition</b><span>PC · Mac · Linux</span></div></button>
-            <button type="button" data-ed="bedrock" aria-pressed="false"><i data-feather="smartphone"></i><div><b>Bedrock Edition</b><span>Mobile · Win10 · Consolas</span></div></button>
+            <button type="button" data-ed="bedrock" aria-pressed="false"><i data-feather="smartphone"></i><div><b>Bedrock Edition</b><span>Mobile · Win11 · Consolas</span></div></button>
           </div>
           <div class="portline" id="portline"></div>
           <div class="engines" id="engines" role="radiogroup" aria-label="Motor"></div>
-          <div class="fields two" style="margin-top:18px">
-            <label class="f">Versión
-              <select class="inp mono" id="f-version"></select>
-              <span class="hint" id="ver-hint"></span>
-            </label>
-            <label class="f">Imagen del contenedor
-              <input class="inp mono" id="f-image" readonly tabindex="-1">
-              <span class="hint">Asignada automáticamente según la edición.</span>
-            </label>
-          </div>
+          <label class="f" style="margin-top:18px">Versión
+            <select class="inp mono" id="f-version"></select>
+            <span class="hint" id="ver-hint"></span>
+          </label>
         </div>
       </section>
 
@@ -469,7 +463,7 @@ const ENGINES = {
     { id: 'bedrock', name: 'Bedrock Oficial', desc: 'Bedrock Dedicated Server de Mojang.', src: 'bedrock' },
   ],
 };
-const NET = { java: { port: '25565/tcp', image: 'itzg/minecraft-server' }, bedrock: { port: '19132/udp', image: 'itzg/minecraft-bedrock-server' } };
+const NET = { java: { port: '25565/tcp' }, bedrock: { port: '19132/udp' } };
 const RELEASE = /^\d+\.\d+(\.\d+)?$/;
 const verCache = {};
 
@@ -496,7 +490,6 @@ function renderEngines() {
     </button>`).join('');
   const n = NET[S.edition];
   $('portline').innerHTML = `<span class="chip ok"><span class="dot"></span>${n.port}</span><span class="chip">Túnel Playit.gg</span><span class="chip">Volumen persistente</span>`;
-  $('f-image').value = n.image + ':latest';
 }
 
 async function loadVersions() {
