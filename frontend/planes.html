@@ -123,22 +123,10 @@ textarea.inp:focus{border-color:rgba(245,158,11,.55);box-shadow:0 0 0 3px rgba(2
 /* Toast / Footer */
 .toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);z-index:80;opacity:0;transition:.3s;max-width:calc(100% - 32px);display:flex;gap:10px;align-items:center;padding:12px 16px;border-radius:12px;background:#11141c;border:1px solid var(--bd2);font-size:13px}
 .toast.on{opacity:1;transform:translate(-50%,0)}
-footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:linear-gradient(to bottom,rgba(11,13,19,.4),#030406)}
-.ft{display:grid;gap:36px;padding:56px 0 32px}
-@media(min-width:768px){.ft{grid-template-columns:1.4fr 1fr 1fr 1fr}}
-.ft h4{font:600 11px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--mu);margin-bottom:14px}
-.ft ul{list-style:none;display:grid;gap:10px;font-size:14px}
-.ft ul a{color:#c3c8d4;transition:.2s}
-.ft ul a:hover{color:var(--ok)}
-.ft .about p{color:var(--mu);font-size:13.5px;max-width:36ch;margin:14px 0 18px}
-.socials{display:flex;flex-wrap:wrap;gap:8px}
-.soc{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);transition:.25s}
-.soc i{width:17px;height:17px;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
-.soc:hover{color:#fff;border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.12);transform:translateY(-2px)}
-.ft-b{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:20px 0 28px;border-top:1px solid var(--bd);font-size:12px;color:var(--mu)}
-.mega{font-weight:800;letter-spacing:-.05em;font-size:clamp(48px,13vw,170px);line-height:.8;text-align:center;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.07);user-select:none;padding-top:8px;overflow:hidden;white-space:nowrap}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="/assets/proservers-footer.css">
+<script src="/assets/proservers-footer.js" defer></script>
 </head>
 <body>
 
@@ -146,9 +134,9 @@ footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:lin
   <div class="wrap">
     <a href="/crear.html" class="brand"><img src="/img/favicon.ico" alt="">ProServers <small>PLANES</small></a>
     <nav class="nav">
-      <a href="/admin.html" id="nav-admin" class="hidden"><i data-feather="shield"></i><span class="lbl">Overwatch</span></a>
+      <a href="/admin.html" id="nav-admin" class="hidden"><i data-feather="shield"></i><span class="lbl">Panel Admin</span></a>
       <a href="/crear.html"><i data-feather="server"></i><span class="lbl">Desplegar</span></a>
-      <a href="/perfil.html" id="nav-perfil" class="hidden"><i data-feather="user"></i><span class="lbl">Perfil</span></a>
+      <a href="/index.html#perfil" id="nav-perfil" class="hidden"><i data-feather="user"></i><span class="lbl">Perfil</span></a>
       <a href="/index.html" id="nav-login"><i data-feather="log-in"></i><span class="lbl">Ingresar</span></a>
     </nav>
   </div>
@@ -180,34 +168,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:lin
   <p class="disclaimer" id="disclaimer"></p>
 </main>
 
-<footer>
-  <div class="wrap">
-    <div class="ft">
-      <div class="about">
-        <a href="/crear.html" class="brand"><img src="/img/favicon.ico" alt="">ProServers</a>
-        <p>Hosting de Minecraft sobre contenedores Docker aislados. Java y Bedrock, modpacks y túneles listos en minutos.</p>
-        <div class="socials">
-          <a class="soc" href="#" data-pending="true" aria-label="Instagram" title="Instagram"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/instagram.svg)"></i></a>
-          <a class="soc" href="#" data-pending="true" aria-label="TikTok" title="TikTok"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/tiktok.svg)"></i></a>
-          <a class="soc" href="#" data-pending="true" aria-label="YouTube" title="YouTube"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/youtube.svg)"></i></a>
-          <a class="soc" href="#" data-pending="true" aria-label="Telegram" title="Telegram"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/telegram.svg)"></i></a>
-          <a class="soc" href="#" data-pending="true" aria-label="Discord" title="Discord"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/discord.svg)"></i></a>
-        </div>
-      </div>
-      <div><h4>Plataforma</h4><ul><li><a href="/crear.html">Desplegar servidor</a></li><li><a href="/planes.html">Planes y precios</a></li><li><a href="/perfil.html">Mi perfil</a></li></ul></div>
-      <div><h4>Soporte</h4><ul><li><a href="/crear.html">Centro de ayuda</a></li><li><a href="/crear.html">Abrir un ticket</a></li><li><a href="#status">Estado del sistema</a></li></ul></div>
-      <div id="status"><h4>Estado</h4>
-        <span class="chip am" id="sys-status"><span class="dot pulse"></span>Verificando…</span>
-        <ul style="margin-top:14px;font-size:12.5px" class="mono">
-          <li id="st-api" style="color:var(--mu)">API · …</li>
-          <li id="st-node" style="color:var(--mu)">Nodos · …</li>
-        </ul>
-      </div>
-    </div>
-    <div class="ft-b"><span>© <span id="year"></span> ProServers. Todos los derechos reservados.</span><span class="mono">Minecraft es marca de Mojang AB. No afiliado.</span></div>
-    <div class="mega" aria-hidden="true">PROSERVERS</div>
-  </div>
-</footer>
+<footer data-ps-footer></footer>
 
 <div class="toast" id="toast" role="status"></div>
 
@@ -362,7 +323,7 @@ async function sendEnterprise(e) {
   $('ent-send').disabled = false;
 }
 
-/* Catálogo en vivo: lo que se edita en Overwatch se refleja acá. */
+/* Catálogo en vivo: lo que se edita en Panel Admin se refleja acá. */
 async function loadPlans() {
   try {
     const r = await fetch('/api/plans', { headers: { Accept: 'application/json' }, cache: 'no-store' });
@@ -382,7 +343,7 @@ async function loadPlans() {
   }
 }
 
-async function systemStatus(apiOk) {
+async function systemStatus() { // capacidad real del nodo (el estado visible lo pinta el pie compartido)
   const ping = await fetch('/ping', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   const cap = Number(ping?.ramTopeMb), cpu = Number(ping?.cpuTope);
   if ((cap > 0 && cap !== CAP_MB) || (cpu > 0 && cpu !== CPU_CAP)) {
@@ -390,15 +351,9 @@ async function systemStatus(apiOk) {
     if (cpu > 0) CPU_CAP = cpu;
     if (PLANS.length) render();
   }
-  const mark = (id, label, ok) => { $(id).textContent = `${label} · ${ok ? 'operativo' : 'sin respuesta'}`; $(id).style.color = ok ? '#6ee7b7' : '#fca5a5'; };
-  mark('st-api', 'API', apiOk); mark('st-node', 'Nodos', !!ping);
-  const all = apiOk && !!ping;
-  $('sys-status').className = 'chip ' + (all ? 'ok' : 'rd');
-  $('sys-status').innerHTML = `<span class="dot${all ? ' pulse' : ''}"></span>${all ? 'All Systems Operational' : 'Servicio degradado'}`;
 }
 
 /* ===== Eventos ===== */
-$('year').textContent = new Date().getFullYear();
 $('cycle').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b) setCycle(Number(b.dataset.m)); });
 $('bento').addEventListener('click', e => {
   if (e.target.closest('#retry')) return loadPlans();

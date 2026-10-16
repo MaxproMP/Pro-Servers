@@ -9,6 +9,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+<link rel="stylesheet" href="/assets/proservers-motion.css">
+<link rel="stylesheet" href="/assets/proservers-footer.css">
+<script src="/assets/proservers-motion.js"></script>
+<script src="/assets/proservers-footer.js" defer></script>
 <style>
 :root{
   --bg:#050609; --sf:#0B0D13; --sf2:#10131b; --bd:rgba(255,255,255,.08); --bd2:rgba(255,255,255,.16);
@@ -180,7 +184,6 @@ details.url .body{padding:0 14px 14px;display:grid;gap:12px}
 .ov{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:rgba(3,4,6,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .3s}
 .ov.on{opacity:1;pointer-events:auto}
 .ov .panel{width:min(560px,100%)}
-.ring{width:56px;height:56px;border-radius:50%;border:2px solid var(--bd);border-top-color:var(--ok);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .prog{height:8px;border-radius:99px;background:var(--sf2);border:1px solid var(--bd);overflow:hidden}
 .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--cy),var(--vi));background-size:200% 100%;animation:flow 2s linear infinite;transition:width .5s}
@@ -188,7 +191,6 @@ details.url .body{padding:0 14px 14px;display:grid;gap:12px}
 .log{font:500 12px 'JetBrains Mono',monospace;background:#07080c;border:1px solid var(--bd);border-radius:10px;padding:12px;max-height:170px;overflow:auto;display:grid;gap:4px;color:var(--mu)}
 .log .k{color:var(--ok)}
 .log .e{color:#fca5a5}
-.ov.err .ring{animation:none;border-color:rgba(239,68,68,.5)}
 .ov.err .prog i{background:var(--rd);animation:none}
 
 /* Toast / dialog / support drawer */
@@ -207,21 +209,6 @@ dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
 .bub.me{justify-self:end;background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3)}
 .drawer form{display:flex;gap:8px;padding:12px;border-top:1px solid var(--bd)}
 
-/* Footer */
-footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:linear-gradient(to bottom,rgba(11,13,19,.4),#030406);margin-top:24px}
-.ft{display:grid;gap:36px;padding:56px 0 32px}
-@media(min-width:768px){.ft{grid-template-columns:1.4fr 1fr 1fr 1fr}}
-.ft h4{font:600 11px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--mu);margin-bottom:14px}
-.ft ul{list-style:none;display:grid;gap:10px;font-size:14px}
-.ft ul a,.ft ul button{color:#c3c8d4;transition:.2s}
-.ft ul a:hover,.ft ul button:hover{color:var(--ok)}
-.ft .about p{color:var(--mu);font-size:13.5px;max-width:36ch;margin:14px 0 18px}
-.socials{display:flex;flex-wrap:wrap;gap:8px}
-.soc{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);transition:.25s}
-.soc i{width:17px;height:17px;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
-.soc:hover{color:#fff;border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.12);transform:translateY(-2px)}
-.ft-b{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:20px 0 28px;border-top:1px solid var(--bd);font-size:12px;color:var(--mu)}
-.mega{font-weight:800;letter-spacing:-.05em;font-size:clamp(48px,13vw,170px);line-height:.8;text-align:center;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.07);user-select:none;padding-top:8px;overflow:hidden;white-space:nowrap}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -232,9 +219,9 @@ footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:lin
     <a href="/crear.html" class="brand"><img src="/img/favicon.ico" alt="">ProServers <small>DEPLOY</small></a>
     <nav class="nav">
       <span id="role-chip" class="chip vi hidden"></span>
-      <a href="/admin.html" id="nav-admin" class="hidden"><i data-feather="shield"></i><span class="lbl">PanelAdmin</span></a>
+      <a href="/admin.html" id="nav-admin" class="hidden"><i data-feather="shield"></i><span class="lbl">Panel admin</span></a>
       <a href="/planes.html"><i data-feather="layers"></i><span class="lbl">Planes</span></a>
-      <a href="/perfil.html"><i data-feather="user"></i><span class="lbl">Perfil</span></a>
+      <a href="/index.html#perfil"><i data-feather="user"></i><span class="lbl">Perfil</span></a>
       <button type="button" id="btn-logout" title="Cerrar sesión"><i data-feather="log-out"></i><span class="lbl">Salir</span></button>
     </nav>
   </div>
@@ -287,10 +274,16 @@ footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:lin
           </div>
           <div class="portline" id="portline"></div>
           <div class="engines" id="engines" role="radiogroup" aria-label="Motor"></div>
-          <label class="f" style="margin-top:18px">Versión
-            <select class="inp mono" id="f-version"></select>
-            <span class="hint" id="ver-hint"></span>
-          </label>
+          <div class="fields two" style="margin-top:18px">
+            <label class="f">Versión
+              <select class="inp mono" id="f-version"></select>
+              <span class="hint" id="ver-hint"></span>
+            </label>
+            <label class="f">Imagen del contenedor
+              <input class="inp mono" id="f-image" readonly tabindex="-1">
+              <span class="hint">Asignada automáticamente según la edición.</span>
+            </label>
+          </div>
         </div>
       </section>
 
@@ -356,41 +349,14 @@ footer{position:relative;z-index:1;border-top:1px solid var(--bd);background:lin
   </form>
 </main>
 
-<footer>
-  <div class="wrap">
-    <div class="ft">
-      <div class="about">
-        <a href="/crear.html" class="brand"><img src="/img/favicon.ico" alt="">ProServers</a>
-        <p>Hosting de Minecraft sobre contenedores Docker aislados. Java y Bedrock, modpacks y túneles listos en minutos.</p>
-        <div class="socials">
-          <a class="soc" href="#" data-pending="true" aria-label="Instagram" title="Instagram"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/instagram.svg)"></i></a>
-          <a class="soc" href="#" data-pending="true" aria-label="TikTok" title="TikTok"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/tiktok.svg)"></i></a>
-          <a class="soc" href="#" data-pending="true" aria-label="YouTube" title="YouTube"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/youtube.svg)"></i></a>
-          <a class="soc" href="#" data-pending="true" aria-label="Telegram" title="Telegram"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/telegram.svg)"></i></a>
-          <a class="soc" href="#" data-pending="true" aria-label="Discord" title="Discord"><i style="--ic:url(https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/discord.svg)"></i></a>
-        </div>
-      </div>
-      <div><h4>Plataforma</h4><ul><li><a href="/crear.html">Desplegar servidor</a></li><li><a href="/planes.html">Planes y precios</a></li><li><a href="/perfil.html">Mi perfil</a></li></ul></div>
-      <div><h4>Soporte</h4><ul><li><button type="button" data-support>Centro de ayuda</button></li><li><button type="button" data-support>Abrir un ticket</button></li><li><a href="#status">Estado del sistema</a></li></ul></div>
-      <div id="status"><h4>Estado</h4>
-        <span class="chip am" id="sys-status"><span class="dot pulse"></span>Verificando…</span>
-        <ul style="margin-top:14px;font-size:12.5px" class="mono">
-          <li id="st-api" style="color:var(--mu)">API · …</li>
-          <li id="st-node" style="color:var(--mu)">Daemon · …</li>
-        </ul>
-      </div>
-    </div>
-    <div class="ft-b"><span>© <span id="year"></span> ProServers. Todos los derechos reservados.</span><span class="mono">Minecraft es marca de Mojang AB. No afiliado.</span></div>
-    <div class="mega" aria-hidden="true">PROSERVERS</div>
-  </div>
-</footer>
+<footer data-ps-footer></footer>
 
 <!-- Overlay de despliegue -->
 <div class="ov" id="ov" role="dialog" aria-modal="true" aria-labelledby="ov-title">
   <section class="panel">
     <div class="panel-b" style="display:grid;gap:18px">
       <div style="display:flex;gap:16px;align-items:center">
-        <div class="ring"></div>
+        <div id="ov-ring"></div>
         <div style="min-width:0"><h2 id="ov-title" style="font-size:19px;letter-spacing:-.02em">Desplegando infraestructura</h2><p class="hint mono" id="ov-step">Enviando orden al daemon…</p></div>
       </div>
       <div class="prog"><i id="ov-bar"></i></div>
@@ -463,7 +429,7 @@ const ENGINES = {
     { id: 'bedrock', name: 'Bedrock Oficial', desc: 'Bedrock Dedicated Server de Mojang.', src: 'bedrock' },
   ],
 };
-const NET = { java: { port: '25565/tcp' }, bedrock: { port: '19132/udp' } };
+const NET = { java: { port: '25565/tcp', image: 'itzg/minecraft-server' }, bedrock: { port: '19132/udp', image: 'itzg/minecraft-bedrock-server' } };
 const RELEASE = /^\d+\.\d+(\.\d+)?$/;
 const verCache = {};
 
@@ -490,6 +456,7 @@ function renderEngines() {
     </button>`).join('');
   const n = NET[S.edition];
   $('portline').innerHTML = `<span class="chip ok"><span class="dot"></span>${n.port}</span><span class="chip">Túnel Playit.gg</span><span class="chip">Volumen persistente</span>`;
+  $('f-image').value = n.image + ':latest';
 }
 
 async function loadVersions() {
@@ -669,12 +636,14 @@ function ovLog(text, cls = '') {
   row.innerHTML = `<span class="k">${new Date().toLocaleTimeString('es-AR')}</span> <span class="${cls}">${esc(text)}</span>`;
   log.appendChild(row); log.scrollTop = log.scrollHeight;
 }
+let ring = null;
 function ovProgress(pct, step) {
   $('ov-bar').style.width = pct + '%'; $('ov-pct').textContent = pct + '%';
+  ring?.set(pct);
   if (step) { $('ov-step').textContent = step; ovLog(step); }
 }
 function ovFail(msg) {
-  $('ov').classList.add('err');
+  $('ov').classList.add('err'); ring?.fail();
   $('ov-title').textContent = 'El despliegue falló';
   $('ov-step').textContent = msg;
   ovLog(msg, 'e');
@@ -700,6 +669,7 @@ async function deploy(e) {
 
   deploying = true; sync();
   $('ov').className = 'ov on'; $('ov-log').innerHTML = ''; $('ov-close').classList.add('hidden');
+  ring = PSMotion.ring($('ov-ring'), { size: 64, stroke: 5 });
   $('ov-title').textContent = 'Desplegando infraestructura';
   ovProgress(4, payload.modpackUrl ? 'Validando enlace externo y enviando orden…' : 'Enviando orden al daemon…');
 
@@ -728,7 +698,7 @@ async function deploy(e) {
       if (st.done) {
         stop();
         if (st.error) return ovFail(st.error);
-        $('ov-title').textContent = 'Infraestructura lista';
+        $('ov-title').textContent = 'Infraestructura lista'; ring?.done();
         ovLog('Redirigiendo al panel del servidor…');
         server.version = payload.version;
         sessionStorage.setItem('selectedServer', JSON.stringify(server));
@@ -757,20 +727,7 @@ function openSupport(open) {
   if (open) { pullSupport(); supportPoll = setInterval(pullSupport, 15000); $('support-in').focus(); }
 }
 
-/* ===== Estado del sistema (footer) ===== */
-async function systemStatus() {
-  const check = (u, h) => fetch(u, { headers: h }).then(r => r.ok).catch(() => false);
-  const token = auth.currentUser ? await auth.currentUser.getIdToken() : null;
-  const [node, api_] = await Promise.all([check('/ping'), token ? check('/api/user/status', { Authorization: 'Bearer ' + token, Accept: 'application/json' }) : false]);
-  const mark = (id, label, ok) => { $(id).textContent = `${label} · ${ok ? 'operativo' : 'sin respuesta'}`; $(id).style.color = ok ? '#6ee7b7' : '#fca5a5'; };
-  mark('st-api', 'API', api_); mark('st-node', 'Daemon', node);
-  const all = node && api_;
-  $('sys-status').className = 'chip ' + (all ? 'ok' : 'rd');
-  $('sys-status').innerHTML = `<span class="dot${all ? ' pulse' : ''}"></span>${all ? 'All Systems Operational' : 'Servicio degradado'}`;
-}
-
 /* ===== Eventos ===== */
-$('year').textContent = new Date().getFullYear();
 $('edition').addEventListener('click', e => { const b = e.target.closest('[data-ed]'); if (b) setEdition(b.dataset.ed); });
 $('engines').addEventListener('click', e => {
   const b = e.target.closest('[data-eng]'); if (!b || b.dataset.eng === S.engine) return;
@@ -835,7 +792,7 @@ if (!auth.currentUser) {
     }
   }).catch(() => {});
   loadFleet();
-  systemStatus(); setInterval(systemStatus, 60000);
+
 }
 </script>
 </body>

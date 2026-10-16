@@ -87,6 +87,7 @@ Route::middleware(['throttle:ip', 'firebase.auth'])->group(function () {
     
     // Pagos
     Route::get('/checkout/pasarelas', [CheckoutController::class, 'pasarelas']);
+    Route::post('/checkout/asistido', [CheckoutController::class, 'asistido'])->middleware('throttle:sensible');
     Route::post('/checkout/{pasarela}', [CheckoutController::class, 'crearPago'])->middleware('throttle:sensible');
     Route::get('/trial/status', [TrialController::class, 'status']);
     Route::post('/trial/start', [TrialController::class, 'start'])->middleware('throttle:5,1');
@@ -100,16 +101,9 @@ Route::middleware(['throttle:ip', 'firebase.auth'])->group(function () {
     Route::any('/curseforge/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', '.*');
     Route::get('/modrinth/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', 'search|versions');
 
-    // Gestor de archivos: se construye con el rediseño del panel. Hasta entonces, cerrado en servidor.
-    Route::any('/files/{path}', function (Request $request) {
-        $u = $request->user();
-        $premium = in_array($u->role, ['ceo', 'admin', 'soporte'], true)
-            || in_array($u->suscripcionActiva()->with('plan')->first()?->plan?->nombre, config('services.planes_premium'), true);
-
-        return $premium
-            ? response()->json(['success' => false, 'error' => 'El gestor de archivos todavía no está disponible.'], 501)
-            : response()->json(['success' => false, 'error' => 'Disponible desde el Plan Oro.'], 403);
-    })->where('path', '.*');
+    // Gestor de archivos (plan Oro+): Laravel exige el plan y Node valida propiedad, plan y la jaula de rutas.
+    Route::get('/files/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', 'list|content|download');
+    Route::post('/files/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', 'save|upload|mkdir|rename|delete')->middleware('throttle:sensible');
 });
 
 // === PANEL OVERWATCH ===
@@ -150,6 +144,7 @@ Route::middleware(['firebase.auth', 'admin:ceo,admin'])->prefix('admin')->group(
 
     Route::get('/accounting', [AccountingController::class, 'summary']);
     Route::post('/accounting/payment', [AccountingController::class, 'payment']);
+    Route::post('/accounting/confirm', [AccountingController::class, 'confirm']);
     Route::post('/accounting/refund', [AccountingController::class, 'refund']);
     Route::get('/payments/{id}/pdf', [AccountingController::class, 'pdf'])->whereNumber('id');
 

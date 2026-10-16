@@ -8,6 +8,10 @@ const path = require('path');
 const dns = require('dns').promises;
 const net = require('net');
 const { secretoValido, puedeOperar, accesoPremium, crearLimitador } = require('./lib/acceso');
+const mineAi = require('./lib/mineai');
+const ajustes = require('./lib/ajustes');
+const archivos = require('./lib/archivos');
+const contenedor = require('./lib/contenedor');
 
 // === INTEGRACIÓN FIREBASE ADMIN SDK (Seguridad) ===
 const admin = require('firebase-admin');
@@ -162,6 +166,57 @@ const exigirPremium = (req, res, next) => accesoPremium(req.planCliente, req.rol
     ? next()
     : res.status(403).json({ success: false, error: 'Disponible desde el Plan Oro.' });
 
+// === GESTOR DE ARCHIVOS (plan Oro+): jaula en servers/<serverId>/, validada por lib/archivos ===
+app.use('/api/files', verificarTokenFirebase, soloDesdeLaravel, limitarTasa, exigirPropiedad, exigirPremium);
+const baseArchivos = (req) => path.join(SERVERS_DIR, req.serverId);
+const conArchivos = (fn) => async (req, res) => {
+    try {
+        await fn(req, res);
+    } catch (e) {
+        const propio = e instanceof archivos.ErrorRuta;
+        const status = propio ? e.status : e.code === 'ENOENT' ? 404 : e.code === 'ENOTEMPTY' ? 409 : 500;
+        res.status(status).json({ success: false, error: propio ? e.message : e.code === 'ENOENT' ? 'No existe.' : 'Error de archivos: ' + e.message });
+    }
+};
+const auditarArchivo = (req, accion, ruta) => void registrarAuditoria('files.' + accion, req.uid, req.serverId, { ruta });
+
+app.get('/api/files/list', conArchivos((req, res) => res.json({ success: true, ...archivos.listar(baseArchivos(req), req.query.path) })));
+app.get('/api/files/content', conArchivos((req, res) => res.json({ success: true, content: archivos.leerTexto(baseArchivos(req), req.query.path) })));
+app.get('/api/files/download', conArchivos((req, res) => {
+    const f = archivos.paraDescargar(baseArchivos(req), req.query.path);
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(f.nombre)}`);
+    fs.createReadStream(f.abs).pipe(res);
+}));
+app.post('/api/files/save', conArchivos((req, res) => {
+    archivos.guardarTexto(baseArchivos(req), req.body.path, req.body.content);
+    auditarArchivo(req, 'save', req.body.path);
+    res.json({ success: true });
+}));
+app.post('/api/files/upload', express.raw({ type: '*/*', limit: archivos.MAX_SUBIDA }), conArchivos((req, res) => {
+    archivos.subir(baseArchivos(req), req.query.path, String(req.query.name || ''), req.body);
+    auditarArchivo(req, 'upload', `${req.query.path || ''}/${req.query.name || ''}`);
+    res.json({ success: true });
+}));
+app.post('/api/files/mkdir', conArchivos((req, res) => {
+    archivos.crearCarpeta(baseArchivos(req), req.body.path);
+    res.json({ success: true });
+}));
+app.post('/api/files/rename', conArchivos((req, res) => {
+    archivos.renombrar(baseArchivos(req), req.body.from, req.body.to);
+    auditarArchivo(req, 'rename', `${req.body.from} -> ${req.body.to}`);
+    res.json({ success: true });
+}));
+app.post('/api/files/delete', conArchivos((req, res) => {
+    archivos.borrar(baseArchivos(req), req.body.path);
+    auditarArchivo(req, 'delete', req.body.path);
+    res.json({ success: true });
+}));
+app.use('/api/files', (err, req, res, next) => {
+    if (err?.type === 'entity.too.large') return res.status(413).json({ success: false, error: 'El archivo supera 20 MB.' });
+    next(err);
+});
+
 // === HELPER: Generar ID único para servidor ===
 function generateId() {
     return 'srv-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8);
@@ -231,7 +286,9 @@ function getServerEnv(payload, port, limites) {
     const env = [
         'EULA=TRUE',
         `MOTD=${payload.motd || 'Professional Server'}`,
-        `SERVER_PORT=${port}`,
+        // Puerto INTERNO del contenedor: Docker publica 25565/tcp (o 19132/udp) en el puerto asignado del host.
+        // Usar el puerto del host acá dejaba sin conexión a todo servidor que no fuera el primero (25565).
+        `SERVER_PORT=${payload.edition === 'bedrock' ? 19132 : 25565}`,
         `MAX_PLAYERS=${limites.maxPlayers}`,
     ];
 
@@ -580,25 +637,12 @@ app.post('/api/admin/global-broadcast', verificarCerebro, async (req, res) => {
 app.post('/api/admin/diagnose', verificarCerebro, async (req, res) => {
     const { serverId } = req.body;
     if (!serverId) return res.status(400).json({ error: 'Falta serverId' });
-    const groqKey = (process.env.GROQ_API_KEY || '').replace(/^"|"$/g, '').trim();
-    if (!groqKey) return res.status(503).json({ error: 'Mine AI no está configurada en el servidor.' });
-
     try {
         const buf = await docker.getContainer(`mc-${serverId}`).logs({ stdout: true, stderr: true, tail: 200 });
         const logText = buf.toString('utf8').slice(-30000);
-        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
-                messages: [{ role: 'user', content: `Analiza este log de Minecraft como ingeniero de infraestructura. Devuelve únicamente JSON válido con las claves mensaje, hay_que_borrar, archivo_a_borrar, paso_a_paso y mod_alternativo.\n\nLOG:\n${logText}` }],
-                temperature: 0.1,
-                response_format: { type: 'json_object' },
-            }),
-        });
-        const data = await r.json();
-        if (!r.ok) return res.status(502).json({ error: data.error?.message || 'Groq rechazó el diagnóstico.' });
-        res.json({ success: true, analysis: JSON.parse(data.choices?.[0]?.message?.content || '{}'), logExtract: logText.slice(-2500) });
+        const r = await mineAi.diagnosticar(logText);
+        if (!r.ok) return res.status(r.status).json({ error: r.error });
+        res.json({ success: true, analysis: r.analysis, logExtract: logText.slice(-2500) });
     } catch (e) {
         if (e.statusCode === 404) return res.status(404).json({ error: 'container_not_found', message: 'El contenedor no existe.' });
         res.status(500).json({ error: 'Error analizando el log: ' + e.message });
@@ -905,9 +949,9 @@ app.get('/api/server/status', async (req, res) => {
         const container = docker.getContainer(`mc-${serverId}`);
         const info = await container.inspect();
         const isRunning = info.State.Running;
-        res.json({ online: isRunning, status: info.State.Status });
+        res.json({ online: isRunning, status: info.State.Status, startedAt: isRunning ? info.State.StartedAt : null, restarting: info.State.Restarting });
     } catch (e) {
-        res.json({ online: false, status: 'offline' });
+        res.json({ online: false, status: e.statusCode === 404 ? 'missing' : 'offline' });
     }
 });
 
@@ -978,59 +1022,115 @@ app.post('/api/server/restart', async (req, res) => {
     }
 });
 
-// --- Enviar comandos a la consola ---
+// --- Ejecuta un comando dentro del contenedor y devuelve su salida (con tope de tiempo) ---
+async function ejecutar(container, cmd, ms = 6000) {
+    const exec = await container.exec({ Cmd: cmd, AttachStdout: true, AttachStderr: true, Tty: true });
+    const stream = await exec.start({ hijack: true, stdin: false, Tty: true });
+    return new Promise((resolve, reject) => {
+        let out = '';
+        const fin = () => { clearTimeout(t); resolve(out.slice(0, 20000)); };
+        const t = setTimeout(() => { stream.destroy(); resolve(out); }, ms);
+        stream.on('data', d => { out += d.toString('utf8'); });
+        stream.on('end', fin);
+        stream.on('close', fin);
+        stream.on('error', e => { clearTimeout(t); reject(e); });
+    });
+}
+
+// --- Enviar comandos a la consola (Java: rcon-cli · Bedrock: send-command) ---
 app.post('/api/server/command', async (req, res) => {
-    const { serverId, command } = req.body;
-    if (!serverId || !command) return res.status(400).json({error: "Datos faltantes"});
+    const command = typeof req.body.command === 'string' ? req.body.command.trim() : '';
+    if (!command || command.length > 300 || /[\r\n]/.test(command)) return res.status(422).json({ error: 'Comando inválido (una línea, hasta 300 caracteres).' });
+    const bedrock = req.servidor.srv.edition === 'bedrock';
     try {
-        const container = docker.getContainer(`mc-${serverId}`);
-        const exec = await container.exec({ AttachStdin: true, AttachStdout: true, AttachStderr: true, Tty: true, Cmd: ['rcon-cli', command] });
-        await exec.start({ hijack: true, stdin: true });
-        res.json({success: true});
-    } catch(e) { res.status(500).json({error: e.message}); }
+        const salida = await ejecutar(docker.getContainer(`mc-${req.serverId}`), bedrock ? ['send-command', command] : ['rcon-cli', command]);
+        res.json({ success: true, output: salida.replace(/\x1b\[[0-9;]*[A-Za-z]/g, '').trim() });
+    } catch (e) {
+        if (e.statusCode === 409) return res.status(409).json({ error: 'El servidor está detenido. Inicialo para usar la consola.' });
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// --- Jugadores conectados (solo Java: Bedrock no expone RCON) ---
+app.get('/api/server/players', async (req, res) => {
+    if (req.servidor.srv.edition === 'bedrock') return res.json({ supported: false });
+    try {
+        const r = ajustes.parsearJugadores(await ejecutar(docker.getContainer(`mc-${req.serverId}`), ['rcon-cli', 'list'], 4000));
+        res.json(r ? { supported: true, ...r } : { supported: true, online: 0, max: null, players: [], arrancando: true });
+    } catch (e) {
+        res.json({ supported: true, online: 0, max: null, players: [], detenido: true });
+    }
+});
+
+// --- Configuración del servidor (versión, RAM, jugadores y server.properties) ---
+// Cambiar variables de entorno exige recrear el contenedor; el mundo vive en el volumen y no se toca.
+const enOperacion = new Set();
+const MB = 1048576;
+
+const recrearMc = (serverId, envNuevo, memoryMb) => contenedor.recrear(docker, `mc-${serverId}`, envNuevo, memoryMb);
+
+app.get('/api/server/settings', async (req, res) => {
+    try {
+        const info = await docker.getContainer(`mc-${req.serverId}`).inspect();
+        res.json({ success: true, settings: ajustes.ajustesActuales(req.servidor.srv, info.Config.Env, info.HostConfig.Memory) });
+    } catch (e) {
+        if (e.statusCode === 404) return res.status(404).json({ success: false, error: 'El contenedor no existe. Volvé a desplegar el servidor.' });
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+app.post('/api/server/settings', async (req, res) => {
+    const { serverId } = req;
+    const { srv, uid } = req.servidor;
+    if (srv.frozen) return res.status(423).json({ success: false, error: 'Tu cuenta está en Zona de Hielo. Contactá a soporte.' });
+    if (!['ceo', 'admin'].includes(req.rol) && !req.planCliente) return res.status(403).json({ success: false, error: 'Necesitás un plan activo para cambiar la configuración.' });
+    if (enOperacion.has(serverId)) return res.status(409).json({ success: false, error: 'Ya hay un cambio en curso en este servidor.' });
+
+    enOperacion.add(serverId);
+    try {
+        const info = await docker.getContainer(`mc-${serverId}`).inspect();
+        const v = ajustes.validarAjustes(req.body, srv, info.Config.Env);
+        if (v.error) return res.status(422).json({ success: false, error: v.error });
+
+        await recrearMc(serverId, ajustes.mezclarEnv(info.Config.Env, v.cambios), v.memoryMb);
+
+        const db = loadDB();
+        const reg = db[uid]?.servers.find(s => s.id === serverId);
+        if (reg) {
+            reg.motd = v.cambios.MOTD ?? v.cambios.SERVER_NAME ?? reg.motd;
+            if (v.cambios.VERSION) reg.version = v.cambios.VERSION;
+            saveDB(db);
+        }
+        void registrarAuditoria('server.settings.updated', req.uid, serverId, { memoryMb: v.memoryMb, cambios: Object.keys(v.cambios) });
+        res.json({ success: true, reiniciado: info.State.Running });
+    } catch (e) {
+        if (e.statusCode === 404) return res.status(404).json({ success: false, error: 'El contenedor no existe. Volvé a desplegar el servidor.' });
+        res.status(500).json({ success: false, error: 'No se pudo aplicar la configuración: ' + e.message });
+    } finally {
+        enOperacion.delete(serverId);
+    }
 });
 
 // --- Mine AI: diagnóstico técnico del log del servidor ---
 app.post('/api/server/mine-ai', exigirPremium, async (req, res) => {
     const { serverId } = req;
 
-    const groqKey = (process.env.GROQ_API_KEY || '').replace(/^"|"$/g, '').trim();
-    if (!groqKey) {
-        return res.status(503).json({ success: false, error: 'Mine AI no está configurada en el servidor.' });
-    }
-
     try {
         const container = docker.getContainer(`mc-${serverId}`);
         const logBuffer = await container.logs({ stdout: true, stderr: true, tail: 200 });
         const logText = logBuffer.toString('utf8').slice(-30000);
-        const prompt = `Analiza este log de Minecraft como ingeniero de infraestructura. Devuelve únicamente JSON válido con las claves mensaje, hay_que_borrar, archivo_a_borrar, paso_a_paso y mod_alternativo. No ordenes borrar archivos si no hay evidencia clara.\n\nLOG:\n${logText}`;
+        if (!logText.trim()) return res.json({ success: true, analysis: { mensaje: 'El servidor todavía no generó registros. Encendelo y volvé a analizar.', paso_a_paso: [] } });
 
-        const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${groqKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
-                messages: [{ role: 'user', content: prompt }],
-                temperature: 0.1,
-                response_format: { type: 'json_object' }
-            })
-        });
-
-        const responseData = await groqResponse.json();
-        if (!groqResponse.ok) {
-            return res.status(502).json({ success: false, error: responseData.error?.message || 'Groq rechazó el diagnóstico.' });
-        }
-
-        const analysis = JSON.parse(responseData.choices?.[0]?.message?.content || '{}');
+        const r = await mineAi.diagnosticar(logText);
+        if (!r.ok) return res.status(r.status).json({ success: false, error: r.error });
+        const analysis = r.analysis;
         void registrarAuditoria('mine-ai.diagnosis.completed', req.user.uid, serverId, {
             hay_que_borrar: Boolean(analysis.hay_que_borrar),
             archivo_a_borrar: analysis.archivo_a_borrar || null,
         });
         return res.json({ success: true, analysis });
     } catch (error) {
+        if (error.statusCode === 404) return res.status(404).json({ success: false, error: 'El contenedor no existe. Volvé a desplegar el servidor.' });
         return res.status(500).json({ success: false, error: 'Error analizando el log: ' + error.message });
     }
 });
@@ -1187,6 +1287,59 @@ app.post('/daemon/server/destroy-forced', verificarCerebro, async (req, res) => 
         destroyed,
         failures,
     });
+});
+
+// --- Red Playit.gg: estado del agente, enlace de reclamo, direcciones y destino local del túnel ---
+app.get('/api/server/network', async (req, res) => {
+    const { srv } = req.servidor;
+    const bedrock = srv.edition === 'bedrock';
+    const ip = process.env.PUBLIC_IP || '';
+    const base = {
+        destino: { host: `mc-${req.serverId}`, puerto: bedrock ? 19132 : 25565, protocolo: bedrock ? 'UDP' : 'TCP' },
+        directa: ip ? `${ip}:${srv.port}` : null,
+    };
+    try {
+        const c = docker.getContainer(`playit-${req.serverId}`);
+        const info = await c.inspect();
+        const logs = (await c.logs({ stdout: true, stderr: true, tail: 200 })).toString('utf8');
+        const p = ajustes.parsearPlayit(logs);
+        const recientes = ajustes.parsearPlayit(logs.split('\n').slice(-25).join('\n'));
+        const estado = !info.State.Running ? 'detenido' : recientes.claimUrl ? 'pendiente' : 'conectado';
+        res.json({ success: true, ...base, agente: estado, claimUrl: estado === 'pendiente' ? recientes.claimUrl : null, direcciones: p.direcciones, logs: logs.replace(/\x1b\[[0-9;]*[A-Za-z]/g, '').split('\n').slice(-60).join('\n') });
+    } catch (e) {
+        if (e.statusCode === 404) return res.json({ success: true, ...base, agente: 'sin-agente', claimUrl: null, direcciones: [], logs: '' });
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// Reinicia el agente o lo regenera (agente nuevo = enlace de reclamo nuevo; el túnel anterior deja de funcionar).
+app.post('/api/server/network/reset', async (req, res) => {
+    const { serverId } = req;
+    const modo = req.body?.modo === 'regenerar' ? 'regenerar' : 'reiniciar';
+    if (req.servidor.srv.frozen) return res.status(423).json({ success: false, error: 'Tu cuenta está en Zona de Hielo. Contactá a soporte.' });
+    if (enOperacion.has('net-' + serverId)) return res.status(409).json({ success: false, error: 'Ya hay una operación de red en curso.' });
+    enOperacion.add('net-' + serverId);
+    try {
+        const nombre = `playit-${serverId}`;
+        if (modo === 'reiniciar') {
+            await docker.getContainer(nombre).restart();
+        } else {
+            try { await docker.getContainer(nombre).remove({ force: true }); } catch (e) { if (e.statusCode !== 404) throw e; }
+            const nuevo = await docker.createContainer({
+                Image: 'pepaondrugs/playitgg-docker:latest',
+                name: nombre,
+                HostConfig: { NetworkMode: 'minecraft-panel_minecraft-net', RestartPolicy: { Name: 'unless-stopped' }, Memory: 128 * MB },
+            });
+            await nuevo.start();
+        }
+        void registrarAuditoria('server.network.' + modo, req.uid, serverId, {});
+        res.json({ success: true, modo });
+    } catch (e) {
+        if (e.statusCode === 404) return res.status(404).json({ success: false, error: 'El agente de red no existe. Usá "Regenerar agente".' });
+        res.status(500).json({ success: false, error: e.message });
+    } finally {
+        enOperacion.delete('net-' + serverId);
+    }
 });
 
 // --- Ver Logs de Playit (Para el túnel de red) ---

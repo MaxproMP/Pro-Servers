@@ -82,14 +82,22 @@ it('Mine AI pasa con Plan Oro o con rol de staff', function () {
     Http::assertSentCount(2);
 });
 
-it('el gestor de archivos queda cerrado en servidor hasta su lanzamiento', function () {
+it('el gestor de archivos exige plan Oro+ y reenvía la subida cruda a Node', function () {
+    Http::fake(['*' => Http::response(['success' => true])]);
     $h = tokenFirebase('uid-f', 'f@gmail.com');
     $this->postJson('/api/login', [], $h)->assertOk();
     $this->getJson('/api/files/list?serverId=srv-f', $h)->assertStatus(403);
+    Http::assertNothingSent();
 
     conPlan('uid-f', 'diamante');
-    $this->getJson('/api/files/list?serverId=srv-f', $h)->assertStatus(501);
-    Http::assertNothingSent();
+    $this->getJson('/api/files/list?serverId=srv-f&path=plugins', $h)->assertOk();
+    $this->call('POST', '/api/files/upload?serverId=srv-f&path=plugins&name=mod.jar', [], [], [], [
+        'HTTP_AUTHORIZATION' => $h['Authorization'], 'CONTENT_TYPE' => 'application/octet-stream', 'HTTP_ACCEPT' => 'application/json',
+    ], "\x00\x01binario")->assertOk();
+    $this->postJson('/api/files/exec', ['serverId' => 'srv-f'], $h)->assertNotFound();
+
+    Http::assertSent(fn ($r) => str_contains($r->url(), '/api/files/list') && $r['path'] === 'plugins' && $r->hasHeader('x-daemon-secret'));
+    Http::assertSent(fn ($r) => str_contains($r->url(), '/api/files/upload?serverId=srv-f&path=plugins&name=mod.jar') && $r->body() === "\x00\x01binario");
 });
 
 // --- A3: IDOR de perfiles ---

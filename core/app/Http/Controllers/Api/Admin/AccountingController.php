@@ -86,6 +86,24 @@ final class AccountingController extends AdminController
         return response()->json(['success' => true, 'pago_id' => $pago->id], 201);
     }
 
+    /** Confirma un pago pendiente (asistido o de pasarela) tras verificar el cobro en la consola del medio. */
+    public function confirm(Request $request, \App\Services\ActivadorPagos $activador): JsonResponse
+    {
+        $data = $request->validate([
+            'pago_id' => 'required|integer|exists:pagos,id',
+            'medio_pago' => ['required', Rule::in(['transferencia', 'tarjeta', 'saldo', 'efectivo'])],
+            'nota' => 'nullable|string|max:200',
+        ]);
+        $pago = Pago::findOrFail($data['pago_id']);
+        if ($pago->estado !== 'pendiente') {
+            return response()->json(['error' => 'Solo se confirman pagos pendientes.'], 422);
+        }
+        $activador->completar($pago, $data['medio_pago']);
+        $this->auditar('admin.payment_confirmed', null, ['pago_id' => $pago->id, 'transaccion_id' => $pago->transaccion_id, 'nota' => $data['nota'] ?? null]);
+
+        return response()->json(['success' => true, 'pago_id' => $pago->id]);
+    }
+
     public function refund(Request $request): JsonResponse
     {
         $data = $request->validate([

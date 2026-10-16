@@ -121,3 +121,39 @@ it('confirmar un pago manual desde Overwatch activa la suscripción y reemplaza 
         ->and(Suscripcion::whereNotNull('trial_ends_at')->first()->estado)->toBe('reemplazada')
         ->and($c->fresh()->suscripcionActiva->id)->toBe($sub->id);
 });
+
+it('el pago asistido deja la suscripción pendiente, abre un ticket y no duplica pedidos', function () {
+    $r = $this->postJson('/api/checkout/asistido', ['plan_nombre' => 'oro', 'ciclo_meses' => 3, 'medio' => 'uala'], $this->h)
+        ->assertCreated()->assertJson(['monto_usd' => 40.5, 'medio' => 'Ualá Bis']);
+    $this->postJson('/api/checkout/asistido', ['plan_nombre' => 'oro', 'ciclo_meses' => 3, 'medio' => 'uala'], $this->h)
+        ->assertCreated()->assertJson(['transaccion_id' => $r->json('transaccion_id')]);
+
+    $pago = Pago::firstOrFail();
+    expect(Pago::count())->toBe(1)
+        ->and($pago->estado)->toBe('pendiente')->and($pago->pasarela_pago)->toBe('uala')
+        ->and($pago->suscripcion->estado)->toBe('pendiente')
+        ->and(\App\Models\MensajeTicket::where('mensaje', 'like', '%'.$pago->transaccion_id.'%')->count())->toBe(1);
+});
+
+it('el pago asistido valida plan, ciclo y medio', function () {
+    $this->postJson('/api/checkout/asistido', ['plan_nombre' => 'oro', 'ciclo_meses' => 3, 'medio' => 'bitcoin'], $this->h)->assertStatus(422);
+    $this->postJson('/api/checkout/asistido', ['plan_nombre' => 'inexistente', 'ciclo_meses' => 1, 'medio' => 'uala'], $this->h)->assertStatus(422);
+    expect(Pago::count())->toBe(0);
+});
+
+it('Overwatch confirma un pago asistido una sola vez y activa el plan por su ciclo', function () {
+    Http::fake(['*' => Http::response(['success' => true])]);
+    $this->postJson('/api/checkout/asistido', ['plan_nombre' => 'oro', 'ciclo_meses' => 6, 'medio' => 'transferencia'], $this->h)->assertCreated();
+    $pago = Pago::firstOrFail();
+
+    $this->postJson('/api/admin/accounting/confirm', ['pago_id' => $pago->id, 'medio_pago' => 'transferencia'], $this->h)->assertForbidden();
+
+    $hs = tokenFirebase('uid-ceo', config('services.ceo_email'));
+    $this->postJson('/api/login', [], $hs)->assertOk();
+    $this->postJson('/api/admin/accounting/confirm', ['pago_id' => $pago->id, 'medio_pago' => 'transferencia'], $hs)->assertOk();
+    $this->postJson('/api/admin/accounting/confirm', ['pago_id' => $pago->id, 'medio_pago' => 'transferencia'], $hs)->assertStatus(422);
+
+    $sub = $pago->suscripcion->fresh();
+    expect($pago->fresh()->estado)->toBe('completado')->and($sub->estado)->toBe('activa')
+        ->and((int) round(now()->diffInMonths($sub->fecha_vencimiento)))->toBe(6);
+});

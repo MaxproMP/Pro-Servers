@@ -4,12 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Checkout · ProServers</title>
-<meta name="description" content="Contratá tu plan de ProServers: elegí el ciclo de facturación y pagá con Mercado Pago o AstroPay.">
+<meta name="description" content="Contratá tu plan de ProServers: elegí el ciclo de facturación y pagá con Mercado Pago, Ualá Bis, AstroPay o transferencia.">
 <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/proservers-motion.css">
+<link rel="stylesheet" href="/assets/proservers-footer.css">
+<script src="/assets/proservers-footer.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
 <style>
 :root{--bg:#050609;--sf:#0B0D13;--sf2:#10131b;--sf3:#161a24;--bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.16);--tx:#e8eaf0;--mu:#9aa2b5;--ok:#10B981;--vi:#8B5CF6;--am:#F59E0B;--rd:#EF4444;--r:14px}
@@ -69,10 +71,20 @@ h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.03em;font-weight:800;margin:3
 .method:hover:not(:disabled){border-color:var(--bd2)}
 .method[aria-checked="true"]{border-color:rgba(16,185,129,.6);background:rgba(16,185,129,.07)}
 .method:disabled{opacity:.5;cursor:not-allowed}
-.method .ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--sf3);font-weight:800;font-size:13px}
+.method .ico{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:var(--sf3);border:1px solid var(--bd);font:800 13px 'JetBrains Mono',monospace;color:var(--ic,#e8eaf0)}
 .method b{display:block;font-size:14.5px}
 .method small{color:var(--mu);font-size:12.5px}
-.method .chip{margin-left:auto}
+.method .chip{margin-left:auto;flex:none}
+.method .radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--bd2);flex:none;display:grid;place-items:center;margin-left:4px}
+.method[aria-checked="true"] .radio{border-color:var(--ok)}
+.method[aria-checked="true"] .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin:-12px 0 24px;font-size:13px;color:var(--mu)}
+.steps span{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;border:1px solid var(--bd)}
+.steps span.on{color:var(--tx);border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.07)}
+.steps b{font:700 11px 'JetBrains Mono',monospace;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:var(--sf3)}
+.ref{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(0,0,0,.25);font:600 13px 'JetBrains Mono',monospace}
+.how{display:grid;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--bd);font-size:13px;color:var(--mu)}
+.how li{margin-left:18px}
 .notice{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:12px;font-size:14px;line-height:1.5}
 .notice.am{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);color:#fde68a}
 .notice.ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.35);color:#a7f3d0}
@@ -92,9 +104,6 @@ h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.03em;font-weight:800;margin:3
 .err{color:#fca5a5;font-size:13px;margin-top:10px;min-height:18px}
 .skel{height:120px;border-radius:12px;background:linear-gradient(90deg,#0d1017,#151923,#0d1017);background-size:200% 100%;animation:sk 1.2s infinite}
 @keyframes sk{to{background-position:-200% 0}}
-.foot{border-top:1px solid var(--bd);padding:18px 0 28px;color:var(--mu);font-size:12.5px}
-.foot .wrap{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
-.signature{font:600 12px 'JetBrains Mono',monospace;letter-spacing:.1em;color:#4fae7b}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -107,6 +116,7 @@ h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.03em;font-weight:800;margin:3
 <main class="wrap">
   <h1 id="title">Contratar plan</h1>
   <p class="lead" id="lead">Elegí el ciclo y el medio de pago. El total lo calcula el servidor con los precios publicados.</p>
+  <div class="steps" aria-hidden="true"><span class="on"><b>1</b>Plan</span><span class="on" id="st-2"><b>2</b>Ciclo</span><span id="st-3"><b>3</b>Medio de pago</span><span id="st-4"><b>4</b>Activación</span></div>
 
   <div id="estado-pago" class="hidden" style="margin-bottom:20px"></div>
 
@@ -132,12 +142,7 @@ h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.03em;font-weight:800;margin:3
         <section class="card">
           <h2><i data-feather="credit-card"></i>Medio de pago</h2>
           <div class="methods" role="radiogroup" aria-label="Medio de pago" id="methods"></div>
-          <div class="notice am hidden" id="no-methods" style="margin-top:12px">
-            <i data-feather="info"></i>
-            <div>Los pagos online se están habilitando. Mientras tanto podés pagar por transferencia: pedilo por soporte y lo confirmamos desde el panel.
-              <div style="margin-top:10px"><button type="button" class="btn btn-ghost" id="btn-transfer"><i data-feather="message-square"></i>Pedir pago por transferencia</button></div>
-            </div>
-          </div>
+          <ol class="how" id="how"></ol>
         </section>
       </div>
     </div>
@@ -154,12 +159,12 @@ h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.03em;font-weight:800;margin:3
       <div class="ars" id="s-ars"></div>
       <button type="button" class="btn btn-pri btn-block" id="btn-pay" disabled><i data-feather="lock"></i><span id="pay-label">Elegí un medio de pago</span></button>
       <p class="err" id="pay-err" role="alert"></p>
-      <p class="fine">Te redirigimos a la pasarela para pagar. ProServers no ve ni guarda los datos de tu tarjeta. La suscripción se activa cuando la pasarela confirma el pago.</p>
+      <p class="fine" id="fine">ProServers no ve ni guarda los datos de tu tarjeta. La suscripción se activa cuando el cobro queda confirmado.</p>
     </aside>
   </div>
 </main>
 
-<footer class="foot"><div class="wrap"><span class="signature">PROFESSIONAL SERVERS V1.0 | BY @MAXPRO</span><span>Precios en USD. Mercado Pago cobra en pesos al tipo de cambio indicado.</span></div></footer>
+<footer data-ps-footer></footer>
 
 <script type="module">
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
@@ -188,11 +193,15 @@ async function api(path, opts = {}) {
 
 const COLOR = { redstone: '#EF4444', hierro: '#CBD5E1', cobre: '#D97706', oro: '#EAB308', diamante: '#22D3EE', netherite: '#A855F7', 'ghost-warrior': '#3B82F6' };
 const NOMBRE = (n) => n.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+// Cada medio funciona siempre: online (redirección + webhook verificado) si la pasarela está configurada,
+// o asistido (pedido pendiente en SQL Server + link de pago por soporte + confirmación desde Overwatch).
 const METODOS = [
-  { id: 'mercadopago', nombre: 'Mercado Pago', det: 'Tarjetas, dinero en cuenta y efectivo. Cobra en pesos.', ico: 'MP' },
-  { id: 'astropay', nombre: 'AstroPay', det: 'Tarjetas y medios locales. Cobra en dólares.', ico: 'AP' },
-  { id: 'uala', nombre: 'Ualá Bis', det: 'Integración en camino.', ico: 'UB' },
+  { id: 'mercadopago', nombre: 'Mercado Pago', det: 'Tarjetas, dinero en cuenta y efectivo. Cobra en pesos.', ico: 'MP', c: '#38bdf8' },
+  { id: 'uala', nombre: 'Ualá Bis', det: 'Link de cobro de Ualá: tarjeta de débito, crédito o saldo Ualá.', ico: 'UB', c: '#f472b6' },
+  { id: 'astropay', nombre: 'AstroPay', det: 'Tarjetas y medios locales. Cobra en dólares.', ico: 'AP', c: '#a3e635' },
+  { id: 'transferencia', nombre: 'Transferencia bancaria', det: 'CBU/CVU o alias. Te pasamos los datos por soporte.', ico: '$', c: '#fcd34d' },
 ];
+const online = (id) => S.pasarelas[id] === true;
 
 const q = new URLSearchParams(location.search);
 const S = { plan: null, ciclo: [1, 3, 6, 12].includes(Number(q.get('ciclo'))) ? Number(q.get('ciclo')) : 1, metodo: null, pasarelas: {}, tasa: null, desc: { 1: 0, 3: 10, 6: 15, 12: 20 }, cap: null };
@@ -216,12 +225,14 @@ function pintarCiclos() {
 }
 
 function pintarMetodos() {
-  $('methods').innerHTML = METODOS.map(m => {
-    const on = S.pasarelas[m.id] === true;
-    return `<button type="button" class="method" role="radio" data-id="${m.id}" aria-checked="${S.metodo === m.id}" ${on ? '' : 'disabled'}>
-      <span class="ico">${m.ico}</span><span><b>${m.nombre}</b><small>${m.det}</small></span>${on ? '' : '<span class="chip">Próximamente</span>'}</button>`;
-  }).join('');
-  $('no-methods').classList.toggle('hidden', Object.values(S.pasarelas).some(Boolean));
+  $('methods').innerHTML = METODOS.map(m => `<button type="button" class="method" role="radio" data-id="${m.id}" aria-checked="${S.metodo === m.id}">
+      <span class="ico" style="--ic:${m.c}">${m.ico}</span><span><b>${m.nombre}</b><small>${m.det}</small></span>
+      ${online(m.id) ? '<span class="chip ok">Pago online</span>' : '<span class="chip am">Link por soporte</span>'}<span class="radio"></span></button>`).join('');
+  const m = METODOS.find(x => x.id === S.metodo);
+  $('how').innerHTML = !m ? '' : online(m.id)
+    ? `<li>Te llevamos a ${m.nombre} para pagar con su checkout seguro.</li><li>Al aprobarse, la pasarela nos avisa y tu plan se activa solo.</li>`
+    : `<li>Registramos tu pedido con una referencia única y lo dejamos en tu chat de soporte.</li><li>Te enviamos ${m.id === 'transferencia' ? 'los datos de transferencia' : `el link de pago de ${m.nombre}`} por ese chat.</li><li>Cuando confirmamos el cobro, el plan se activa por el ciclo elegido.</li>`;
+  $('st-3').classList.toggle('on', !!m);
 }
 
 function pintarResumen() {
@@ -234,14 +245,25 @@ function pintarResumen() {
   $('s-ars').textContent = S.metodo === 'mercadopago' && S.tasa ? `≈ ${ars(total * S.tasa)} en Mercado Pago (US$ 1 = ${ars(S.tasa)})` : '';
   const m = METODOS.find(x => x.id === S.metodo);
   $('btn-pay').disabled = !m;
-  $('pay-label').textContent = m ? `Pagar con ${m.nombre}` : 'Elegí un medio de pago';
+  $('pay-label').textContent = !m ? 'Elegí un medio de pago' : online(m.id) ? `Pagar con ${m.nombre}` : m.id === 'transferencia' ? 'Pedir datos de transferencia' : `Pedir link de ${m.nombre}`;
 }
 
 async function pagar() {
-  $('btn-pay').disabled = true; $('pay-err').textContent = ''; $('pay-label').textContent = 'Conectando con la pasarela…';
+  const m = METODOS.find(x => x.id === S.metodo);
+  $('btn-pay').disabled = true; $('pay-err').textContent = ''; $('pay-label').textContent = online(m.id) ? 'Conectando con la pasarela…' : 'Registrando tu pedido…';
   try {
-    const d = await api(`/api/checkout/${S.metodo}`, { method: 'POST', body: JSON.stringify({ plan_nombre: S.plan.nombre, ciclo_meses: S.ciclo }) });
-    location.href = d.redirect_url;
+    if (online(m.id)) {
+      const d = await api(`/api/checkout/${m.id}`, { method: 'POST', body: JSON.stringify({ plan_nombre: S.plan.nombre, ciclo_meses: S.ciclo }) });
+      location.href = d.redirect_url;
+      return;
+    }
+    const d = await api('/api/checkout/asistido', { method: 'POST', body: JSON.stringify({ plan_nombre: S.plan.nombre, ciclo_meses: S.ciclo, medio: m.id }) });
+    $('st-4').classList.add('on');
+    mostrarEstado('ok', `Pedido registrado. Te enviamos ${m.id === 'transferencia' ? 'los datos de transferencia' : `el link de pago de ${d.medio}`} por el chat de soporte; tu plan se activa en cuanto confirmamos el cobro.`,
+      `<div class="ref"><span>Referencia</span><b>${esc(d.transaccion_id)}</b><span style="margin-left:auto">${money(d.monto_usd)}</span></div><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-pri" href="/index.html#soporte"><i data-feather="message-circle"></i>Abrir el chat de soporte</a></div>`);
+    scrollTo({ top: 0, behavior: 'smooth' });
+    pintarResumen();
+    esperarActivacion(true);
   } catch (e) { $('pay-err').textContent = e.message; pintarResumen(); }
 }
 
@@ -262,19 +284,19 @@ function mostrarEstado(tipo, texto, accion = '') {
 }
 
 /* Vuelta desde la pasarela: esperamos la confirmación del webhook leyendo el plan real. */
-async function esperarActivacion() {
+async function esperarActivacion(asistido = false) {
   const estado = q.get('estado');
-  if (!estado) return;
+  if (!estado && !asistido) return;
   if (estado === 'error') return mostrarEstado('rd', 'La pasarela rechazó o canceló el pago. No se cobró nada; podés intentar de nuevo.');
-  mostrarEstado('am', estado === 'pendiente' ? 'El pago quedó pendiente en la pasarela. Lo activamos apenas se acredite.' : 'Pago recibido. Esperando la confirmación de la pasarela…');
-  for (let i = 0; i < 30; i++) {
+  if (!asistido) mostrarEstado('am', estado === 'pendiente' ? 'El pago quedó pendiente en la pasarela. Lo activamos apenas se acredite.' : 'Pago recibido. Esperando la confirmación de la pasarela…');
+  for (let i = 0; i < (asistido ? 180 : 30); i++) {
     const me = await api('/api/me').catch(() => null);
     if (me?.plan?.nombre === S.plan.nombre && !me.en_prueba) {
       return mostrarEstado('ok', `Listo: el plan ${NOMBRE(S.plan.nombre)} está activo.`, '<div style="margin-top:10px"><a class="btn btn-pri" href="/crear.html">Desplegar servidor</a></div>');
     }
     await new Promise(r => setTimeout(r, 4000));
   }
-  mostrarEstado('am', 'La confirmación está tardando. Te avisamos por soporte si hace falta algo; no hace falta pagar de nuevo.');
+  if (!asistido) mostrarEstado('am', 'La confirmación está tardando. Te avisamos por soporte si hace falta algo; no hace falta pagar de nuevo.');
 }
 
 /* Eventos */
@@ -283,13 +305,6 @@ $('methods').addEventListener('click', e => { const b = e.target.closest('[data-
 $('btn-pay').onclick = pagar;
 $('btn-trial').onclick = activarPrueba;
 $('btn-pagar-en-vez').onclick = () => { $('trial-card').classList.add('hidden'); $('pay-section').classList.remove('hidden'); $('sum').classList.remove('hidden'); };
-$('btn-transfer').onclick = async () => {
-  try {
-    await api('/api/support/chat', { method: 'POST', body: JSON.stringify({ message: `[Pago por transferencia] Quiero contratar el plan ${NOMBRE(S.plan.nombre)} por ${S.ciclo} ${S.ciclo === 1 ? 'mes' : 'meses'} (total ${money(quote(S.ciclo))}).` }) });
-    mostrarEstado('ok', 'Listo: abrimos un ticket con tu pedido. Te pasamos los datos de transferencia por soporte.');
-    scrollTo({ top: 0, behavior: 'smooth' });
-  } catch (e) { $('pay-err').textContent = e.message; }
-};
 
 /* Arranque */
 feather.replace();

@@ -2,6 +2,8 @@
    crossfade(container, nextPane)       → fundido cruzado entre .ps-pane
    shared(pairs, update)                → elemento compartido (View Transitions o FLIP)
    dock(el, { axis, max, sigma })       → dock con lupa gaussiana
+   ring(el, { size, stroke })           → anillo de progreso animado: .set(pct) .done() .fail()
+   count(el, value, { decimals, suffix }) → número que se desliza al nuevo valor
    Focus Blur es solo CSS: .ps-focus-group > .ps-focus-item */
 (() => {
   'use strict';
@@ -92,5 +94,58 @@
     });
   }
 
-  window.PSMotion = { crossfade, shared, dock };
+  /* 5. ANILLO DE PROGRESO — interpola hacia el avance real y, mientras espera el próximo dato,
+     avanza muy despacio (sin pasar del 99 % ni alejarse más de 8 puntos del último valor real). */
+  function ring(el, { size = 64, stroke = 5 } = {}) {
+    const r = (size - stroke) / 2, C = 2 * Math.PI * r;
+    el.classList.add('ps-ring');
+    el.style.width = el.style.height = size + 'px';
+    el.innerHTML = `<svg viewBox="0 0 ${size} ${size}" aria-hidden="true">
+      <circle class="ps-ring-track" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}"/>
+      <circle class="ps-ring-bar" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}" stroke-dasharray="${C}" stroke-dashoffset="${C}"/>
+      <circle class="ps-ring-sheen" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}" stroke-dasharray="${C * 0.08} ${C}"/>
+    </svg><span class="ps-ring-val">0%</span>`;
+    el.setAttribute('role', 'progressbar'); el.setAttribute('aria-valuemin', '0'); el.setAttribute('aria-valuemax', '100');
+    const bar = el.querySelector('.ps-ring-bar'), val = el.querySelector('.ps-ring-val');
+    let shown = 0, real = 0, raf = 0, fin = false;
+    const paint = () => {
+      bar.style.strokeDashoffset = String(C * (1 - shown / 100));
+      val.textContent = Math.round(shown) + '%';
+      el.setAttribute('aria-valuenow', String(Math.round(shown)));
+    };
+    const tick = () => {
+      const techo = fin ? real : Math.min(99, real + 8);
+      const objetivo = shown < real ? real : techo;
+      const paso = shown < real ? (real - shown) * (calm() ? 1 : 0.12) : (calm() ? 0 : (techo - shown) * 0.008);
+      shown = Math.min(objetivo, shown + Math.max(paso, 0));
+      paint();
+      if (!fin || shown < real - 0.1) raf = requestAnimationFrame(tick); else { shown = real; paint(); raf = 0; }
+    };
+    const start = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    return {
+      set(p) { real = Math.max(real, Math.min(100, Number(p) || 0)); start(); },
+      done() { fin = true; real = 100; el.classList.add('is-done'); start(); },
+      fail() { fin = true; el.classList.add('is-error'); start(); },
+      reset() { fin = false; real = shown = 0; el.classList.remove('is-done', 'is-error'); paint(); start(); },
+    };
+  }
+
+  /* 6. CONTADOR — desliza el número mostrado hasta el nuevo valor (métricas en vivo). */
+  function count(el, value, { decimals = 0, suffix = '', duration = 600 } = {}) {
+    if (!el) return;
+    const to = Number(value) || 0, from = Number(el.dataset.psVal ?? to);
+    el.dataset.psVal = String(to);
+    const fmt = (n) => n.toFixed(decimals) + suffix;
+    if (calm() || from === to || !el.isConnected) { el.innerHTML = fmt(to); return; }
+    const t0 = performance.now();
+    cancelAnimationFrame(Number(el.dataset.psRaf || 0));
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / duration), e = 1 - Math.pow(1 - k, 3);
+      el.innerHTML = fmt(from + (to - from) * e);
+      if (k < 1) el.dataset.psRaf = String(requestAnimationFrame(step));
+    };
+    el.dataset.psRaf = String(requestAnimationFrame(step));
+  }
+
+  window.PSMotion = { crossfade, shared, dock, ring, count };
 })();

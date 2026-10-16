@@ -1,0 +1,44 @@
+/* ProServers · pie institucional compartido (Login, Panel, Planes, Checkout, Crear, Legal). */
+.psf {
+  --psf-bg: #030406; --psf-bd: rgba(255, 255, 255, .08); --psf-tx: #e8eaf0; --psf-mu: #9aa2b5; --psf-ok: #10B981;
+  position: relative; z-index: 1; border-top: 1px solid var(--psf-bd); color: var(--psf-mu);
+  background: linear-gradient(180deg, rgba(11, 13, 19, .55), var(--psf-bg) 60%);
+  font: 14px/1.55 'Plus Jakarta Sans', system-ui, sans-serif; overflow: hidden;
+}
+.psf * { box-sizing: border-box; }
+.psf a, .psf button { color: inherit; text-decoration: none; background: none; border: 0; font: inherit; cursor: pointer; padding: 0; }
+.psf-wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 768px) { .psf-wrap { padding: 0 28px; } }
+.psf-grid { display: grid; gap: 32px; padding: 48px 0 28px; }
+@media (min-width: 640px) { .psf-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1024px) { .psf-grid { grid-template-columns: 1.5fr 1fr 1fr 1fr 1.1fr; } }
+.psf-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--psf-tx); font-weight: 800; letter-spacing: -.02em; font-size: 16px; }
+.psf-brand img { width: 26px; height: 26px; }
+.psf-about p { margin: 12px 0 16px; max-width: 38ch; font-size: 13.5px; }
+.psf h4 { margin: 0 0 12px; font-size: 13px; font-weight: 700; color: var(--psf-tx); }
+.psf ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 14px; }
+.psf ul a, .psf ul button { color: #b9bfcc; transition: color .2s; text-align: left; }
+.psf ul a:hover, .psf ul button:hover { color: var(--psf-tx); }
+.psf ul a:focus-visible, .psf ul button:focus-visible, .psf-soc:focus-visible { outline: 2px solid var(--psf-ok); outline-offset: 3px; border-radius: 4px; }
+.psf-socials { display: flex; flex-wrap: wrap; gap: 8px; }
+.psf-soc { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; border: 1px solid var(--psf-bd); background: rgba(255, 255, 255, .02); color: var(--psf-mu); transition: color .25s, border-color .25s, transform .25s; }
+.psf-soc:hover { color: var(--psf-tx); border-color: rgba(255, 255, 255, .22); transform: translateY(-2px); }
+.psf-soc i { width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--ic) center/contain no-repeat; mask: var(--ic) center/contain no-repeat; }
+.psf-status { display: grid; gap: 8px; }
+.psf-node { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--psf-bd); background: rgba(255, 255, 255, .02); font-size: 13px; }
+.psf-node b { color: var(--psf-tx); font-weight: 600; }
+.psf-node span:last-child { margin-left: auto; font: 600 12px 'JetBrains Mono', ui-monospace, monospace; }
+.psf-led { width: 8px; height: 8px; border-radius: 50%; background: #6b7280; flex: none; }
+.psf-node[data-s="ok"] .psf-led { background: var(--psf-ok); box-shadow: 0 0 0 3px rgba(16, 185, 129, .18); }
+.psf-node[data-s="ok"] span:last-child { color: #6ee7b7; }
+.psf-node[data-s="down"] .psf-led { background: #EF4444; }
+.psf-node[data-s="down"] span:last-child { color: #fca5a5; }
+.psf-bottom { display: flex; flex-wrap: wrap; gap: 10px 20px; justify-content: space-between; align-items: center; padding: 18px 0 24px; border-top: 1px solid var(--psf-bd); font-size: 12.5px; }
+.psf-sign { font: 700 12px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .12em; color: #6ee7b7; }
+.psf-legal { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.psf-legal a:hover { color: var(--psf-tx); }
+.psf-regret { display: inline-flex; align-items: center; gap: 8px; margin-top: 4px; padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(245, 158, 11, .4); color: #fcd34d !important; background: rgba(245, 158, 11, .07); font-weight: 600; }
+.psf-regret:hover { background: rgba(245, 158, 11, .14); }
+.psf-mega { font-weight: 800; letter-spacing: -.05em; font-size: clamp(44px, 12vw, 168px); line-height: .8; text-align: center; color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, .07); user-select: none; white-space: nowrap; overflow: hidden; padding-top: 4px; }
+.psf.psf-compact .psf-grid, .psf.psf-compact .psf-mega { display: none; }
+@media (prefers-reduced-motion: reduce) { .psf * { transition: none !important; } }

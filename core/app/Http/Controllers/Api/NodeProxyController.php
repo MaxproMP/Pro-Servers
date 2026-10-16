@@ -21,8 +21,19 @@ class NodeProxyController extends Controller
     /** Rutas que crean contenedores: reciben los límites del plan y exigen email verificado. */
     private const RUTAS_DEPLOY = ['api/project/create', 'api/project/clone'];
 
-    /** Funciones premium (plan Oro o superior, o staff). */
-    private const RUTAS_PREMIUM = ['api/server/mine-ai'];
+    /** Funciones premium (plan Oro o superior, o staff): rutas exactas o prefijos terminados en "/". */
+    private const RUTAS_PREMIUM = ['api/server/mine-ai', 'api/files/'];
+
+    private static function esPremium(string $ruta): bool
+    {
+        foreach (self::RUTAS_PREMIUM as $r) {
+            if ($ruta === $r || (str_ends_with($r, '/') && str_starts_with($ruta, $r))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /** @return array{nombre: string, memoria_mb: int, cpu_cores: int, almacenamiento_gb: int, max_jugadores: int|null}|null */
     private function limitesDelPlan(Cliente $cliente): ?array
@@ -50,7 +61,7 @@ class NodeProxyController extends Controller
         $esStaff = in_array($user->role, ['ceo', 'admin', 'soporte'], true);
         $planNombre = $user->suscripcionActiva()->with('plan')->first()?->plan?->nombre;
 
-        if (in_array($ruta, self::RUTAS_PREMIUM, true) && ! $esStaff && ! in_array($planNombre, config('services.planes_premium'), true)) {
+        if (self::esPremium($ruta) && ! $esStaff && ! in_array($planNombre, config('services.planes_premium'), true)) {
             return response()->json(['success' => false, 'error' => 'Disponible desde el Plan Oro.'], 403);
         }
 
@@ -71,17 +82,27 @@ class NodeProxyController extends Controller
         }
 
         $metodo = strtoupper($request->method());
-        $response = Http::withToken((string) $request->bearerToken())
+        $cliente = Http::withToken((string) $request->bearerToken())
             ->withHeaders([
                 'x-daemon-secret' => $secret,
                 'x-staff-role' => $esStaff ? $user->role : 'usuario',
                 'x-plan' => (string) $planNombre,
                 'X-Forwarded-For' => $request->ip(),
             ])
-            ->timeout(60)
-            ->send($metodo, $this->nodeUrl.'/'.$ruta, $metodo === 'GET' ? ['query' => $data] : ['json' => $data]);
+            ->timeout(60);
 
-        return response($response->body(), $response->status())
+        // Subida de archivos: el cuerpo viaja crudo (binario) y los parámetros por query string.
+        $response = $ruta === 'api/files/upload'
+            ? $cliente->withBody($request->getContent(), 'application/octet-stream')
+                ->post($this->nodeUrl.'/'.$ruta.'?'.http_build_query($request->only(['serverId', 'path', 'name'])))
+            : $cliente->send($metodo, $this->nodeUrl.'/'.$ruta, $metodo === 'GET' ? ['query' => $data] : ['json' => $data]);
+
+        $salida = response($response->body(), $response->status())
             ->header('Content-Type', $response->header('Content-Type') ?: 'application/json');
+        if ($response->header('Content-Disposition')) {
+            $salida->header('Content-Disposition', $response->header('Content-Disposition'));
+        }
+
+        return $salida;
     }
 }

@@ -55,7 +55,19 @@
   }
 }
 
+/* 5. ANILLO DE PROGRESO (deploy): se rellena con el avance real y un brillo gira mientras trabaja. */
+.ps-ring { --ps-ring: #10B981; position: relative; display: grid; place-items: center; flex: none; }
+.ps-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.ps-ring .ps-ring-track { fill: none; stroke: rgba(255, 255, 255, .08); }
+.ps-ring .ps-ring-bar { fill: none; stroke: var(--ps-ring); stroke-linecap: round; }
+.ps-ring .ps-ring-sheen { fill: none; stroke: rgba(255, 255, 255, .55); stroke-linecap: round; transform-origin: 50% 50%; animation: ps-ring-spin 1.6s linear infinite; }
+.ps-ring.is-done .ps-ring-sheen, .ps-ring.is-error .ps-ring-sheen { display: none; }
+.ps-ring.is-error { --ps-ring: #EF4444; }
+.ps-ring-val { position: absolute; font: 700 13px 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; color: #e8eaf0; }
+@keyframes ps-ring-spin { to { transform: rotate(360deg); } }
+
 @media (prefers-reduced-motion: reduce) {
+  .ps-ring .ps-ring-sheen { animation: none; display: none; }
   :root { --ps-dur: 0.01s; --ps-blur: 0px; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
   .ps-dock-item, .ps-dock-item svg { transition: none; }

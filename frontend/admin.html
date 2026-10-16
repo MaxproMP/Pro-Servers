@@ -736,7 +736,7 @@ function paintPagos() {
   $('#pagos-body').innerHTML = list.length ? list.map(p => `<tr><td class="num">#${String(p.id).padStart(6, '0')}</td><td class="sub">${fdate(p.fecha)}</td>
     <td>${p.cliente ? `${esc(p.cliente.username)}<div class="sub">${esc(p.cliente.email)}</div>` : '—'}</td><td>${esc(p.plan || '—')}</td><td>${esc(p.pasarela_pago)}</td><td>${esc(p.medio_pago)}</td>
     <td><span class="b ${PAGO_B[p.estado] || 'mu'}">${esc(p.estado)}</span></td><td class="r num">${money(p.monto)}</td>
-    <td class="r"><div class="acts"><button class="btn sm" data-act="pdf" data-id="${p.id}">Descargar factura PDF</button>${p.estado === 'completado' ? `<button class="btn sm danger" data-act="refund" data-id="${p.id}" data-monto="${p.monto}">Reembolsar</button>` : ''}</div></td></tr>`).join('')
+    <td class="r"><div class="acts"><button class="btn sm" data-act="pdf" data-id="${p.id}">Descargar factura PDF</button>${p.estado === 'completado' ? `<button class="btn sm danger" data-act="refund" data-id="${p.id}" data-monto="${p.monto}">Reembolsar</button>` : ''}${p.estado === 'pendiente' ? `<button class="btn sm pri" data-act="confirm" data-id="${p.id}" data-tx="${esc(p.transaccion_id)}" data-monto="${p.monto}" data-pas="${esc(p.pasarela_pago)}">Confirmar cobro</button>` : ''}</div></td></tr>`).join('')
     : `<tr><td colspan="9" class="empty">${S.acct.pagos.length ? 'No hay pagos que coincidan.' : 'Aún no hay pagos registrados.'}</td></tr>`;
 }
 async function payDialog() {
@@ -751,6 +751,16 @@ async function payDialog() {
     actions: [{ label: 'Cancelar' }, { label: 'Registrar pago', kind: 'pri', onClick: async () => {
       const monto = +$('#p-monto').value; if (!(monto > 0)) throw new Error('Ingresa un monto mayor a cero.');
       await api('POST', '/accounting/payment', { suscripcion_id: +$('#p-sub').value, monto, medio_pago: $('#p-medio').value, nota: $('#p-nota').value }); toast('Pago registrado.', 'ok'); loadAcct();
+    } }] });
+}
+function confirmDialog(b) {
+  modal({ title: `Confirmar cobro ${esc(b.dataset.tx)}`, body: `
+    <p class="sub" style="margin-bottom:10px">Confirmá solo después de ver el dinero acreditado en ${esc(b.dataset.pas)}. Activa el plan por su ciclo y aplica los límites al instante.</p>
+    <div class="grid2"><label class="f">Monto esperado<input value="${money(+b.dataset.monto)}" readonly></label>
+    <label class="f">Medio<select id="c-medio"><option>transferencia</option><option>tarjeta</option><option>saldo</option><option>efectivo</option></select></label></div>
+    <label class="f">Nota (opcional)<input id="c-nota" maxlength="200" placeholder="N° de operación en la pasarela"></label>`,
+    actions: [{ label: 'Cancelar' }, { label: 'Confirmar y activar', kind: 'pri', onClick: async () => {
+      await api('POST', '/accounting/confirm', { pago_id: +b.dataset.id, medio_pago: $('#c-medio').value, nota: $('#c-nota').value }); toast('Cobro confirmado: plan activado.', 'ok'); loadAcct();
     } }] });
 }
 function refundDialog(id, max) {
@@ -879,6 +889,7 @@ function bind() {
     const b = e.target.closest('[data-act]'); if (!b) return;
     if (b.dataset.act === 'pdf') { b.disabled = true; try { await downloadPdf(`/payments/${b.dataset.id}/pdf`, `factura-${b.dataset.id}.pdf`); } finally { b.disabled = false; } }
     if (b.dataset.act === 'refund') refundDialog(+b.dataset.id, +b.dataset.monto);
+    if (b.dataset.act === 'confirm') confirmDialog(b);
   });
   $('#t-estado').onchange = safe(() => { S.ticket = null; $('#chat-body').innerHTML = ''; $('#chat-head').innerHTML = '<b>Selecciona un ticket</b>'; $('#reply-form').classList.add('hidden'); return loadTickets(); });
   $('#tk-list').onclick = safe(async (e) => { const t = e.target.closest('.tk'); if (t) await PSMotion.shared([{ from: t.querySelector('b'), to: () => $('#chat-head b'), name: 'ps-ticket' }], () => openTicket(+t.dataset.id)); });
