@@ -3,9 +3,14 @@
    Estado de nodos en vivo: /ping (daemon Node) y /api/ping (Laravel), cada 60 s. */
 (() => {
   'use strict';
+  // Redes oficiales (las mismas que usa el panel a través de window.PSSocial).
   const SOC = [
-    ['Instagram', 'instagram'], ['TikTok', 'tiktok'], ['YouTube', 'youtube'], ['Telegram', 'telegram'], ['Discord', 'discord'],
+    ['Discord', 'discord', 'https://discord.gg/JheUtgsNR6'],
+    ['Instagram', 'instagram', 'https://www.instagram.com/professionalservers?xtok=MWZuZm9lMmxkMDRheg=='],
+    ['TikTok', 'tiktok', 'https://www.tiktok.com/@proservershost?_r=1&_t=ZS-9AaneWmDFFS'],
+    ['YouTube', 'youtube', 'https://youtube.com/@professionalservers-y9p?si=9ebb0XGQ87gGohFM'],
   ];
+  window.PSSocial = SOC.map(([nombre, slug, url]) => ({ nombre, slug, url, icono: `https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/${slug}.svg` }));
   const ic = (n) => `https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/${n}.svg`;
 
   const html = () => `
@@ -14,7 +19,7 @@
       <div class="psf-about">
         <a href="/" class="psf-brand"><img src="/img/favicon.ico" alt="" width="26" height="26">ProServers</a>
         <p>Servidores de Minecraft en contenedores Docker aislados, con consola en vivo, túneles Playit.gg y diagnóstico con Mine AI.</p>
-        <div class="psf-socials">${SOC.map(([n, s]) => `<a class="psf-soc" href="#" data-pending="true" aria-label="${n} (próximamente)" title="${n}"><i style="--ic:url(${ic(s)})"></i></a>`).join('')}</div>
+        <div class="psf-socials">${SOC.map(([n, s, u]) => `<a class="psf-soc" href="${u}" target="_blank" rel="noopener noreferrer" aria-label="ProServers en ${n} (abre en una pestaña nueva)" title="${n}"><i style="--ic:url(${ic(s)})"></i></a>`).join('')}</div>
       </div>
       <nav aria-label="Plataforma"><h4>Plataforma</h4><ul>
         <li><a href="/index.html">Panel de control</a></li>
@@ -25,6 +30,7 @@
       <nav aria-label="Soporte"><h4>Soporte</h4><ul>
         <li><a href="/index.html#soporte">Abrir un ticket</a></li>
         <li><a href="/index.html#ai">Mine AI</a></li>
+        <li><a href="https://discord.gg/JheUtgsNR6" target="_blank" rel="noopener noreferrer">Comunidad en Discord</a></li>
         <li><a href="/legal.html#terminos">Uso aceptable</a></li>
       </ul></nav>
       <nav aria-label="Legal"><h4>Legal</h4><ul>
@@ -62,7 +68,6 @@
       f.classList.add('psf');
       if (f.hasAttribute('data-compact')) f.classList.add('psf-compact');
       f.innerHTML = html();
-      f.addEventListener('click', e => { if (e.target.closest('[data-pending]')) e.preventDefault(); });
     });
     const revisar = () => document.querySelectorAll('[data-ps-node]').forEach(ping);
     revisar();

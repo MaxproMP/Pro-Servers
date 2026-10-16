@@ -15,7 +15,7 @@
 ---
 
 ## 📌 Estado Actual del Proyecto
-El proyecto ha culminado exitosamente la **v0.9.5 Beta (El Punto de Inflexión Híbrido)** y entra oficialmente en la **v1.0**. Esta versión ya cuenta con la arquitectura monorepo consolidada y desplegada en el dominio oficial, con el centro de comando administrativo **Overwatch**, métricas 100% reales desde SQL Server y Docker, generadores contables de PDF, blindaje de memoria en contenedores y las nuevas interfaces de despliegue (`crear.html`) y catálogo interactivo (`planes.html`). El objetivo actual en esta **v1.0** es completar el rediseño total de la experiencia de cliente, la página principal inmersiva, el checkout y la nueva identidad visual corporativa.
+El proyecto ha culminado exitosamente la **v0.9.5 Beta (El Punto de Inflexión Híbrido)** y entra oficialmente en la **v1.0**. Esta versión ya cuenta con la arquitectura monorepo consolidada y desplegada en el dominio oficial, con el centro de comando administrativo **Panel Admin**, métricas 100% reales desde SQL Server y Docker, generadores contables de PDF, blindaje de memoria en contenedores y las nuevas interfaces de despliegue (`crear.html`) y catálogo interactivo (`planes.html`). El objetivo actual en esta **v1.0** es completar el rediseño total de la experiencia de cliente, la página principal inmersiva, el checkout y la nueva identidad visual corporativa.
 
 ### Estado de la versión v1.0
 - **Fase:** lanzamiento v1.0 y remodelación visual de experiencia de usuario y marca.
@@ -55,7 +55,7 @@ El nacimiento de ProServers no fue corporativo, sino académico y lleno de anéc
 -   **v0.5 a v0.8 Beta - "La Plataforma":** Dejando atrás K8s, se migró a una integración limpia y oficial con la API de Docker local. Creación del primer panel web interactivo real. Se sumaron el Gestor de Archivos estable, la consola RCON y las métricas.
 -   **v0.9 Beta - "El Imperio y la Independencia":** Reestructuración total y desarrollo 100% *in-house*. Se abandonó cualquier código de terceros. Se introdujo el Modo CEO, la *Zona de Hielo*, Mine AI, los permisos granulares de invitados y la clonación de nodos.
 -   **v0.9.5 Beta - "El Punto de Inflexión Híbrido":** A un paso de la v1.0, el sistema exigía una profesionalización mayor. Se decidió que Node.js no podía manejar de forma segura la facturación de los clientes y el control de Docker al mismo tiempo. Se migró la plataforma a un Monorepo, introduciendo Laravel y Microsoft SQL Server como el "Cerebro" corporativo, delegando a Node.js la tarea exclusiva de "Demonio" de infraestructura. Sobre esta base se sumó la autenticación con verificación en dos pasos (2FA), soporte WebAuthn (Passkeys), gestión contable de reembolsos en 3FN, integración con Pro Server Bot y la estabilización del flujo de sesiones entre Firebase y Laravel.
--   **v1.0 Oficial (Actual) - "La Era Overwatch y Experiencia Inmersiva":** Con el backend híbrido blindado y operando exclusivamente con datos de producción reales, nace el centro de comando **Overwatch** en 3D con gestión integral de cuentas (IAM Recovery), facturación PDF y el rediseño completo de las interfaces de despliegue y planes escalonados.
+-   **v1.0 Oficial (Actual) - "La Era del Panel Admin y Experiencia Inmersiva":** Con el backend híbrido blindado y operando exclusivamente con datos de producción reales, nace el centro de comando **Panel Admin** en 3D con gestión integral de cuentas (IAM Recovery), facturación PDF y el rediseño completo de las interfaces de despliegue y planes escalonados.
 
 ---
 
@@ -83,7 +83,7 @@ El nacimiento de ProServers no fue corporativo, sino académico y lleno de anéc
 - [x] **Persistencia Docker:** Corrección de rutas host para que los archivos de Minecraft se conserven en `./servers/srv-*`.
 - [x] **Seguridad de infraestructura:** Firebase en las APIs del daemon, autorización de propiedad, Socket.io autenticado, protección anti-SSRF en URLs y secreto interno Laravel → Node.
 - [x] **CurseForge, Modrinth y Mine AI:** Proxies seguros de CurseForge y Modrinth, búsqueda de modpacks y endpoint autenticado de diagnóstico de logs con Groq.
-- [x] **Centro de Comando Overwatch (CEO / Admin / Soporte):** Rediseño total de `admin.html` con núcleo 3D, telemetría real del host, directorio de cuentas SQL Server, Recovery de 2FA/contraseña por correo y exportación de facturas y tickets en PDF.
+- [x] **Panel Admin (CEO / Admin / Soporte):** Rediseño total de `admin.html` con núcleo 3D, telemetría real del host, directorio de cuentas SQL Server, Recovery de 2FA/contraseña por correo y exportación de facturas y tickets en PDF.
 - [x] **Modelado SQL base y Producción Limpia:** Modelos Eloquent, migraciones, relaciones `clientes -> suscripciones -> servidores`, pagos normalizados, purga total de datos falsos de prueba y restricciones de dominio en Laravel.
 - [x] **Validación técnica:** Suite Pest (34 tests en verde), Pint, validaciones de sintaxis y builds Docker ejecutados correctamente.
 - [x] **Migración controlada de RDS:** Esquema aplicado y verificado sobre Microsoft SQL Server; planes comerciales con límites de jugadores y escala de hardware cargados.

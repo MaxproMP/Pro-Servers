@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Único camino para pasar un pago a "completado" y activar su suscripción.
- * Lo usan los webhooks verificados de las pasarelas y la confirmación manual de Overwatch.
+ * Lo usan los webhooks verificados de las pasarelas y la confirmación manual desde el Panel Admin.
  */
 final class ActivadorPagos
 {

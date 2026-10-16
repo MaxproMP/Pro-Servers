@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ProServers Panel admin</title>
+<title>ProServers Panel Admin</title>
 <link rel="icon" href="/img/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -187,13 +187,15 @@ pre.log{background:#000;border:1px solid var(--bd);border-radius:8px;padding:8px
 </style>
 <link rel="stylesheet" href="/assets/proservers-motion.css">
 <script src="/assets/proservers-motion.js"></script>
+<link rel="stylesheet" href="/assets/proservers-footer.css">
+<script src="/assets/proservers-footer.js" defer></script>
 </head>
 <body data-role="">
 
-<div class="gate" id="gate"><b>ProServers Panel admin</b><span id="gate-msg">Verificando credenciales…</span></div>
+<div class="gate" id="gate"><b>ProServers Panel Admin</b><span id="gate-msg">Verificando credenciales…</span></div>
 
 <header class="topbar">
-  <div class="brand" id="brand-btn" title="Ir a crear un servidor"><img src="/img/favicon.ico" alt=""><span>ProServers</span><b>Panel admin</b></div>
+  <div class="brand" id="brand-btn" title="Ir a crear un servidor"><img src="/img/favicon.ico" alt=""><span>ProServers</span><b>Panel Admin</b></div>
   <div class="pills">
     <span class="pill" id="pill-docker"><i class="dot"></i>Docker Engine</span>
     <span class="pill" id="pill-sql"><i class="dot"></i>SQL Server 3FN</span>
@@ -949,5 +951,6 @@ onAuthStateChanged(auth, async (u) => {
   setInterval(loadLive, 5000); setInterval(loadStats, 30000);
 });
 </script>
+<footer data-ps-footer data-compact></footer>
 </body>
 </html>

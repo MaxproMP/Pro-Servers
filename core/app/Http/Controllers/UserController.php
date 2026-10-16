@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ActualizarPerfilRequest;
 use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -59,5 +60,15 @@ class UserController extends Controller
         }
 
         return response()->json($cliente, 200);
+    }
+
+    /** Mi cuenta: cada usuario edita solo sus propios datos (el uid sale del token, nunca del cuerpo). */
+    public function actualizar(ActualizarPerfilRequest $request)
+    {
+        /** @var Cliente $cliente */
+        $cliente = $request->user();
+        $cliente->update($request->safe()->only(['nombre', 'apellido', 'username', 'phone']));
+
+        return response()->json(['success' => true, 'perfil' => $cliente->only(['nombre', 'apellido', 'username', 'phone', 'email'])]);
     }
 }

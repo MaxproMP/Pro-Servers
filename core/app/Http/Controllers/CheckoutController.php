@@ -17,7 +17,7 @@ use Illuminate\Validation\Rule;
 
 /**
  * Inicia un pago: valida plan y ciclo, calcula el monto en servidor y redirige a la pasarela.
- * La suscripción queda "pendiente" hasta que un webhook verificado (o Overwatch) confirme el pago.
+ * La suscripción queda "pendiente" hasta que un webhook verificado (o el Panel Admin) confirme el pago.
  */
 class CheckoutController extends Controller
 {
@@ -30,9 +30,14 @@ class CheckoutController extends Controller
         // Solo se ofrece una pasarela si además puede CONFIRMAR pagos (secret de webhook cargado).
         $astroUrl = (string) config('services.astropay.api_url');
 
+        $mp = filled(config('services.mercadopago.token')) && (float) config('services.mercadopago.tasa_ars') > 0
+            && filled(config('services.mercadopago.webhook_secret'));
+
         return [
-            'mercadopago' => filled(config('services.mercadopago.token')) && (float) config('services.mercadopago.tasa_ars') > 0
-                && filled(config('services.mercadopago.webhook_secret')),
+            'mercadopago' => $mp,
+            'tarjeta' => $mp, // crédito o débito por el Checkout Pro de Mercado Pago, limitado a tarjetas
+            // Google Pay nativo exige una pasarela con tokenización de Google Pay y merchant ID: hasta tenerla, va asistido.
+            'googlepay' => false,
             'astropay' => $astroUrl !== '' && filled(config('services.astropay.client_id')) && filled(config('services.astropay.secret'))
                 && filled(config('services.webhooks.secret'))
                 && ! (app()->isProduction() && str_contains($astroUrl, 'sandbox')), // nunca cobrar en sandbox en producción
@@ -89,8 +94,9 @@ class CheckoutController extends Controller
             $pago = Pago::create([
                 'suscripcion_id' => $suscripcion->id,
                 'monto' => $monto,
-                'pasarela_pago' => $pasarela,
-                'medio_pago' => 'no_definido',
+                // "tarjeta" se cobra por Mercado Pago: la pasarela queda registrada como tal (la usa su webhook).
+                'pasarela_pago' => $pasarela === 'tarjeta' ? 'mercadopago' : $pasarela,
+                'medio_pago' => $pasarela === 'tarjeta' ? 'tarjeta' : 'no_definido',
                 'estado' => 'pendiente',
                 'transaccion_id' => $transaccionId,
             ]);
@@ -98,8 +104,8 @@ class CheckoutController extends Controller
             return [$suscripcion, $pago];
         });
 
-        $redirect = $pasarela === 'mercadopago'
-            ? $this->mercadoPago($plan, $ciclo, $monto, $transaccionId, $cliente->email)
+        $redirect = in_array($pasarela, ['mercadopago', 'tarjeta'], true)
+            ? $this->mercadoPago($plan, $ciclo, $monto, $transaccionId, $cliente->email, $pasarela === 'tarjeta')
             : $this->astroPay($monto, $transaccionId, $cliente->email);
 
         if (! $redirect) {
@@ -114,16 +120,22 @@ class CheckoutController extends Controller
             'redirect_url' => $redirect,
             'transaccion_id' => $transaccionId,
             'monto_usd' => $monto,
-            'monto_ars' => $pasarela === 'mercadopago' ? round($monto * (float) config('services.mercadopago.tasa_ars'), 2) : null,
+            'monto_ars' => in_array($pasarela, ['mercadopago', 'tarjeta'], true) ? round($monto * (float) config('services.mercadopago.tasa_ars'), 2) : null,
         ]);
     }
 
-    /** Medios con cobro asistido: el staff envía el link (o los datos de transferencia) y confirma desde Overwatch. */
-    public const ASISTIDOS = ['mercadopago' => 'Mercado Pago', 'uala' => 'Ualá Bis', 'astropay' => 'AstroPay', 'transferencia' => 'Transferencia bancaria'];
+    /** Medios con cobro asistido: el staff envía el link (o los datos de transferencia) y confirma desde el Panel Admin. */
+    public const ASISTIDOS = [
+        'tarjeta' => 'Tarjeta de crédito o débito', 'googlepay' => 'Google Pay', 'mercadopago' => 'Mercado Pago',
+        'uala' => 'Ualá Bis', 'astropay' => 'AstroPay', 'transferencia' => 'Transferencia bancaria',
+    ];
+
+    /** Medio de pago (columna medio_pago) de cada pedido asistido; el staff lo corrige al confirmar si hace falta. */
+    private const MEDIO_ASISTIDO = ['tarjeta' => 'tarjeta', 'googlepay' => 'tarjeta', 'transferencia' => 'transferencia'];
 
     /**
      * Pago asistido: deja la suscripción y el pago "pendiente" en SQL Server y abre un ticket con la referencia.
-     * Overwatch lo confirma con /api/admin/accounting/confirm, que activa el plan igual que un webhook.
+     * El Panel Admin lo confirma con /api/admin/accounting/confirm, que activa el plan igual que un webhook.
      */
     public function asistido(Request $request): JsonResponse
     {
@@ -152,7 +164,7 @@ class CheckoutController extends Controller
                     'suscripcion_id' => $suscripcion->id,
                     'monto' => $monto,
                     'pasarela_pago' => $data['medio'],
-                    'medio_pago' => $data['medio'] === 'transferencia' ? 'transferencia' : 'no_definido',
+                    'medio_pago' => self::MEDIO_ASISTIDO[$data['medio']] ?? 'no_definido',
                     'estado' => 'pendiente',
                     'transaccion_id' => 'ASI-'.Str::upper(Str::random(12)),
                 ]);
@@ -174,7 +186,7 @@ class CheckoutController extends Controller
         ], 201);
     }
 
-    private function mercadoPago(Plan $plan, int $ciclo, float $monto, string $tx, ?string $email): ?string
+    private function mercadoPago(Plan $plan, int $ciclo, float $monto, string $tx, ?string $email, bool $soloTarjetas = false): ?string
     {
         $ars = round($monto * (float) config('services.mercadopago.tasa_ars'), 2);
         $volver = rtrim((string) config('app.url'), '/').'/checkout.html?plan='.urlencode($plan->nombre).'&ciclo='.$ciclo.'&estado=';
@@ -192,6 +204,8 @@ class CheckoutController extends Controller
                 'notification_url' => rtrim((string) config('app.url'), '/').'/api/webhooks/mercadopago',
                 'back_urls' => ['success' => $volver.'ok', 'failure' => $volver.'error', 'pending' => $volver.'pendiente'],
                 'auto_return' => 'approved',
+                // Medio "Tarjeta": el checkout muestra solo crédito y débito (sin efectivo ni cajeros).
+                ...($soloTarjetas ? ['payment_methods' => ['excluded_payment_types' => [['id' => 'ticket'], ['id' => 'atm']]]] : []),
             ]);
 
         return $r->successful() ? ($r->json('init_point') ?: null) : null;

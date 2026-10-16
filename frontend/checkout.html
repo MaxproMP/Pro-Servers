@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Checkout · ProServers</title>
-<meta name="description" content="Contratá tu plan de ProServers: elegí el ciclo de facturación y pagá con Mercado Pago, Ualá Bis, AstroPay o transferencia.">
+<meta name="description" content="Contratá tu plan de ProServers: elegí el ciclo de facturación y pagá con tarjeta de crédito o débito, Google Pay, Mercado Pago, AstroPay, Ualá Bis o transferencia.">
 <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -194,13 +194,16 @@ async function api(path, opts = {}) {
 const COLOR = { redstone: '#EF4444', hierro: '#CBD5E1', cobre: '#D97706', oro: '#EAB308', diamante: '#22D3EE', netherite: '#A855F7', 'ghost-warrior': '#3B82F6' };
 const NOMBRE = (n) => n.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 // Cada medio funciona siempre: online (redirección + webhook verificado) si la pasarela está configurada,
-// o asistido (pedido pendiente en SQL Server + link de pago por soporte + confirmación desde Overwatch).
+// o asistido (pedido pendiente en SQL Server + link de pago por soporte + confirmación desde el Panel Admin).
 const METODOS = [
+  { id: 'tarjeta', nombre: 'Tarjeta de crédito o débito', corto: 'tarjeta', det: 'Visa, Mastercard, American Express, Naranja y más, por el checkout seguro de Mercado Pago.', ico: '<i data-feather="credit-card"></i>', c: '#e8eaf0' },
+  { id: 'googlepay', nombre: 'Google Pay', det: 'Pagás con la tarjeta que tenés en Google Pay mediante un link de pago seguro que te enviamos.', ico: 'G', c: '#60a5fa' },
   { id: 'mercadopago', nombre: 'Mercado Pago', det: 'Tarjetas, dinero en cuenta y efectivo. Cobra en pesos.', ico: 'MP', c: '#38bdf8' },
-  { id: 'uala', nombre: 'Ualá Bis', det: 'Link de cobro de Ualá: tarjeta de débito, crédito o saldo Ualá.', ico: 'UB', c: '#f472b6' },
   { id: 'astropay', nombre: 'AstroPay', det: 'Tarjetas y medios locales. Cobra en dólares.', ico: 'AP', c: '#a3e635' },
+  { id: 'uala', nombre: 'Ualá Bis', det: 'Link de cobro de Ualá: tarjeta de débito, crédito o saldo Ualá.', ico: 'UB', c: '#f472b6' },
   { id: 'transferencia', nombre: 'Transferencia bancaria', det: 'CBU/CVU o alias. Te pasamos los datos por soporte.', ico: '$', c: '#fcd34d' },
 ];
+const envio = (m) => ({ transferencia: 'los datos de transferencia', tarjeta: 'un link de pago seguro con tarjeta', googlepay: 'un link de pago seguro para usar la tarjeta de tu Google Pay' }[m.id] || `el link de pago de ${m.nombre}`);
 const online = (id) => S.pasarelas[id] === true;
 
 const q = new URLSearchParams(location.search);
@@ -226,13 +229,14 @@ function pintarCiclos() {
 
 function pintarMetodos() {
   $('methods').innerHTML = METODOS.map(m => `<button type="button" class="method" role="radio" data-id="${m.id}" aria-checked="${S.metodo === m.id}">
-      <span class="ico" style="--ic:${m.c}">${m.ico}</span><span><b>${m.nombre}</b><small>${m.det}</small></span>
+      <span class="ico" style="--ic:${m.c}" aria-hidden="true">${m.ico}</span><span><b>${m.nombre}</b><small>${m.det}</small></span>
       ${online(m.id) ? '<span class="chip ok">Pago online</span>' : '<span class="chip am">Link por soporte</span>'}<span class="radio"></span></button>`).join('');
   const m = METODOS.find(x => x.id === S.metodo);
   $('how').innerHTML = !m ? '' : online(m.id)
     ? `<li>Te llevamos a ${m.nombre} para pagar con su checkout seguro.</li><li>Al aprobarse, la pasarela nos avisa y tu plan se activa solo.</li>`
-    : `<li>Registramos tu pedido con una referencia única y lo dejamos en tu chat de soporte.</li><li>Te enviamos ${m.id === 'transferencia' ? 'los datos de transferencia' : `el link de pago de ${m.nombre}`} por ese chat.</li><li>Cuando confirmamos el cobro, el plan se activa por el ciclo elegido.</li>`;
+    : `<li>Registramos tu pedido con una referencia única y lo dejamos en tu chat de soporte.</li><li>Te enviamos ${envio(m)} por ese chat.</li><li>Cuando confirmamos el cobro, el plan se activa por el ciclo elegido.</li>`;
   $('st-3').classList.toggle('on', !!m);
+  feather.replace();
 }
 
 function pintarResumen() {
@@ -242,10 +246,10 @@ function pintarResumen() {
   $('s-ciclo').textContent = `${S.ciclo} ${S.ciclo === 1 ? 'mes' : 'meses'}`;
   $('s-desc').textContent = S.desc[S.ciclo] ? `-${money(bruto - total)} (${S.desc[S.ciclo]}%)` : '—';
   $('s-total').textContent = money(total);
-  $('s-ars').textContent = S.metodo === 'mercadopago' && S.tasa ? `≈ ${ars(total * S.tasa)} en Mercado Pago (US$ 1 = ${ars(S.tasa)})` : '';
+  $('s-ars').textContent = ['mercadopago', 'tarjeta'].includes(S.metodo) && S.tasa ? `≈ ${ars(total * S.tasa)} en Mercado Pago (US$ 1 = ${ars(S.tasa)})` : '';
   const m = METODOS.find(x => x.id === S.metodo);
   $('btn-pay').disabled = !m;
-  $('pay-label').textContent = !m ? 'Elegí un medio de pago' : online(m.id) ? `Pagar con ${m.nombre}` : m.id === 'transferencia' ? 'Pedir datos de transferencia' : `Pedir link de ${m.nombre}`;
+  $('pay-label').textContent = !m ? 'Elegí un medio de pago' : online(m.id) ? `Pagar con ${m.corto || m.nombre}` : m.id === 'transferencia' ? 'Pedir datos de transferencia' : `Pedir link de pago${m.id === 'tarjeta' ? '' : ' · ' + m.nombre}`;
 }
 
 async function pagar() {
@@ -259,7 +263,7 @@ async function pagar() {
     }
     const d = await api('/api/checkout/asistido', { method: 'POST', body: JSON.stringify({ plan_nombre: S.plan.nombre, ciclo_meses: S.ciclo, medio: m.id }) });
     $('st-4').classList.add('on');
-    mostrarEstado('ok', `Pedido registrado. Te enviamos ${m.id === 'transferencia' ? 'los datos de transferencia' : `el link de pago de ${d.medio}`} por el chat de soporte; tu plan se activa en cuanto confirmamos el cobro.`,
+    mostrarEstado('ok', `Pedido registrado. Te enviamos ${envio(m)} por el chat de soporte; tu plan se activa en cuanto confirmamos el cobro.`,
       `<div class="ref"><span>Referencia</span><b>${esc(d.transaccion_id)}</b><span style="margin-left:auto">${money(d.monto_usd)}</span></div><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-pri" href="/index.html#soporte"><i data-feather="message-circle"></i>Abrir el chat de soporte</a></div>`);
     scrollTo({ top: 0, behavior: 'smooth' });
     pintarResumen();

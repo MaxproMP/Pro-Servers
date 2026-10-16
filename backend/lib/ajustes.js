@@ -17,15 +17,23 @@ function versionDelPack(e) {
     return ['AUTO_CURSEFORGE', 'MODRINTH'].includes(e.TYPE) || Boolean(e.GENERIC_PACK);
 }
 
-/** Límites efectivos: los del plan con el que se desplegó (o el último aplicado por Laravel). */
-function topes(srv) {
+/**
+ * Límites efectivos. Si se conoce la RAM contratada (memoriaPlanMb) y la capacidad actual del nodo (nodoMb),
+ * el tope es el menor de ambos: un nodo con más memoria libera RAM del plan sin redesplegar.
+ * Sin esos datos se usa lo aplicado al desplegar.
+ */
+function topes(srv, nodoMb = null) {
+    const lim = srv?.limits || {};
+    const planMb = Number(lim.memoriaPlanMb) > 0 ? Number(lim.memoriaPlanMb) : null;
+    const base = planMb && Number(nodoMb) > 0 ? Math.min(planMb, Number(nodoMb)) : Number(lim.memoryMb) || 2048;
     return {
-        memoryMb: Math.max(RAM_MINIMA_MB, Number(srv?.limits?.memoryMb) || 2048),
-        maxPlayers: Math.max(1, Number(srv?.limits?.maxPlayers) || 20),
+        memoryMb: Math.max(RAM_MINIMA_MB, base),
+        memoryPlanMb: planMb,
+        maxPlayers: Math.max(1, Number(lim.maxPlayers) || 20),
     };
 }
 
-function ajustesActuales(srv, env, memoriaBytes) {
+function ajustesActuales(srv, env, memoriaBytes, nodoMb = null) {
     const e = leerEnv(env);
     const bedrock = srv.edition === 'bedrock';
     return {
@@ -35,14 +43,14 @@ function ajustesActuales(srv, env, memoriaBytes) {
         version: e.VERSION || 'LATEST',
         versionEditable: !bedrock ? !versionDelPack(e) : true,
         maxPlayers: numero(e.MAX_PLAYERS, 20),
-        memoryMb: memoriaBytes ? Math.round(memoriaBytes / 1048576) : topes(srv).memoryMb,
+        memoryMb: memoriaBytes ? Math.round(memoriaBytes / 1048576) : topes(srv, nodoMb).memoryMb,
         difficulty: (e.DIFFICULTY || 'easy').toLowerCase(),
         gamemode: ((bedrock ? e.GAMEMODE : e.MODE) || 'survival').toLowerCase(),
         pvp: e.PVP === undefined ? true : bool(e.PVP),
         viewDistance: numero(e.VIEW_DISTANCE, 10),
         whitelist: bool(e.ENABLE_WHITELIST),
         allowCheats: bool(e.ALLOW_CHEATS),
-        topes: { ...topes(srv), memoryMinMb: RAM_MINIMA_MB },
+        topes: { ...topes(srv, nodoMb), memoryMinMb: RAM_MINIMA_MB },
     };
 }
 
@@ -50,10 +58,10 @@ function ajustesActuales(srv, env, memoriaBytes) {
  * Valida el pedido contra el plan y devuelve las variables a cambiar.
  * @returns {{ error: string } | { cambios: Record<string,string>, memoryMb: number }}
  */
-function validarAjustes(body, srv, env) {
+function validarAjustes(body, srv, env, nodoMb = null) {
     const e = leerEnv(env);
     const bedrock = srv.edition === 'bedrock';
-    const t = topes(srv);
+    const t = topes(srv, nodoMb);
     const b = body || {};
     const cambios = {};
 

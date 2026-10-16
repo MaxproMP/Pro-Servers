@@ -41,7 +41,7 @@ final class PlanAdminController extends AdminController
     public function publico(): JsonResponse
     {
         $prueba = config('services.trial.planes');
-        // Catálogo cacheado 10 min; se invalida al editar un plan desde Overwatch.
+        // Catálogo cacheado 10 min; se invalida al editar un plan desde el Panel Admin.
         $planes = Cache::remember(self::CACHE_CATALOGO, 600, fn () => Plan::where('visible', true)->orderBy('precio_mensual')
             ->get(['id', 'nombre', 'precio_mensual', 'memoria_mb', 'cpu_cores', 'almacenamiento_gb', 'max_jugadores'])
             ->map(fn (Plan $p) => $p->toArray() + ['prueba' => in_array($p->nombre, $prueba, true)])->all());

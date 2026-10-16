@@ -10,7 +10,7 @@ use App\Services\AuditLogService;
 use App\Services\NodeClient;
 use Illuminate\Support\Facades\Auth;
 
-/** Base de los controladores del panel Overwatch: auditoría en MongoDB y acceso al demonio. */
+/** Base de los controladores del Panel Admin: auditoría en MongoDB y acceso al demonio. */
 abstract class AdminController extends Controller
 {
     public function __construct(protected NodeClient $node, protected AuditLogService $audit)

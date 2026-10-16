@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /** Solo el catálogo de planes. firstOrCreate no pisa lo editado desde el panel Overwatch. */
+    /** Solo el catálogo de planes. firstOrCreate no pisa lo editado desde el Panel Admin. */
     public function run(): void
     {
         $planes = [

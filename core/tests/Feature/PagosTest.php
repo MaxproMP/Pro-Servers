@@ -107,7 +107,7 @@ it('un pago aprobado por menos de lo esperado no activa nada', function () {
     expect($pago->fresh()->estado)->toBe('pendiente')->and($pago->suscripcion->fresh()->estado)->toBe('pendiente');
 });
 
-it('confirmar un pago manual desde Overwatch activa la suscripción y reemplaza la prueba', function () {
+it('confirmar un pago manual desde el Panel Admin activa la suscripción y reemplaza la prueba', function () {
     Http::fake(['*' => Http::response(['success' => true])]);
     $this->postJson('/api/trial/start', ['plan_nombre' => 'redstone'], $this->h)->assertCreated();
     $c = Cliente::where('firebase_uid', 'uid-pay')->firstOrFail();
@@ -141,7 +141,7 @@ it('el pago asistido valida plan, ciclo y medio', function () {
     expect(Pago::count())->toBe(0);
 });
 
-it('Overwatch confirma un pago asistido una sola vez y activa el plan por su ciclo', function () {
+it('el Panel Admin confirma un pago asistido una sola vez y activa el plan por su ciclo', function () {
     Http::fake(['*' => Http::response(['success' => true])]);
     $this->postJson('/api/checkout/asistido', ['plan_nombre' => 'oro', 'ciclo_meses' => 6, 'medio' => 'transferencia'], $this->h)->assertCreated();
     $pago = Pago::firstOrFail();
@@ -156,4 +156,24 @@ it('Overwatch confirma un pago asistido una sola vez y activa el plan por su cic
     $sub = $pago->suscripcion->fresh();
     expect($pago->fresh()->estado)->toBe('completado')->and($sub->estado)->toBe('activa')
         ->and((int) round(now()->diffInMonths($sub->fecha_vencimiento)))->toBe(6);
+});
+
+it('pagar con tarjeta usa el checkout de Mercado Pago limitado a tarjetas y lo registra como tal', function () {
+    Http::fake(['api.mercadopago.com/checkout/preferences' => Http::response(['init_point' => 'https://mp.test/pay'], 201)]);
+
+    $this->postJson('/api/checkout/tarjeta', ['plan_nombre' => 'oro', 'ciclo_meses' => 1], $this->h)
+        ->assertOk()->assertJsonPath('redirect_url', 'https://mp.test/pay');
+
+    Http::assertSent(fn ($r) => $r['payment_methods']['excluded_payment_types'] === [['id' => 'ticket'], ['id' => 'atm']]);
+    $pago = Pago::latest('id')->first();
+    expect([$pago->pasarela_pago, $pago->medio_pago, $pago->estado])->toBe(['mercadopago', 'tarjeta', 'pendiente']);
+});
+
+it('Google Pay queda asistido (sin pasarela nativa) y se registra con medio tarjeta', function () {
+    $this->getJson('/api/checkout/pasarelas', $this->h)->assertJsonPath('pasarelas.googlepay', false)->assertJsonPath('pasarelas.tarjeta', true);
+    $this->postJson('/api/checkout/googlepay', ['plan_nombre' => 'oro', 'ciclo_meses' => 1], $this->h)->assertStatus(503);
+
+    $this->postJson('/api/checkout/asistido', ['plan_nombre' => 'oro', 'ciclo_meses' => 1, 'medio' => 'googlepay'], $this->h)
+        ->assertCreated()->assertJsonPath('medio', 'Google Pay');
+    expect(Pago::latest('id')->first()->medio_pago)->toBe('tarjeta');
 });

@@ -43,7 +43,7 @@ class SupportController extends Controller
             return response()->json(['error' => 'Cliente no encontrado.'], 404);
         }
 
-        $this->ticketAbierto($cliente)->mensajes()->create(['remitente' => 'admin', 'mensaje' => $data['reply']]);
+        $this->ticketAbierto($cliente)->mensajes()->create(['remitente' => 'admin', 'mensaje' => $data['reply'], 'autor_id' => Auth::id()]);
 
         return response()->json(['success' => true]);
     }
@@ -74,17 +74,52 @@ class SupportController extends Controller
         ]);
     }
 
-    /** Respuestas del staff posteriores al id indicado (el cliente las consulta periódicamente). */
+    /** Minutos sin actividad en el Panel Admin tras los que el equipo deja de figurar "En línea". */
+    private const EN_LINEA_MIN = 5;
+
+    /**
+     * Mensajes del ticket abierto posteriores al id indicado (el cliente los consulta periódicamente).
+     * Por defecto solo las respuestas del staff; con ?todos=1, el hilo completo con remitente y hora.
+     * "equipo" informa quién atiende (nombre de pila del último operador que respondió) y la presencia real del staff.
+     */
     public function messages(Request $request): JsonResponse
     {
         $after = (int) $request->query('after', 0);
+        $todos = $request->boolean('todos');
         $ticket = TicketSoporte::where('cliente_id', Auth::id())->where('estado', 'abierto')->first();
 
         $mensajes = $ticket
-            ? $ticket->mensajes()->where('remitente', 'admin')->where('id', '>', $after)->orderBy('id')->get(['id', 'mensaje'])
+            ? $ticket->mensajes()->with('autor:id,nombre')->when(! $todos, fn ($q) => $q->where('remitente', 'admin'))
+                ->where('id', '>', $after)->orderBy('id')->limit(200)->get()
+                ->map(fn (MensajeTicket $m) => [
+                    'id' => $m->id,
+                    'mensaje' => $m->mensaje,
+                    'remitente' => $m->remitente,
+                    'autor' => $m->autor ? self::nombreDePila($m->autor->nombre) : null,
+                    'fecha' => $m->created_at?->toIso8601String(),
+                ])->values()
             : collect();
 
-        return response()->json(['success' => true, 'messages' => $mensajes]);
+        $operador = $ticket?->mensajes()->where('remitente', 'admin')->whereNotNull('autor_id')->latest('id')->with('autor:id,nombre')->first()?->autor;
+        $ultima = Cliente::whereIn('role', ['ceo', 'admin', 'soporte'])->max('ultima_actividad');
+
+        return response()->json([
+            'success' => true,
+            'messages' => $mensajes,
+            'equipo' => [
+                'operador' => $operador ? self::nombreDePila($operador->nombre) : null,
+                'en_linea' => $ultima !== null && \Illuminate\Support\Carbon::parse($ultima)->gte(now()->subMinutes(self::EN_LINEA_MIN)),
+                'ultima_conexion' => $ultima ? \Illuminate\Support\Carbon::parse($ultima)->toIso8601String() : null,
+            ],
+        ]);
+    }
+
+    /** Solo el nombre de pila: el cliente nunca ve correo, usuario ni apellido del staff. */
+    private static function nombreDePila(?string $nombre): ?string
+    {
+        $n = trim((string) $nombre);
+
+        return $n === '' ? null : mb_substr(explode(' ', $n)[0], 0, 40);
     }
 
     private function ticketAbierto(Cliente $cliente): TicketSoporte

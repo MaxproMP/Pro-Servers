@@ -65,8 +65,8 @@ class NodeProxyController extends Controller
             return response()->json(['success' => false, 'error' => 'Disponible desde el Plan Oro.'], 403);
         }
 
-        // El uid y los límites nunca los define el navegador.
-        $data = $request->except(['uid', 'plan']);
+        // El uid, los límites y los invitados nunca los define el navegador.
+        $data = $request->except(['uid', 'plan', 'invitado', 'duenoUsername']);
         if (in_array($ruta, self::RUTAS_DEPLOY, true)) {
             if ($request->attributes->get('email_verified') !== true) {
                 return response()->json(['success' => false, 'message' => 'Verificá tu email antes de desplegar un servidor.'], 403);
@@ -74,6 +74,43 @@ class NodeProxyController extends Controller
             $data['plan'] = $this->limitesDelPlan($user);
         }
 
+        return $this->reenviar($request, $user, $ruta, $data, $esStaff, (string) $planNombre);
+    }
+
+    /**
+     * Acceso compartido: el dueño invita por nombre de usuario o correo. La cuenta se resuelve acá, en SQL Server,
+     * y Node recibe solo el uid y el username verificados (Node valida además que quien invita sea el dueño).
+     */
+    public function agregarMiembro(Request $request)
+    {
+        /** @var Cliente $user */
+        $user = $request->user();
+        $data = $request->validate([
+            'serverId' => ['required', 'string', 'max:64', 'regex:/^[a-z0-9-]+$/'],
+            'usuario' => ['required', 'string', 'max:255'],
+        ]);
+
+        $q = strtolower(ltrim(trim($data['usuario']), '@'));
+        $invitado = Cliente::where(str_contains($q, '@') ? 'email' : 'username', $q)->first();
+        if (! $invitado || $invitado->estado === 'congelado' || blank($invitado->firebase_uid)) {
+            return response()->json(['success' => false, 'error' => 'No encontramos una cuenta activa con ese usuario o correo.'], 404);
+        }
+        if ($invitado->id === $user->id) {
+            return response()->json(['success' => false, 'error' => 'Ya sos el dueño de este servidor.'], 422);
+        }
+
+        $esStaff = in_array($user->role, ['ceo', 'admin', 'soporte'], true);
+        $plan = (string) $user->suscripcionActiva()->with('plan')->first()?->plan?->nombre;
+
+        return $this->reenviar($request, $user, 'api/server/members/add', [
+            'serverId' => $data['serverId'],
+            'invitado' => ['uid' => $invitado->firebase_uid, 'username' => $invitado->username],
+            'duenoUsername' => $user->username,
+        ], $esStaff, $plan);
+    }
+
+    private function reenviar(Request $request, Cliente $user, string $ruta, array $data, bool $esStaff, string $planNombre)
+    {
         $secret = (string) config('services.daemon.secret');
         if ($secret === '') {
             report(new \RuntimeException('NODE_SECRET_KEY no configurado: el proxy hacia Node queda cerrado.'));

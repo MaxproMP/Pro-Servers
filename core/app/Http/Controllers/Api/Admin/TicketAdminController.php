@@ -56,7 +56,7 @@ final class TicketAdminController extends AdminController
     {
         $texto = $request->validate(['message' => 'required|string|max:2000'])['message'];
         $t = TicketSoporte::where('estado', 'abierto')->findOrFail($id);
-        $t->mensajes()->create(['remitente' => 'admin', 'mensaje' => $texto]);
+        $t->mensajes()->create(['remitente' => 'admin', 'mensaje' => $texto, 'autor_id' => $request->user()->id]);
         $t->touch();
 
         return response()->json(['success' => true]);

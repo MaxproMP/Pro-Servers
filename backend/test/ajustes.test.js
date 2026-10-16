@@ -43,3 +43,12 @@ test('lee jugadores de rcon-cli y el estado de Playit', () => {
     assert.equal(p.claimUrl, 'https://playit.gg/claim/12a2ac0195');
     assert.deepEqual(p.direcciones, ['green-fox.joinmc.link']);
 });
+
+test('el tope de RAM es el menor entre lo contratado y lo que entrega el nodo hoy', () => {
+    const ghost = { edition: 'java', limits: { memoryMb: 6907, memoriaPlanMb: 262144, maxPlayers: 1000 } };
+    const t = a.ajustesActuales(ghost, envJava, 6907 * 1048576, 15360).topes;
+    assert.deepEqual([t.memoryMb, t.memoryPlanMb], [15360, 262144]);
+    assert.equal(a.ajustesActuales(ghost, envJava, 0).topes.memoryMb, 6907); // sin dato del nodo: lo aplicado al desplegar
+    assert.match(a.validarAjustes({ ...pedido, memoryMb: 16384 }, ghost, envJava, 15360).error, /RAM/);
+    assert.ok(!a.validarAjustes({ ...pedido, memoryMb: 15360 }, ghost, envJava, 15360).error);
+});

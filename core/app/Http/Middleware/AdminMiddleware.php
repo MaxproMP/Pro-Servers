@@ -17,6 +17,13 @@ class AdminMiddleware
             return response()->json(['error' => 'Acceso denegado: Se requiere rol de administrador'], 403);
         }
 
+        // Presencia del staff para el chat de soporte ("En línea"): como mucho una escritura por minuto.
+        $u = $request->user();
+        $ultima = $u->ultima_actividad ? \Illuminate\Support\Carbon::parse($u->ultima_actividad) : null;
+        if (! $ultima || $ultima->lt(now()->subMinute())) {
+            $u->newQuery()->whereKey($u->getKey())->toBase()->update(['ultima_actividad' => now()]);
+        }
+
         return $next($request);
     }
 }

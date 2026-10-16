@@ -7,7 +7,7 @@ const os = require('os');
 const path = require('path');
 const dns = require('dns').promises;
 const net = require('net');
-const { secretoValido, puedeOperar, accesoPremium, crearLimitador } = require('./lib/acceso');
+const { secretoValido, puedeOperar, accesoPremium, crearLimitador, esMiembro, agregarMiembro, vistaCompartida } = require('./lib/acceso');
 const mineAi = require('./lib/mineai');
 const ajustes = require('./lib/ajustes');
 const archivos = require('./lib/archivos');
@@ -146,19 +146,24 @@ for (const prefijo of ['/api/project', '/api/server', '/api/curseforge', '/api/m
     app.use(prefijo, verificarTokenFirebase, soloDesdeLaravel, limitarTasa);
 }
 
-// Propiedad: el servidor tiene que ser del usuario (o el actor es ceo/admin).
+// Propiedad: el servidor tiene que ser del usuario, de alguien que lo invitó (acceso compartido) o el actor es ceo/admin.
 const exigirPropiedad = (req, res, next) => {
     const serverId = String(req.body?.serverId ?? req.query?.serverId ?? '');
     if (!serverId) return res.status(400).json({ success: false, error: 'Falta serverId' });
     const hit = ubicarServidor(serverId);
     if (!hit) return res.status(404).json({ success: false, error: 'Servidor no encontrado.' });
-    if (!puedeOperar(hit.uid, req.uid, req.rol)) {
+    const miembro = !puedeOperar(hit.uid, req.uid, req.rol) && esMiembro(hit.srv, req.uid);
+    if (!puedeOperar(hit.uid, req.uid, req.rol) && !miembro) {
         return res.status(403).json({ success: false, error: 'No tenés permisos sobre este servidor.' });
     }
     req.serverId = serverId;
-    req.servidor = hit; // { uid del dueño, srv }
+    req.servidor = { ...hit, miembro }; // { uid del dueño, srv, miembro: true si es un invitado }
     next();
 };
+// Borrar, clonar y administrar invitados: solo el dueño (o ceo/admin), nunca un invitado.
+const soloDueno = (req, res, next) => req.servidor?.miembro
+    ? res.status(403).json({ success: false, error: 'Solo el dueño del servidor puede hacer esto.' })
+    : next();
 app.use('/api/server', exigirPropiedad);
 
 // Gestor de archivos y Mine AI: plan Oro o superior (o staff), validado acá y en Laravel.
@@ -651,15 +656,13 @@ app.post('/api/admin/diagnose', verificarCerebro, async (req, res) => {
 
 // --- Verificar servidores del usuario ---
 app.get('/api/project/check', (req, res) => {
-    const userData = loadDB()[req.uid];
-    if (!userData || !userData.servers || userData.servers.length === 0) {
-        return res.json({ exists: false, servers: [] });
-    }
-
-    res.json({
-        exists: true,
-        servers: userData.servers
-    });
+    const db = loadDB();
+    const propios = db[req.uid]?.servers || [];
+    // Servidores ajenos donde el usuario fue invitado (sin datos personales del dueño).
+    const compartidos = Object.entries(db).filter(([uid]) => uid !== req.uid)
+        .flatMap(([, d]) => (d.servers || []).filter(s => esMiembro(s, req.uid)).map(s => vistaCompartida(s, s.ownerName)));
+    const servers = [...propios, ...compartidos];
+    res.json({ exists: servers.length > 0, servers });
 });
 
 // --- Crear servidor (Deploy de contenedor Docker) ---
@@ -860,7 +863,7 @@ app.get('/api/project/deploy-status', exigirPropiedad, (req, res) => {
 });
 
 // --- Eliminar servidor ---
-app.post('/api/project/delete', exigirPropiedad, async (req, res) => {
+app.post('/api/project/delete', exigirPropiedad, soloDueno, async (req, res) => {
     const { serverId } = req;
     const uid = req.servidor.uid; // dueño real (un ceo/admin puede borrar por él)
 
@@ -901,7 +904,7 @@ app.post('/api/project/delete', exigirPropiedad, async (req, res) => {
 });
 
 // --- Clonar servidor ---
-app.post('/api/project/clone', exigirPropiedad, async (req, res) => {
+app.post('/api/project/clone', exigirPropiedad, soloDueno, async (req, res) => {
     const original = req.servidor.srv;
     req.body = {
         projectName: `${original.name || 'Servidor'} (Clon)`.slice(0, 32).replace(/[^\p{L}\p{N} _.-]/gu, ''),
@@ -914,14 +917,6 @@ app.post('/api/project/clone', exigirPropiedad, async (req, res) => {
     return crearServidor(req, res);
 });
 
-// --- Compartir / Dejar de compartir (stub) ---
-app.post('/api/project/share', (req, res) => {
-    res.json({ success: true, message: 'Servidor compartido (funcionalidad en desarrollo).' });
-});
-
-app.post('/api/project/unshare', (req, res) => {
-    res.json({ success: true, message: 'Se dejó de compartir el servidor.' });
-});
 
 // --- Obtener IP del servidor ---
 app.post('/api/project/ip', exigirPropiedad, (req, res) => {
@@ -1069,10 +1064,44 @@ const MB = 1048576;
 
 const recrearMc = (serverId, envNuevo, memoryMb) => contenedor.recrear(docker, `mc-${serverId}`, envNuevo, memoryMb);
 
+// === ACCESO COMPARTIDO ===
+// El invitado (uid + username) lo resuelve Laravel desde su base; el navegador solo manda el usuario o correo.
+app.get('/api/server/members', (req, res) => {
+    const { srv, miembro } = req.servidor;
+    res.json({ success: true, esDueno: !miembro, owner: srv.ownerName || null, members: (srv.members || []).map(({ uid, username, addedAt }) => ({ uid, username, addedAt })) });
+});
+
+app.post('/api/server/members/add', soloDueno, (req, res) => {
+    const db = loadDB();
+    const reg = db[req.servidor.uid]?.servers.find(s => s.id === req.serverId);
+    if (!reg) return res.status(404).json({ success: false, error: 'Servidor no encontrado.' });
+    const r = agregarMiembro(reg, req.servidor.uid, req.body?.invitado);
+    if (r.error) return res.status(r.status).json({ success: false, error: r.error });
+    if (req.servidor.uid === req.uid && req.body?.duenoUsername) reg.ownerName = String(req.body.duenoUsername).slice(0, 64);
+    saveDB(db);
+    void registrarAuditoria('server.member.added', req.uid, req.serverId, { invitado: r.miembro.uid });
+    res.status(201).json({ success: true, member: { uid: r.miembro.uid, username: r.miembro.username, addedAt: r.miembro.addedAt } });
+});
+
+// El dueño quita a cualquiera; un invitado solo puede quitarse a sí mismo (salir del servidor).
+app.post('/api/server/members/remove', (req, res) => {
+    const objetivo = String(req.body?.memberUid || ''); // "uid" lo descarta el proxy: nunca lo define el navegador
+    if (req.servidor.miembro && objetivo !== req.uid) return res.status(403).json({ success: false, error: 'Solo el dueño del servidor puede quitar invitados.' });
+    const db = loadDB();
+    const reg = db[req.servidor.uid]?.servers.find(s => s.id === req.serverId);
+    const antes = reg?.members?.length || 0;
+    if (!reg || !antes) return res.status(404).json({ success: false, error: 'Ese usuario no tiene acceso.' });
+    reg.members = reg.members.filter(m => m.uid !== objetivo);
+    if (reg.members.length === antes) return res.status(404).json({ success: false, error: 'Ese usuario no tiene acceso.' });
+    saveDB(db);
+    void registrarAuditoria('server.member.removed', req.uid, req.serverId, { invitado: objetivo });
+    res.json({ success: true });
+});
+
 app.get('/api/server/settings', async (req, res) => {
     try {
         const info = await docker.getContainer(`mc-${req.serverId}`).inspect();
-        res.json({ success: true, settings: ajustes.ajustesActuales(req.servidor.srv, info.Config.Env, info.HostConfig.Memory) });
+        res.json({ success: true, settings: ajustes.ajustesActuales(req.servidor.srv, info.Config.Env, info.HostConfig.Memory, topeRamMb()) });
     } catch (e) {
         if (e.statusCode === 404) return res.status(404).json({ success: false, error: 'El contenedor no existe. Volvé a desplegar el servidor.' });
         res.status(500).json({ success: false, error: e.message });
@@ -1083,13 +1112,13 @@ app.post('/api/server/settings', async (req, res) => {
     const { serverId } = req;
     const { srv, uid } = req.servidor;
     if (srv.frozen) return res.status(423).json({ success: false, error: 'Tu cuenta está en Zona de Hielo. Contactá a soporte.' });
-    if (!['ceo', 'admin'].includes(req.rol) && !req.planCliente) return res.status(403).json({ success: false, error: 'Necesitás un plan activo para cambiar la configuración.' });
+    if (!['ceo', 'admin'].includes(req.rol) && !req.planCliente && !req.servidor.miembro) return res.status(403).json({ success: false, error: 'Necesitás un plan activo para cambiar la configuración.' });
     if (enOperacion.has(serverId)) return res.status(409).json({ success: false, error: 'Ya hay un cambio en curso en este servidor.' });
 
     enOperacion.add(serverId);
     try {
         const info = await docker.getContainer(`mc-${serverId}`).inspect();
-        const v = ajustes.validarAjustes(req.body, srv, info.Config.Env);
+        const v = ajustes.validarAjustes(req.body, srv, info.Config.Env, topeRamMb());
         if (v.error) return res.status(422).json({ success: false, error: v.error });
 
         await recrearMc(serverId, ajustes.mezclarEnv(info.Config.Env, v.cambios), v.memoryMb);
@@ -1386,9 +1415,8 @@ io.on('connection', async (socket) => {
 
     const serverId = socket.handshake.query.serverId;
     if (serverId) {
-        const db = loadDB();
-        const userServers = db[socket.user.uid]?.servers || [];
-        if (!userServers.some(serverRecord => serverRecord.id === serverId)) {
+        const hit = ubicarServidor(String(serverId));
+        if (!hit || (hit.uid !== socket.user.uid && !esMiembro(hit.srv, socket.user.uid))) {
             socket.emit('error', 'No tenés permisos para ver este servidor.');
             return socket.disconnect(true);
         }
@@ -1397,6 +1425,7 @@ io.on('connection', async (socket) => {
             const container = docker.getContainer(`mc-${serverId}`);
             const logStream = await container.logs({ follow: true, stdout: true, stderr: true, tail: 100 });
             logStream.on('data', chunk => socket.emit('log', chunk.toString('utf8')));
+            socket.on('disconnect', () => logStream.destroy()); // sin esto cada pestaña cerrada dejaba un stream abierto
         } catch (e) {}
     }
 

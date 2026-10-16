@@ -84,6 +84,7 @@ Route::middleware(['throttle:ip', 'firebase.auth'])->group(function () {
 
     Route::get('/user/{id}', [UserController::class, 'perfil']);
     Route::get('/perfil/{id}', [UserController::class, 'perfil']);
+    Route::patch('/perfil', [UserController::class, 'actualizar'])->middleware('throttle:sensible');
     
     // Pagos
     Route::get('/checkout/pasarelas', [CheckoutController::class, 'pasarelas']);
@@ -97,6 +98,8 @@ Route::middleware(['throttle:ip', 'firebase.auth'])->group(function () {
     // === DELEGACIÓN A NODE.JS (Validado por Laravel) ===
     Route::post('/project/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', 'create|clone')->middleware('throttle:deploy');
     Route::any('/project/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', '.*');
+    // Acceso compartido: antes del comodín para que el invitado lo resuelva Laravel y no el navegador.
+    Route::post('/server/members/add', [NodeProxyController::class, 'agregarMiembro'])->middleware('throttle:sensible');
     Route::any('/server/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', '.*');
     Route::any('/curseforge/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', '.*');
     Route::get('/modrinth/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', 'search|versions');
@@ -106,7 +109,7 @@ Route::middleware(['throttle:ip', 'firebase.auth'])->group(function () {
     Route::post('/files/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', 'save|upload|mkdir|rename|delete')->middleware('throttle:sensible');
 });
 
-// === PANEL OVERWATCH ===
+// === PANEL ADMIN ===
 // Nivel 1: ceo, admin y soporte. Nivel 2: ceo y admin. Nivel 3: solo ceo.
 Route::middleware(['firebase.auth', 'admin:ceo,admin,soporte'])->prefix('admin')->group(function () {
     Route::get('/stats', [OverviewController::class, 'stats']);
@@ -166,7 +169,7 @@ Route::middleware(['firebase.auth', 'admin:ceo'])->prefix('admin')->group(functi
 Route::get('/plans', [PlanAdminController::class, 'publico'])->middleware('throttle:ip');
 
 // === WEBHOOKS (Abiertos a Internet) ===
-// Firma HMAC obligatoria (WEBHOOK_SECRET). Sin secret: 403 y los pagos se confirman desde Overwatch.
+// Firma HMAC obligatoria (WEBHOOK_SECRET). Sin secret: 403 y los pagos se confirman desde el Panel Admin.
 Route::middleware([VerifyWebhookSignature::class, 'throttle:60,1'])->group(function () {
     Route::post('/pagos/webhook/astropay', [PaymentController::class, 'webhookAstroPay']);
     Route::post('/webhooks/astropay', [PaymentController::class, 'webhookAstroPay']);

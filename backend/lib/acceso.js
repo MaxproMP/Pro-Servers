@@ -19,6 +19,35 @@ function puedeOperar(duenoUid, uid, rol) {
     return Boolean(duenoUid) && (duenoUid === uid || ROLES_DUENO.includes(rol));
 }
 
+/** Acceso compartido: invitados que el dueño agregó al servidor (máximo MAX_MIEMBROS). */
+const MAX_MIEMBROS = 10;
+function esMiembro(srv, uid) {
+    return Boolean(uid) && Array.isArray(srv?.members) && srv.members.some(m => m && m.uid === uid);
+}
+
+/**
+ * Valida y agrega un invitado. `invitado` lo resuelve Laravel (nunca el navegador).
+ * @returns {{ error: string, status: number } | { miembro: object }}
+ */
+function agregarMiembro(srv, duenoUid, invitado, ahora = new Date()) {
+    const uid = String(invitado?.uid || '');
+    const username = String(invitado?.username || '').slice(0, 64);
+    if (!uid || !username) return { error: 'Invitado inválido.', status: 422 };
+    if (uid === duenoUid) return { error: 'Ya sos el dueño de este servidor.', status: 422 };
+    srv.members = Array.isArray(srv.members) ? srv.members : [];
+    if (esMiembro(srv, uid)) return { error: `@${username} ya tiene acceso.`, status: 409 };
+    if (srv.members.length >= MAX_MIEMBROS) return { error: `Máximo ${MAX_MIEMBROS} invitados por servidor.`, status: 422 };
+    const miembro = { uid, username, addedAt: ahora.toISOString() };
+    srv.members.push(miembro);
+    return { miembro };
+}
+
+/** Vista de un servidor ajeno para un invitado: sin datos personales del dueño ni de otros invitados. */
+function vistaCompartida(srv, duenoNombre) {
+    const { email, members, containerId, ...resto } = srv;
+    return { ...resto, shared: true, owner: duenoNombre || null };
+}
+
 /** Gestor de archivos y Mine AI: plan Oro o superior, o staff. */
 function accesoPremium(plan, rol) {
     return ROLES_STAFF.includes(rol) || PLANES_PREMIUM.includes(String(plan || '').toLowerCase());
@@ -41,4 +70,5 @@ function crearLimitador(max, ventanaMs) {
     };
 }
 
-module.exports = { secretoValido, puedeOperar, accesoPremium, crearLimitador, ROLES_STAFF, PLANES_PREMIUM };
+module.exports = {
+    esMiembro, agregarMiembro, vistaCompartida, MAX_MIEMBROS, secretoValido, puedeOperar, accesoPremium, crearLimitador, ROLES_STAFF, PLANES_PREMIUM };

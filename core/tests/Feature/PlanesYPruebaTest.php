@@ -81,7 +81,7 @@ it('una prueba vencida deja de contar como suscripción activa', function () {
     expect(Cliente::firstOrFail()->suscripcionActiva)->toBeNull();
 });
 
-it('editar un plan desde Overwatch invalida el catálogo cacheado', function () {
+it('editar un plan desde el Panel Admin invalida el catálogo cacheado', function () {
     $this->getJson('/api/plans')->assertOk(); // calienta la caché
     $hs = tokenFirebase('uid-ceo', config('services.ceo_email'));
     $this->postJson('/api/login', [], $hs)->assertOk();

@@ -51,6 +51,7 @@ class Cliente extends Authenticatable
         'password' => 'hashed',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'ultima_actividad' => 'datetime',
     ];
 
     /**
