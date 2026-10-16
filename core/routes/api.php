@@ -17,7 +17,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RefundController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\MercadoPagoWebhookController;
 use App\Http\Middleware\VerifyWebhookSignature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -56,10 +56,37 @@ Route::middleware(['throttle:ip', 'firebase.auth'])->group(function () {
         ], 200);
     });
     
+    // Sesión actual: rol, plan vigente y acceso premium (todo calculado en servidor).
+    Route::get('/me', function (Request $request) {
+        $u = $request->user();
+        $sub = $u->suscripcionActiva()->with('plan')->first();
+        $plan = $sub?->plan;
+        $staff = in_array($u->role, ['ceo', 'admin', 'soporte'], true);
+
+        return response()->json([
+            'success' => true,
+            'username' => $u->username,
+            'email' => $u->email,
+            'email_verified' => $request->attributes->get('email_verified') === true,
+            'role' => $u->role,
+            'plan' => $plan ? [
+                'nombre' => $plan->nombre,
+                'memoria_mb' => (int) $plan->memoria_mb,
+                'cpu_cores' => (int) $plan->cpu_cores,
+                'almacenamiento_gb' => (int) $plan->almacenamiento_gb,
+                'max_jugadores' => $plan->max_jugadores === null ? null : (int) $plan->max_jugadores,
+            ] : null,
+            'en_prueba' => (bool) $sub?->enPrueba(),
+            'vence' => $sub?->fecha_vencimiento?->toIso8601String(),
+            'premium' => $staff || in_array($plan?->nombre, config('services.planes_premium'), true),
+        ]);
+    })->middleware('throttle:60,1');
+
     Route::get('/user/{id}', [UserController::class, 'perfil']);
     Route::get('/perfil/{id}', [UserController::class, 'perfil']);
     
     // Pagos
+    Route::get('/checkout/pasarelas', [CheckoutController::class, 'pasarelas']);
     Route::post('/checkout/{pasarela}', [CheckoutController::class, 'crearPago'])->middleware('throttle:sensible');
     Route::get('/trial/status', [TrialController::class, 'status']);
     Route::post('/trial/start', [TrialController::class, 'start'])->middleware('throttle:5,1');
@@ -147,6 +174,9 @@ Route::get('/plans', [PlanAdminController::class, 'publico'])->middleware('throt
 // Firma HMAC obligatoria (WEBHOOK_SECRET). Sin secret: 403 y los pagos se confirman desde Overwatch.
 Route::middleware([VerifyWebhookSignature::class, 'throttle:60,1'])->group(function () {
     Route::post('/pagos/webhook/astropay', [PaymentController::class, 'webhookAstroPay']);
-    Route::post('/webhooks/astropay', [WebhookController::class, 'webhookAstropay']);
+    Route::post('/webhooks/astropay', [PaymentController::class, 'webhookAstroPay']);
 });
+
+// Mercado Pago firma con su propio esquema (x-signature) y el pago se confirma contra su API.
+Route::post('/webhooks/mercadopago', [MercadoPagoWebhookController::class, 'handle'])->middleware('throttle:120,1');
 Route::post('/internal/audit', [AuditController::class, 'store']);

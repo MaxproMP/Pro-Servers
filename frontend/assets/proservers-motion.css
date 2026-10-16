@@ -1,0 +1,62 @@
+/* ProServers Motion v1.0: crossfade, elemento compartido, dock con lupa y desenfoque de foco.
+   Uso: <link rel="stylesheet" href="/assets/proservers-motion.css"> + /assets/proservers-motion.js */
+:root {
+  --ps-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ps-dur: 0.35s;
+  --ps-blur: 6px;
+}
+
+/* 1. CROSSFADE: el panel saliente se desvanece mientras entra el nuevo (sin corte seco). */
+.ps-xfade { position: relative; }
+.ps-pane { display: none; }
+.ps-pane.is-active, .ps-pane.is-leaving { display: block; }
+.ps-pane.is-active {
+  transition: opacity var(--ps-dur) var(--ps-ease), filter var(--ps-dur) var(--ps-ease), transform var(--ps-dur) var(--ps-ease);
+}
+.ps-pane.is-entering { opacity: 0; filter: blur(var(--ps-blur)); transform: translateY(6px); }
+.ps-pane.is-leaving {
+  position: absolute; inset: 0 0 auto 0; pointer-events: none;
+  opacity: 0; filter: blur(var(--ps-blur)); transform: translateY(-4px);
+  transition: opacity var(--ps-dur) var(--ps-ease), filter var(--ps-dur) var(--ps-ease), transform var(--ps-dur) var(--ps-ease);
+}
+
+/* 2. ELEMENTO COMPARTIDO (View Transitions; el fallback FLIP vive en el JS). */
+::view-transition-group(*) { animation-duration: 0.45s; animation-timing-function: var(--ps-ease); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.3s; }
+
+/* 3. MAGNIFICATION: el JS escribe --ps-scale por ítem según la distancia al cursor. */
+.ps-dock:not(.ps-dock-icons) { --ps-size: 44px; display: flex; gap: 6px; align-items: flex-end; }
+.ps-dock:not(.ps-dock-icons)[data-axis="y"] { flex-direction: column; align-items: flex-start; }
+.ps-dock-item {
+  --ps-scale: 1;
+  position: relative; display: grid; place-items: center; flex: none;
+  width: calc(var(--ps-size) * var(--ps-scale)); height: calc(var(--ps-size) * var(--ps-scale));
+  transition: width 0.18s var(--ps-ease), height 0.18s var(--ps-ease);
+}
+/* Variante para menús con texto: solo crece el ícono, el layout del menú no cambia. */
+.ps-dock-icons .ps-dock-item { width: auto; height: auto; display: flex; transition: none; }
+.ps-dock-item svg { width: calc(18px * var(--ps-scale)); height: calc(18px * var(--ps-scale)); transition: width 0.18s var(--ps-ease), height 0.18s var(--ps-ease); }
+.ps-dock-label {
+  position: absolute; white-space: nowrap; pointer-events: none; z-index: 5;
+  padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;
+  opacity: 0; transform: translateY(4px); transition: opacity 0.18s, transform 0.18s var(--ps-ease);
+}
+.ps-dock:not([data-axis="y"]) .ps-dock-label { bottom: calc(100% + 8px); left: 50%; translate: -50% 0; }
+.ps-dock[data-axis="y"] .ps-dock-label { left: calc(100% + 10px); top: 50%; translate: 0 -50%; transform: translateX(-4px); }
+.ps-dock-item.is-near .ps-dock-label, .ps-dock-item:focus-visible .ps-dock-label { opacity: 1; transform: none; }
+
+/* 4. FOCUS BLUR: al apuntar un ítem, los hermanos se desenfocan. Solo con mouse o teclado. */
+@media (hover: hover) {
+  .ps-focus-rows > tr, .ps-focus-group > .ps-focus-item { transition: filter 0.25s var(--ps-ease), opacity 0.25s var(--ps-ease); }
+  .ps-focus-group:has(> .ps-focus-item:hover) > .ps-focus-item:not(:hover),
+  .ps-focus-rows:has(> tr:hover) > tr:not(:hover),
+  .ps-focus-group:has(> .ps-focus-item:focus-visible) > .ps-focus-item:not(:focus-visible) {
+    filter: blur(5.5px); opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --ps-dur: 0.01s; --ps-blur: 0px; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  .ps-dock-item, .ps-dock-item svg { transition: none; }
+}

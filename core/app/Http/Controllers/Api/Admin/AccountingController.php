@@ -76,6 +76,11 @@ final class AccountingController extends AdminController
             'estado' => 'completado',
             'fecha_transaccion' => now(),
         ]);
+        // El pago manual activa (o renueva) la suscripción igual que un webhook verificado.
+        $activador = app(\App\Services\ActivadorPagos::class);
+        $sub = $pago->suscripcion()->with(['cliente', 'plan'])->first();
+        $activador->activarSuscripcion($sub);
+        $activador->aplicarLimites($sub->fresh(['cliente', 'plan']));
         $this->auditar('admin.payment_manual', null, ['pago_id' => $pago->id, 'monto' => $data['monto'], 'nota' => $data['nota'] ?? null]);
 
         return response()->json(['success' => true, 'pago_id' => $pago->id], 201);

@@ -61,7 +61,7 @@ body[data-role="admin"] .only-ceo, body[data-role="usuario"] .only-admin{display
 /* Sidebar */
 .side{position:fixed;top:var(--top);bottom:0;left:0;width:var(--side);z-index:40;padding:14px 10px;display:flex;flex-direction:column;gap:4px;background:var(--sf);border-right:1px solid var(--bd)}
 .side button{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid transparent;border-radius:9px;background:none;cursor:pointer;color:var(--mu);font-weight:600;text-align:left}
-.side button svg{width:17px;height:17px;flex:none}
+.side button svg{width:calc(17px * var(--ps-scale,1));height:calc(17px * var(--ps-scale,1));flex:none;transition:width .18s,height .18s}
 .side button:hover{color:var(--tx);background:rgba(255,255,255,.04)}
 .side button.on{color:var(--tx);background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.35)}
 .side .sp{flex:1}
@@ -69,7 +69,7 @@ body[data-role="admin"] .only-ceo, body[data-role="usuario"] .only-admin{display
 
 /* Layout */
 main{margin:var(--top) 0 0 var(--side);padding:22px 24px 60px;min-height:calc(100vh - var(--top))}
-.mod{display:none}.mod.active{display:block}
+#mods{position:relative}
 .mh{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 .mh h1{font-size:20px;font-weight:800}
 .mh p{color:var(--mu);margin-top:2px}
@@ -85,7 +85,7 @@ main{margin:var(--top) 0 0 var(--side);padding:22px 24px 60px;min-height:calc(10
 .kpi{position:relative;overflow:hidden}
 .kpi .l{font-size:12px;color:var(--mu);font-weight:600}
 .kpi .v{font-size:28px;font-weight:800;margin:4px 0 2px;line-height:1.1}
-.kpi .s{font-size:11px;color:var(--mu)}
+.kpi .s{font-size:12px;color:var(--mu)}
 .kpi .sp{position:absolute;right:0;bottom:0;width:46%;height:44px;opacity:.9;pointer-events:none}
 .bar{height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin:3px 0 7px}
 .bar u{display:block;height:100%;background:var(--ok)}
@@ -93,14 +93,14 @@ main{margin:var(--top) 0 0 var(--side);padding:22px 24px 60px;min-height:calc(10
 #core3d{position:relative;height:340px;border-radius:9px;background:radial-gradient(ellipse at center,rgba(139,92,246,.08),transparent 70%);cursor:grab}
 #core3d:active{cursor:grabbing}
 #tip{position:absolute;pointer-events:none;background:rgba(5,6,9,.92);border:1px solid var(--bd2);border-radius:8px;padding:6px 9px;font-size:11px;z-index:5;display:none;white-space:nowrap}
-.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--mu)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--mu)}
 .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
 
 /* Controles */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 13px;border-radius:8px;border:1px solid var(--bd2);background:rgba(255,255,255,.04);color:var(--tx);font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
 .btn:hover{background:rgba(255,255,255,.09)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-.btn.pri{background:var(--ceo);border-color:var(--ceo);color:#fff}.btn.pri:hover{background:#9d74f7}
+.btn.pri{background:#7c3aed;border-color:#7c3aed;color:#fff}.btn.pri:hover{background:#6d28d9}
 .btn.ok{background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.5);color:var(--ok)}
 .btn.danger{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.5);color:#fca5a5}
 .btn.cy{background:rgba(6,182,212,.12);border-color:rgba(6,182,212,.45);color:var(--cy)}
@@ -178,13 +178,15 @@ pre.log{background:#000;border:1px solid var(--bd);border-radius:8px;padding:8px
 @media (max-width:900px){
   :root{--side:0px}
   .side{top:auto;bottom:0;left:0;right:0;width:100%;height:58px;flex-direction:row;overflow-x:auto;padding:6px;border-right:0;border-top:1px solid var(--bd)}
-  .side button{flex:1;justify-content:center;padding:8px;flex-direction:column;gap:2px;font-size:10px;min-width:64px}
+  .side button{flex:1;justify-content:center;padding:8px;flex-direction:column;gap:2px;font-size:11px;min-width:64px}
   .side .sp,.side .me{display:none}
   main{margin-left:0;padding:16px 14px 80px}
   .bc{display:none}.kpis{grid-template-columns:1fr 1fr}.actions .btn.ghost{display:none}
 }
 @media (max-width:560px){.kpis{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.brand b{display:none}}
 </style>
+<link rel="stylesheet" href="/assets/proservers-motion.css">
+<script src="/assets/proservers-motion.js"></script>
 </head>
 <body data-role="">
 
@@ -214,21 +216,22 @@ pre.log{background:#000;border:1px solid var(--bd);border-radius:8px;padding:8px
   </div>
 </header>
 
-<nav class="side" id="side">
-  <button data-mod="m1" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>Comando</button>
-  <button data-mod="m2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6M17 11a3 3 0 100-6M22 20c0-3-2-5-5-5"/></svg>Cuentas</button>
-  <button data-mod="m3" class="only-admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>Contabilidad</button>
-  <button data-mod="m4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z"/></svg>Soporte</button>
-  <button data-mod="m5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Catálogo y sistema</button>
+<nav class="side ps-dock ps-dock-icons" id="side" aria-label="Módulos">
+  <button data-mod="m1" class="ps-dock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>Comando</button>
+  <button data-mod="m2" class="ps-dock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6M17 11a3 3 0 100-6M22 20c0-3-2-5-5-5"/></svg>Cuentas</button>
+  <button data-mod="m3" class="ps-dock-item only-admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>Contabilidad</button>
+  <button data-mod="m4" class="ps-dock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z"/></svg>Soporte</button>
+  <button data-mod="m5" class="ps-dock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Catálogo y sistema</button>
   <div class="sp"></div>
   <div class="me" id="me"></div>
 </nav>
 
 <main>
+<div class="ps-xfade" id="mods">
   <!-- MÓDULO 1 -->
-  <section class="mod active" id="m1">
+  <section class="mod ps-pane is-active" id="m1">
     <div class="mh"><div><h1>Centro de comando</h1><p>Telemetría real del host, Docker y SQL Server.</p></div></div>
-    <div class="kpis" id="kpis"></div>
+    <div class="kpis ps-focus-group" id="kpis"></div>
     <div class="bento">
       <div class="card span7">
         <div class="chd"><h2>Núcleo de flota</h2><span class="sub" id="core-sub"></span></div>
@@ -250,37 +253,37 @@ pre.log{background:#000;border:1px solid var(--bd);border-radius:8px;padding:8px
         <div class="chd"><h2>Flota de nodos</h2>
           <div class="tools"><input id="f-q" placeholder="Buscar nodo, dueño o plan" aria-label="Buscar nodo">
             <select id="f-state" aria-label="Estado"><option value="">Todos</option><option value="running">En línea</option><option value="stopped">Detenidos</option><option value="frozen">Zona de Hielo</option><option value="missing">Sin contenedor</option></select></div></div>
-        <div class="tw"><table><thead><tr><th>Nodo</th><th>Dueño</th><th>Plan</th><th>Estado</th><th>CPU</th><th>RAM</th><th>Puerto</th><th class="r">Acciones</th></tr></thead><tbody id="fleet-body"></tbody></table></div>
+        <div class="tw"><table><thead><tr><th>Nodo</th><th>Dueño</th><th>Plan</th><th>Estado</th><th>CPU</th><th>RAM</th><th>Puerto</th><th class="r">Acciones</th></tr></thead><tbody id="fleet-body" class="ps-focus-rows"></tbody></table></div>
       </div>
     </div>
   </section>
 
   <!-- MÓDULO 2 -->
-  <section class="mod" id="m2">
+  <section class="mod ps-pane" id="m2">
     <div class="mh"><div><h1>Directorio de cuentas</h1><p>Todos los clientes de SQL Server, tengan o no plan o servidor.</p></div>
       <div class="tools"><input id="c-q" placeholder="Usuario, correo o UID" aria-label="Buscar cliente">
         <select id="c-rol" aria-label="Rol"><option value="">Todos los roles</option><option>ceo</option><option>admin</option><option>soporte</option><option>usuario</option></select>
         <select id="c-estado" aria-label="Estado"><option value="">Todo estado</option><option value="activo">Activo</option><option value="congelado">Zona de Hielo</option><option value="eliminado">Eliminado</option></select>
         <select id="c-seg" aria-label="Seguridad"><option value="">Toda seguridad</option><option value="2fa">2FA activo</option><option value="no2fa">Sin 2FA</option></select>
         <select id="c-plan" aria-label="Plan"><option value="">Todo plan</option><option value="__none">Sin plan</option></select></div></div>
-    <div class="card"><div class="tw"><table><thead><tr><th>Cuenta</th><th>Rol</th><th>Estado</th><th>Plan</th><th>Servidor</th><th class="r">Pagos</th><th class="r">Tickets</th><th>Seguridad</th><th>Alta</th></tr></thead><tbody id="clients-body"></tbody></table></div><div class="sub" id="clients-count" style="margin-top:10px"></div></div>
+    <div class="card"><div class="tw"><table><thead><tr><th>Cuenta</th><th>Rol</th><th>Estado</th><th>Plan</th><th>Servidor</th><th class="r">Pagos</th><th class="r">Tickets</th><th>Seguridad</th><th>Alta</th></tr></thead><tbody id="clients-body" class="ps-focus-rows"></tbody></table></div><div class="sub" id="clients-count" style="margin-top:10px"></div></div>
   </section>
 
   <!-- MÓDULO 3 -->
-  <section class="mod" id="m3">
+  <section class="mod ps-pane" id="m3">
     <div class="mh"><div><h1>Contabilidad</h1><p>Libro mayor de pagos y reembolsos, cruzado por suscripción, cliente y plan.</p></div>
       <div class="tools"><button class="btn pri" id="btn-pay">Registrar pago manual</button></div></div>
-    <div class="kpis" id="acct-kpis" style="grid-template-columns:repeat(6,1fr)"></div>
+    <div class="kpis ps-focus-group" id="acct-kpis" style="grid-template-columns:repeat(6,1fr)"></div>
     <div class="bento">
       <div class="card span12"><div class="chd"><h2>Libro mayor de pagos</h2><input id="a-q" placeholder="Buscar cliente, plan, pasarela o transacción" style="min-width:260px" aria-label="Buscar pago"></div>
-        <div class="tw"><table><thead><tr><th>N°</th><th>Fecha</th><th>Cliente</th><th>Plan</th><th>Pasarela</th><th>Medio</th><th>Estado</th><th class="r">Monto</th><th class="r">Acciones</th></tr></thead><tbody id="pagos-body"></tbody></table></div></div>
+        <div class="tw"><table><thead><tr><th>N°</th><th>Fecha</th><th>Cliente</th><th>Plan</th><th>Pasarela</th><th>Medio</th><th>Estado</th><th class="r">Monto</th><th class="r">Acciones</th></tr></thead><tbody id="pagos-body" class="ps-focus-rows"></tbody></table></div></div>
       <div class="card span12"><div class="chd"><h2>Reembolsos</h2></div>
-        <div class="tw"><table><thead><tr><th>N°</th><th>Pago</th><th>Cliente</th><th>Motivo</th><th>Estado</th><th>Fecha</th><th class="r">Monto</th></tr></thead><tbody id="refunds-body"></tbody></table></div></div>
+        <div class="tw"><table><thead><tr><th>N°</th><th>Pago</th><th>Cliente</th><th>Motivo</th><th>Estado</th><th>Fecha</th><th class="r">Monto</th></tr></thead><tbody id="refunds-body" class="ps-focus-rows"></tbody></table></div></div>
     </div>
   </section>
 
   <!-- MÓDULO 4 -->
-  <section class="mod" id="m4">
+  <section class="mod ps-pane" id="m4">
     <div class="mh"><div><h1>Mesa de soporte</h1><p>Tickets, chat con el cliente y diagnóstico de Mine AI.</p></div></div>
     <div class="desk">
       <div class="card"><div class="ph"><b>Tickets</b><select id="t-estado" aria-label="Estado del ticket"><option value="abierto">Abiertos</option><option value="cerrado">Cerrados</option></select></div><div class="pb" id="tk-list"></div></div>
@@ -291,7 +294,7 @@ pre.log{background:#000;border:1px solid var(--bd);border-radius:8px;padding:8px
   </section>
 
   <!-- MÓDULO 5 -->
-  <section class="mod" id="m5">
+  <section class="mod ps-pane" id="m5">
     <div class="mh"><div><h1>Catálogo, staff y sistema</h1><p>Oferta comercial en vivo, roles, auditoría y mantenimiento.</p></div></div>
     <div class="bento">
       <div class="card span12 only-admin"><div class="chd"><h2>Planes (SQL Server)</h2><span class="sub">Los cambios se aplican al guardar cada fila.</span></div>
@@ -308,6 +311,7 @@ pre.log{background:#000;border:1px solid var(--bd);border-radius:8px;padding:8px
         <p class="sub" style="margin-top:10px">La purga solo elimina imágenes sin etiqueta y nunca toca contenedores ni volúmenes de clientes.</p></div>
     </div>
   </section>
+</div>
 </main>
 
 <aside id="drawer"><div class="dh"><b id="drawer-title"></b><button class="btn ghost sm" id="drawer-x">Cerrar</button></div><div id="drawer-body"></div></aside>
@@ -495,7 +499,7 @@ const Fleet3D = {
 
 /* ---------- Módulo 1: comando y flota ---------- */
 function buildKpis() {
-  const t = (key, label, sp) => `<div class="card kpi" id="k-${key}"><div class="l">${label}</div><div class="v num" data-v>–</div><div class="s" data-s>&nbsp;</div>${sp ? `<div class="sp"><canvas id="sp-${key}"></canvas></div>` : ''}</div>`;
+  const t = (key, label, sp) => `<div class="card kpi ps-focus-item" id="k-${key}"><div class="l">${label}</div><div class="v num" data-v>–</div><div class="s" data-s>&nbsp;</div>${sp ? `<div class="sp"><canvas id="sp-${key}"></canvas></div>` : ''}</div>`;
   $('#kpis').innerHTML = t('clients', 'Clientes registrados (SQL)') + t('subs', 'Suscripciones activas')
     + (isAdmin() ? t('mrr', 'MRR mensual', true) : t('tk', 'Tickets abiertos')) + t('nodes', 'Nodos en línea', true) + t('host', 'Host: CPU', true);
   if (isAdmin()) spark('sp-mrr', '#8B5CF6'); spark('sp-nodes', '#10B981'); spark('sp-host', '#06B6D4');
@@ -718,7 +722,7 @@ async function openClient(id) {
 const PAGO_B = { completado: 'ok', pendiente: 'am', reembolsado: 'cy', fallido: 'rd' };
 async function loadAcct() {
   S.acct = await api('GET', '/accounting'); const k = S.acct.kpis;
-  const t = (l, v, s = '') => `<div class="card kpi"><div class="l">${l}</div><div class="v num" style="font-size:22px">${v}</div><div class="s">${s}</div></div>`;
+  const t = (l, v, s = '') => `<div class="card kpi ps-focus-item"><div class="l">${l}</div><div class="v num" style="font-size:22px">${v}</div><div class="s">${s}</div></div>`;
   $('#acct-kpis').innerHTML = t('Ingresos totales', money(k.ingresos_totales)) + t('MRR', money(k.mrr), 'suscripciones activas') + t('Facturado este mes', money(k.facturado_mes))
     + t('Total reembolsado', money(k.total_reembolsado)) + t('Ticket promedio', money(k.ticket_promedio)) + t('Suscripciones activas', num(k.suscripciones_activas));
   paintPagos();
@@ -842,7 +846,7 @@ async function openCleanup(kinds) {
 const safe = (fn) => async (...a) => { try { await fn(...a); } catch (e) { toast(e.message, 'rd'); } };
 function go(mod) {
   S.mod = mod; Fleet3D.run(false); Object.values(S.timers).forEach(clearInterval); S.timers = {};
-  $$('.mod').forEach(m => m.classList.toggle('active', m.id === mod)); $$('#side button').forEach(b => b.classList.toggle('on', b.dataset.mod === mod));
+  PSMotion.crossfade($('#mods'), $('#' + mod)); $$('#side button').forEach(b => b.classList.toggle('on', b.dataset.mod === mod));
   closeDrawer(); scrollTo(0, 0);
   if (mod === 'm1') { Fleet3D.run(true); paintLive(); loadStats(); }
   if (mod === 'm2') safe(loadClients)();
@@ -852,6 +856,7 @@ function go(mod) {
 }
 function bind() {
   $$('#side button').forEach(b => b.onclick = () => go(b.dataset.mod));
+  PSMotion.dock($('#side'), { axis: 'y', max: 1.45, sigma: 46 });
   $('#brand-btn').onclick = () => { sessionStorage.setItem('forceUserMode', 'true'); location.href = '/crear.html'; };
   $('#btn-deploy').onclick = () => sessionStorage.setItem('forceUserMode', 'true');
   $('#btn-usermode').onclick = () => { sessionStorage.setItem('forceUserMode', 'true'); location.href = '/index.html'; };
@@ -868,7 +873,7 @@ function bind() {
   Fleet3D.init($('#core3d'), openNode);
   $('#drawer-body').addEventListener('click', safe(async (e) => { const b = e.target.closest('[data-act]'); if (b && S.live?.servers.some(s => s.id === b.dataset.id)) await nodeAction(b.dataset.id, b.dataset.act); }));
   ['c-q', 'c-rol', 'c-estado', 'c-seg', 'c-plan'].forEach(id => $('#' + id).addEventListener('input', paintClients));
-  $('#clients-body').onclick = safe(async (e) => { const r = e.target.closest('tr[data-id]'); if (r) await openClient(+r.dataset.id); });
+  $('#clients-body').onclick = safe(async (e) => { const r = e.target.closest('tr[data-id]'); if (r) await PSMotion.shared([{ from: r.querySelector('b') || r.cells[0], to: '#drawer-title', name: 'ps-client' }], () => openClient(+r.dataset.id)); });
   $('#btn-pay').onclick = safe(payDialog); $('#a-q').oninput = () => S.acct && paintPagos();
   $('#pagos-body').onclick = safe(async (e) => {
     const b = e.target.closest('[data-act]'); if (!b) return;
@@ -876,7 +881,7 @@ function bind() {
     if (b.dataset.act === 'refund') refundDialog(+b.dataset.id, +b.dataset.monto);
   });
   $('#t-estado').onchange = safe(() => { S.ticket = null; $('#chat-body').innerHTML = ''; $('#chat-head').innerHTML = '<b>Selecciona un ticket</b>'; $('#reply-form').classList.add('hidden'); return loadTickets(); });
-  $('#tk-list').onclick = safe(async (e) => { const t = e.target.closest('.tk'); if (t) await openTicket(+t.dataset.id); });
+  $('#tk-list').onclick = safe(async (e) => { const t = e.target.closest('.tk'); if (t) await PSMotion.shared([{ from: t.querySelector('b'), to: () => $('#chat-head b'), name: 'ps-ticket' }], () => openTicket(+t.dataset.id)); });
   $('#chat-head').onclick = safe(async (e) => {
     const b = e.target.closest('[data-act]'); if (!b || !S.ticket) return; const id = S.ticket.ticket.id;
     if (b.dataset.act === 'tk-pdf') await downloadPdf(`/tickets/${id}/pdf`, `ticket-${id}.pdf`);

@@ -1,7 +1,6 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const cors = require('cors');
 const Docker = require('dockerode');
 const fs = require('fs');
 const os = require('os');
@@ -23,12 +22,13 @@ const app = express();
 const server = http.createServer(app);
 const docker = new Docker({ socketPath: '/var/run/docker.sock' });
 
-app.use(cors());
+// Sin CORS: el navegador nunca llama a Node directo (todo pasa por nginx en el mismo origen).
+app.disable('x-powered-by');
 app.use(express.json());
 
 // Configuramos Socket.io para la consola en vivo del frontend
 const io = new Server(server, {
-    cors: { origin: '*' }
+    cors: { origin: false }, // misma origen vía nginx; nada cross-site
 });
 
 // === MIDDLEWARE DE SEGURIDAD FRONTEND (Firebase) ===

@@ -14,7 +14,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->mock(AuditLogService::class)->shouldIgnoreMissing();
     config(['services.daemon.secret' => 'secreto-daemon']);
-    Http::fake(['*' => Http::response(['success' => true], 200)]);
+    Http::fake(['*' => Http::response(['success' => true, 'init_point' => 'https://mp.test/pay'], 200)]);
 });
 
 // --- C1/C2: proxy firmado, uid fuera del alcance del navegador ---
@@ -145,6 +145,7 @@ it('con secret configurado rechaza firmas inválidas y acepta las válidas', fun
 // --- Bug de checkout: el uid de Firebase llega al controlador ---
 
 it('el checkout encuentra al cliente autenticado y registra el pago pendiente', function () {
+    config(['services.mercadopago.token' => 'TEST', 'services.mercadopago.tasa_ars' => 1000, 'services.mercadopago.webhook_secret' => 'x']);
     Http::fake(['api.mercadopago.com/*' => Http::response(['init_point' => 'https://mp.test/pay'], 201)]);
     $h = tokenFirebase('uid-c', 'c@gmail.com');
     $this->postJson('/api/login', [], $h)->assertOk();
@@ -159,4 +160,13 @@ it('la prueba gratis exige email verificado', function () {
     $h = tokenFirebase('uid-t', 't@gmail.com', false);
     $this->postJson('/api/trial/start', ['plan_nombre' => 'redstone'], $h)->assertStatus(403);
     expect(Suscripcion::count())->toBe(0);
+});
+
+it('/api/me informa plan, verificación y acceso premium calculados en servidor', function () {
+    $h = tokenFirebase('uid-me', 'me@gmail.com', false);
+    $this->postJson('/api/login', [], $h)->assertOk();
+    $this->getJson('/api/me', $h)->assertOk()->assertJson(['email_verified' => false, 'plan' => null, 'premium' => false, 'role' => 'usuario']);
+
+    conPlan('uid-me', 'diamante');
+    $this->getJson('/api/me', $h)->assertOk()->assertJson(['plan' => ['nombre' => 'diamante', 'max_jugadores' => 100], 'premium' => true, 'en_prueba' => false]);
 });

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Cliente;
 use App\Models\Pago;
 use App\Models\Plan;
 use App\Models\Suscripcion;
@@ -12,31 +11,71 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
+/**
+ * Inicia un pago: valida plan y ciclo, calcula el monto en servidor y redirige a la pasarela.
+ * La suscripción queda "pendiente" hasta que un webhook verificado (o Overwatch) confirme el pago.
+ */
 class CheckoutController extends Controller
 {
+    /** Descuentos por ciclo: los mismos que muestran planes.html y checkout.html. */
+    public const DESCUENTOS = [1 => 0, 3 => 10, 6 => 15, 12 => 20];
+
+    /** Qué pasarelas están configuradas de verdad en este servidor. */
+    public static function pasarelasActivas(): array
+    {
+        // Solo se ofrece una pasarela si además puede CONFIRMAR pagos (secret de webhook cargado).
+        $astroUrl = (string) config('services.astropay.api_url');
+
+        return [
+            'mercadopago' => filled(config('services.mercadopago.token')) && (float) config('services.mercadopago.tasa_ars') > 0
+                && filled(config('services.mercadopago.webhook_secret')),
+            'astropay' => $astroUrl !== '' && filled(config('services.astropay.client_id')) && filled(config('services.astropay.secret'))
+                && filled(config('services.webhooks.secret'))
+                && ! (app()->isProduction() && str_contains($astroUrl, 'sandbox')), // nunca cobrar en sandbox en producción
+            'uala' => false, // Ualá Bis: integración pendiente de credenciales y API oficial.
+        ];
+    }
+
+    public function pasarelas(): JsonResponse
+    {
+        $tasa = (float) config('services.mercadopago.tasa_ars');
+
+        return response()->json([
+            'success' => true,
+            'pasarelas' => self::pasarelasActivas(),
+            'tasa_ars' => $tasa > 0 ? $tasa : null,
+            'descuentos' => self::DESCUENTOS,
+        ]);
+    }
+
     public function crearPago(Request $request, string $pasarela): JsonResponse
     {
-        $request->validate([
-            'plan_nombre' => 'required|string',
-            'ciclo_meses' => 'required|integer|min:1',
+        $data = $request->validate([
+            'plan_nombre' => ['required', 'string', 'max:40'],
+            'ciclo_meses' => ['required', 'integer', Rule::in(array_keys(self::DESCUENTOS))],
         ]);
 
         $pasarela = strtolower($pasarela);
-        if (! in_array($pasarela, ['astropay', 'uala', 'mercadopago'], true)) {
+        $activas = self::pasarelasActivas();
+        if (! array_key_exists($pasarela, $activas)) {
             return response()->json(['success' => false, 'error' => 'Pasarela no soportada.'], 422);
         }
+        if (! $activas[$pasarela]) {
+            return response()->json(['success' => false, 'error' => 'Este medio de pago todavía no está disponible.'], 503);
+        }
 
-        
+        $cliente = $request->user();
+        $plan = Plan::where('nombre', strtolower($data['plan_nombre']))->where('visible', true)->first();
+        if (! $plan) {
+            return response()->json(['success' => false, 'error' => 'Ese plan no está disponible.'], 422);
+        }
 
-        $firebaseUid = (string) $request->attributes->get('firebase_uid');
-        $transaccionId = 'PRO-'.uniqid();
-        $cliente = Cliente::where('firebase_uid', $firebaseUid)->firstOrFail();
-        $plan = Plan::where('nombre', strtolower((string) $request->input('plan_nombre')))->firstOrFail();
-        $ciclo = (int) $request->input('ciclo_meses');
-        $discounts = [1 => 0, 3 => 10, 6 => 15, 12 => 20];
-        $discount = $discounts[$ciclo] ?? 0;
-        $monto = round((float) $plan->precio_mensual * $ciclo * (1 - ($discount / 100)), 2);
+        $ciclo = (int) $data['ciclo_meses'];
+        $monto = round((float) $plan->precio_mensual * $ciclo * (1 - self::DESCUENTOS[$ciclo] / 100), 2);
+        $transaccionId = 'PRO-'.Str::upper(Str::random(16));
 
         [$suscripcion, $pago] = DB::transaction(function () use ($cliente, $plan, $ciclo, $monto, $pasarela, $transaccionId) {
             $suscripcion = Suscripcion::create([
@@ -45,7 +84,6 @@ class CheckoutController extends Controller
                 'ciclo_meses' => $ciclo,
                 'estado' => 'pendiente',
             ]);
-
             $pago = Pago::create([
                 'suscripcion_id' => $suscripcion->id,
                 'monto' => $monto,
@@ -58,69 +96,62 @@ class CheckoutController extends Controller
             return [$suscripcion, $pago];
         });
 
-                if ($pasarela === 'astropay') {
-            $response = Http::withHeaders([
-                'Authorization' => 'Basic '.base64_encode(env('ASTROPAY_CLIENT_ID').':'.env('ASTROPAY_SECRET')),
-                'Content-Type' => 'application/json',
-            ])->post(env('ASTROPAY_API_URL'), [
-                'amount' => $monto,
-                'currency' => 'USD',
-                'merchant_order_id' => $transaccionId,
-                'country' => 'AR',
-                'user' => [
-                    'email' => $request->input('email', $cliente->email),
-                ],
-            ]);
+        $redirect = $pasarela === 'mercadopago'
+            ? $this->mercadoPago($plan, $ciclo, $monto, $transaccionId, $cliente->email)
+            : $this->astroPay($monto, $transaccionId, $cliente->email);
 
-            if ($response->successful()) {
-                return response()->json([
-                    'success' => true,
-                    'redirect_url' => $response->json()['redirect_url'] ?? '#',
-                    'transaccion_id' => $transaccionId,
-                    'suscripcion_id' => $suscripcion->id,
-                ]);
-            }
-            return response()->json(['success' => false, 'error' => 'Error API AstroPay'], 500);
+        if (! $redirect) {
+            $pago->update(['estado' => 'fallido']);
+            $suscripcion->update(['estado' => 'cancelada']);
+
+            return response()->json(['success' => false, 'error' => 'La pasarela no respondió. Probá de nuevo en unos minutos.'], 502);
         }
 
-        if ($pasarela === 'uala') {
-            // Placeholder: Auth then create checkout in Uala
-            // Since we just need to verify it works or pass the smoke test, we can mock or implement real
-            return response()->json([
-                'success' => true,
-                'redirect_url' => 'https://uala.com.ar/checkout/'.$transaccionId,
-                'transaccion_id' => $transaccionId,
-                'suscripcion_id' => $suscripcion->id,
-            ]);
-        }
+        return response()->json([
+            'success' => true,
+            'redirect_url' => $redirect,
+            'transaccion_id' => $transaccionId,
+            'monto_usd' => $monto,
+            'monto_ars' => $pasarela === 'mercadopago' ? round($monto * (float) config('services.mercadopago.tasa_ars'), 2) : null,
+        ]);
+    }
 
-        if ($pasarela === 'mercadopago') {
-            $mpToken = env('MERCADOPAGO_ACCESS_TOKEN');
-            $response = Http::withToken($mpToken)->post('https://api.mercadopago.com/checkout/preferences', [
+    private function mercadoPago(Plan $plan, int $ciclo, float $monto, string $tx, ?string $email): ?string
+    {
+        $ars = round($monto * (float) config('services.mercadopago.tasa_ars'), 2);
+        $volver = rtrim((string) config('app.url'), '/').'/checkout.html?plan='.urlencode($plan->nombre).'&ciclo='.$ciclo.'&estado=';
+
+        $r = Http::withToken((string) config('services.mercadopago.token'))->timeout(20)
+            ->post('https://api.mercadopago.com/checkout/preferences', [
                 'items' => [[
-                    'title' => 'Plan ' . $plan->nombre,
+                    'title' => 'ProServers Plan '.ucfirst($plan->nombre).' x '.$ciclo.' '.($ciclo === 1 ? 'mes' : 'meses'),
                     'quantity' => 1,
                     'currency_id' => 'ARS',
-                    'unit_price' => $monto * 1000 // Aprox conversion if plan is USD
+                    'unit_price' => $ars,
                 ]],
-                'external_reference' => $transaccionId,
-                'back_urls' => [
-                    'success' => env('APP_URL').'/panel.html?status=success',
-                    'failure' => env('APP_URL').'/panel.html?status=failure',
-                    'pending' => env('APP_URL').'/panel.html?status=pending'
-                ],
-                'auto_return' => 'approved'
+                'payer' => ['email' => $email],
+                'external_reference' => $tx,
+                'notification_url' => rtrim((string) config('app.url'), '/').'/api/webhooks/mercadopago',
+                'back_urls' => ['success' => $volver.'ok', 'failure' => $volver.'error', 'pending' => $volver.'pendiente'],
+                'auto_return' => 'approved',
             ]);
 
-            if ($response->successful()) {
-                return response()->json([
-                    'success' => true,
-                    'redirect_url' => $response->json()['init_point'] ?? '#',
-                    'transaccion_id' => $transaccionId,
-                    'suscripcion_id' => $suscripcion->id,
-                ]);
-            }
-            return response()->json(['success' => false, 'error' => 'Error API MercadoPago'], 500);
-        }
+        return $r->successful() ? ($r->json('init_point') ?: null) : null;
+    }
+
+    private function astroPay(float $monto, string $tx, ?string $email): ?string
+    {
+        $r = Http::withBasicAuth((string) config('services.astropay.client_id'), (string) config('services.astropay.secret'))
+            ->timeout(20)
+            ->post((string) config('services.astropay.api_url'), [
+                'amount' => $monto,
+                'currency' => 'USD',
+                'merchant_order_id' => $tx,
+                'country' => 'AR',
+                'callback_url' => rtrim((string) config('app.url'), '/').'/api/pagos/webhook/astropay',
+                'user' => ['email' => $email],
+            ]);
+
+        return $r->successful() ? ($r->json('redirect_url') ?: $r->json('url') ?: null) : null;
     }
 }

@@ -1,711 +1,329 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout | Professional Servers</title>
-
-    <!-- SEGURIDAD API -->
-    <meta name="csrf-token" content="">
-
-    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600;700&display=swap"
-        rel="stylesheet">
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        body {
-            background: #0a0a0a;
-            color: white;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .bg-glow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 50% 15%, #142914 0%, #0a0a0a 85%);
-            z-index: -1;
-        }
-
-        .glass-panel {
-            background: rgba(18, 18, 18, 0.9);
-            backdrop-filter: blur(14px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-        }
-
-        .input-dark {
-            background: #111;
-            border: 1px solid #333;
-            color: white;
-            outline: none;
-            transition: 0.3s;
-            padding: 12px;
-            border-radius: 8px;
-            width: 100%;
-            font-size: 14px;
-        }
-
-        .input-dark:focus {
-            border-color: #4CAF50;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
-        }
-
-        .input-error {
-            border-color: #EF4444 !important;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2) !important;
-        }
-
-        .cycle-box {
-            border: 1px solid #333;
-            background: #161616;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .cycle-box:hover {
-            border-color: #555;
-            background: #1a1a1a;
-        }
-
-        .cycle-box.active {
-            border-color: #4CAF50;
-            background: rgba(76, 175, 80, 0.1);
-        }
-
-        .transfer-button {
-            background: #111;
-            color: white;
-            border: 1px solid #333;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        .transfer-button:hover:not(:disabled) {
-            border-color: #4CAF50;
-            background: #1a1a1a;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
-        }
-
-        .payment-pill {
-            background: #111;
-            border: 1px solid #222;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: bold;
-            color: #aaa;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0a0a0a;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout · ProServers</title>
+<meta name="description" content="Contratá tu plan de ProServers: elegí el ciclo de facturación y pagá con Mercado Pago o AstroPay.">
+<link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/proservers-motion.css">
+<script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+<style>
+:root{--bg:#050609;--sf:#0B0D13;--sf2:#10131b;--sf3:#161a24;--bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.16);--tx:#e8eaf0;--mu:#9aa2b5;--ok:#10B981;--vi:#8B5CF6;--am:#F59E0B;--rd:#EF4444;--r:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--tx);font:15px/1.55 'Plus Jakarta Sans',system-ui,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:rgba(16,185,129,.35)}
+:focus-visible{outline:2px solid var(--ok);outline-offset:2px;border-radius:6px}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+svg.feather{width:16px;height:16px;stroke-width:2;flex:none}
+.hidden{display:none!important}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+@media(min-width:768px){.wrap{padding:0 28px}}
+.top{border-bottom:1px solid var(--bd)}
+.top .wrap{display:flex;align-items:center;gap:12px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em}
+.brand img{width:28px;height:28px}
+.top nav{margin-left:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:12px;font-weight:700;font-size:14px;transition:background .2s,border-color .2s,opacity .2s;white-space:nowrap}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-pri{color:#04120c;background:#10B981}
+.btn-pri:hover:not(:disabled){background:#34d399}
+.btn-ghost{border:1px solid var(--bd2)}
+.btn-ghost:hover:not(:disabled){border-color:rgba(255,255,255,.32)}
+.btn-block{width:100%;min-height:52px;font-size:15px}
+h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.03em;font-weight:800;margin:36px 0 6px}
+.lead{color:var(--mu);margin-bottom:28px}
+.layout{display:grid;gap:20px;padding-bottom:56px}
+@media(min-width:960px){.layout{grid-template-columns:minmax(0,1fr) 360px;align-items:start}}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:22px}
+.col,#pay-section{display:grid;gap:16px;align-content:start}
+.card h2{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.plan-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.plan-head .led{width:10px;height:10px;border-radius:50%;background:var(--c,#10B981)}
+.plan-head b{font-size:24px;letter-spacing:-.02em}
+.plan-head .chip{margin-left:auto}
+.chip{display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;padding:4px 10px;border-radius:999px;border:1px solid var(--bd);color:var(--mu)}
+.chip.ok{color:#6ee7b7;border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.08)}
+.chip.am{color:#fcd34d;border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
+.specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+@media(min-width:620px){.specs{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.spec{border:1px solid var(--bd);border-radius:12px;padding:12px;background:var(--sf2)}
+.spec dt{font-size:12px;color:var(--mu);font-weight:600}
+.spec dd{font:700 18px 'JetBrains Mono',monospace;margin-top:4px}
+.spec .node{display:block;font:500 11px 'JetBrains Mono',monospace;color:#fcd34d;margin-top:2px}
+.cycles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:620px){.cycles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.cyc{display:grid;gap:4px;text-align:left;padding:14px;border-radius:12px;border:1px solid var(--bd);background:var(--sf2);transition:border-color .2s,background .2s;min-height:88px}
+.cyc:hover{border-color:var(--bd2)}
+.cyc[aria-checked="true"]{border-color:rgba(16,185,129,.6);background:rgba(16,185,129,.07)}
+.cyc b{font-size:14px}
+.cyc span{font:600 15px 'JetBrains Mono',monospace}
+.cyc small{font:600 11.5px 'JetBrains Mono',monospace;color:var(--ok);min-height:16px}
+.methods{display:grid;gap:10px}
+.method{display:flex;align-items:center;gap:14px;text-align:left;padding:14px 16px;border-radius:12px;border:1px solid var(--bd);background:var(--sf2);transition:border-color .2s;min-height:64px}
+.method:hover:not(:disabled){border-color:var(--bd2)}
+.method[aria-checked="true"]{border-color:rgba(16,185,129,.6);background:rgba(16,185,129,.07)}
+.method:disabled{opacity:.5;cursor:not-allowed}
+.method .ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--sf3);font-weight:800;font-size:13px}
+.method b{display:block;font-size:14.5px}
+.method small{color:var(--mu);font-size:12.5px}
+.method .chip{margin-left:auto}
+.notice{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:12px;font-size:14px;line-height:1.5}
+.notice.am{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);color:#fde68a}
+.notice.ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.35);color:#a7f3d0}
+.notice.rd{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.35);color:#fecaca}
+.notice svg.feather{margin-top:2px}
+.sum{position:sticky;top:20px}
+.rows{display:grid;margin:6px 0 16px}
+.rows div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);font-size:14px}
+.rows dt{color:var(--mu)}
+.rows dd{font-family:'JetBrains Mono',monospace}
+.rows .save dd{color:var(--ok)}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.total span{color:var(--mu);font-weight:600}
+.total b{font:700 34px 'JetBrains Mono',monospace;letter-spacing:-.03em}
+.ars{text-align:right;font:500 12.5px 'JetBrains Mono',monospace;color:var(--mu);min-height:18px;margin-bottom:16px}
+.fine{font-size:12.5px;color:var(--mu);margin-top:12px;line-height:1.5}
+.err{color:#fca5a5;font-size:13px;margin-top:10px;min-height:18px}
+.skel{height:120px;border-radius:12px;background:linear-gradient(90deg,#0d1017,#151923,#0d1017);background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{to{background-position:-200% 0}}
+.foot{border-top:1px solid var(--bd);padding:18px 0 28px;color:var(--mu);font-size:12.5px}
+.foot .wrap{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
+.signature{font:600 12px 'JetBrains Mono',monospace;letter-spacing:.1em;color:#4fae7b}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
-
 <body>
-    <div class="bg-glow"></div>
+<header class="top"><div class="wrap">
+  <a href="/" class="brand"><img src="/img/favicon.ico" alt="">ProServers</a>
+  <nav><a class="btn btn-ghost" href="/planes.html"><i data-feather="arrow-left"></i>Volver a planes</a></nav>
+</div></header>
 
-    <div class="max-w-5xl mx-auto px-4 py-10">
+<main class="wrap">
+  <h1 id="title">Contratar plan</h1>
+  <p class="lead" id="lead">Elegí el ciclo y el medio de pago. El total lo calcula el servidor con los precios publicados.</p>
 
-        <!-- HEADER -->
-        <div class="flex items-center justify-between mb-8 pb-6 border-b border-[#333]">
-            <div class="flex items-center gap-4">
-                <img src="/img/favicon.ico" class="w-12 h-12 object-contain drop-shadow-[0_0_12px_rgba(76,175,80,0.5)]"
-                    onerror="this.src='/img/logo-minecraft.ico'">
-                <div>
-                    <h1 class="text-2xl font-bold font-['Cinzel'] tracking-wider text-white">Finalizar Compra</h1>
-                    <p class="text-xs text-gray-400">Checkout seguro con Tarjetas, AstroPay, Mercado Pago, Ualá Bis y
-                        Transferencia</p>
-                </div>
-            </div>
-            <button onclick="window.location.href='/planes.html'"
-                class="text-xs text-gray-400 hover:text-white transition-colors uppercase font-bold flex items-center gap-2 bg-[#161616] px-4 py-2 rounded-lg border border-[#333]">
-                <i data-feather="arrow-left" class="w-4 h-4"></i> Volver a Planes
-            </button>
+  <div id="estado-pago" class="hidden" style="margin-bottom:20px"></div>
+
+  <div class="layout">
+    <div class="col">
+      <section class="card" id="plan-card"><div class="skel"></div></section>
+
+      <section class="card hidden" id="trial-card">
+        <h2><i data-feather="gift"></i>Prueba gratis de 15 días</h2>
+        <p style="color:var(--mu)">Sin tarjeta y sin cobro. Una prueba por cuenta: se activa al instante sobre este plan y vence sola a los 15 días. Requiere el correo verificado.</p>
+        <div class="err" id="trial-err" role="alert"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+          <button type="button" class="btn btn-pri" id="btn-trial"><i data-feather="zap"></i>Activar prueba gratis</button>
+          <button type="button" class="btn btn-ghost" id="btn-pagar-en-vez">Prefiero pagar ahora</button>
         </div>
+      </section>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            <!-- COLUMNA IZQUIERDA: CONFIGURACIÓN -->
-            <div class="lg:col-span-2 space-y-6">
-
-                <!-- 1. RESUMEN DEL SERVIDOR -->
-                <div class="glass-panel p-6">
-                    <h2 class="text-sm uppercase tracking-widest text-green-500 font-bold mb-4 flex items-center gap-2">
-                        <span
-                            class="bg-green-500/20 text-green-400 w-6 h-6 flex items-center justify-center rounded-full">1</span>
-                        Plan Seleccionado
-                    </h2>
-                    <div class="flex items-center justify-between bg-[#111] border border-[#222] p-4 rounded-xl">
-                        <div class="flex items-center gap-4">
-                            <div class="bg-[#1a1a1a] p-3 rounded-lg border border-[#333]">
-                                <i data-feather="server" class="w-6 h-6 text-gray-300" id="plan-icon"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-white font-['Cinzel']" id="plan-name">Cargando Plan...
-                                </h3>
-                                <div class="flex gap-3 text-xs text-gray-400 mt-1">
-                                    <span id="plan-ram"><i data-feather="cpu" class="w-3 h-3 inline"></i> -- GB
-                                        RAM</span>
-                                    <span id="plan-slots"><i data-feather="users" class="w-3 h-3 inline"></i> --
-                                        Slots</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="block text-xs text-gray-500 uppercase tracking-widest">Precio Base</span>
-                            <span class="text-2xl font-bold text-white" id="plan-base-price">$0.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. CICLO DE FACTURACIÓN -->
-                <div id="cycle-selection-panel" class="glass-panel p-6">
-                    <h2 class="text-sm uppercase tracking-widest text-green-500 font-bold mb-4 flex items-center gap-2">
-                        <span
-                            class="bg-green-500/20 text-green-400 w-6 h-6 flex items-center justify-center rounded-full">2</span>
-                        Ciclo de Facturación
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="cycle-box active p-4 rounded-xl relative" onclick="selectCycle(1, 0, this)">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-white">Mensual</span>
-                                <i data-feather="check-circle" class="text-green-500 w-5 h-5 check-icon"></i>
-                            </div>
-                            <p class="text-xs text-gray-400">Renovación cada 30 días</p>
-                        </div>
-                        <div class="cycle-box p-4 rounded-xl relative" onclick="selectCycle(3, 10, this)">
-                            <div
-                                class="absolute -top-3 -right-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg">
-                                Ahorras 10%</div>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-white">Trimestral</span>
-                                <i data-feather="circle" class="text-gray-600 w-5 h-5 check-icon"></i>
-                            </div>
-                            <p class="text-xs text-gray-400">Renovación cada 3 meses</p>
-                        </div>
-                        <div class="cycle-box p-4 rounded-xl relative" onclick="selectCycle(6, 15, this)">
-                            <div
-                                class="absolute -top-3 -right-2 bg-purple-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg">
-                                Ahorras 15%</div>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-white">Semestral</span>
-                                <i data-feather="circle" class="text-gray-600 w-5 h-5 check-icon"></i>
-                            </div>
-                            <p class="text-xs text-gray-400">Renovación cada 6 meses</p>
-                        </div>
-                        <div class="cycle-box p-4 rounded-xl relative border-amber-500/30"
-                            onclick="selectCycle(12, 20, this)">
-                            <div
-                                class="absolute -top-3 -right-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider">
-                                Mejor Valor -20%</div>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-white">Anual</span>
-                                <i data-feather="circle" class="text-gray-600 w-5 h-5 check-icon"></i>
-                            </div>
-                            <p class="text-xs text-gray-400">Pagas 1 vez al año</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PANEL EXCLUSIVO: PRUEBA GRATIS (sin tarjeta, una por cuenta) -->
-                <div id="trial-verification-panel"
-                    class="glass-panel p-6 border border-emerald-500/30 hidden shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-sm uppercase tracking-widest text-emerald-400 font-bold flex items-center gap-2">
-                            <i data-feather="gift" class="w-5 h-5"></i> Prueba gratis de 15 días
-                        </h2>
-                        <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-mono">$0.00</span>
-                    </div>
-                    <p class="text-xs text-gray-400 mb-6">Sin tarjeta y sin cobro. Una prueba por cuenta: se activa al instante sobre este plan y vence sola a los 15 días. Si te gusta, contratás desde Planes.</p>
-                    <div id="trial-msg" class="hidden text-xs p-3 rounded-lg mb-4 font-bold"></div>
-                    <button onclick="procesarPruebaGratis()" id="btn-pay-trial"
-                        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-colors uppercase text-[11px] tracking-wider shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2">
-                        <i data-feather="zap" class="w-4 h-4"></i> Activar prueba gratis
-                    </button>
-                </div>
-
+      <div id="pay-section">
+        <section class="card">
+          <h2><i data-feather="calendar"></i>Ciclo de facturación</h2>
+          <div class="cycles" role="radiogroup" aria-label="Ciclo" id="cycles"></div>
+        </section>
+        <section class="card">
+          <h2><i data-feather="credit-card"></i>Medio de pago</h2>
+          <div class="methods" role="radiogroup" aria-label="Medio de pago" id="methods"></div>
+          <div class="notice am hidden" id="no-methods" style="margin-top:12px">
+            <i data-feather="info"></i>
+            <div>Los pagos online se están habilitando. Mientras tanto podés pagar por transferencia: pedilo por soporte y lo confirmamos desde el panel.
+              <div style="margin-top:10px"><button type="button" class="btn btn-ghost" id="btn-transfer"><i data-feather="message-square"></i>Pedir pago por transferencia</button></div>
             </div>
-
-            <!-- COLUMNA DERECHA: TICKET Y PAGO -->
-            <div class="lg:col-span-1">
-                <div class="glass-panel p-6 sticky top-6">
-                    <h3
-                        class="font-bold text-lg text-white mb-4 border-b border-[#333] pb-3 font-['Cinzel'] tracking-wider">
-                        Resumen de Compra</h3>
-
-                    <div class="space-y-3 mb-6 text-sm">
-                        <div class="flex justify-between text-gray-300">
-                            <span id="ticket-plan-name">Plan ...</span>
-                            <span id="ticket-base-price">$0.00</span>
-                        </div>
-                        <div class="flex justify-between text-gray-400 text-xs">
-                            <span id="ticket-multipler">x 1 Mes</span>
-                            <span></span>
-                        </div>
-
-                        <!-- DESCUENTOS -->
-                        <div id="cycle-discount-row"
-                            class="flex justify-between text-green-400 hidden border-t border-[#222] pt-2 mt-2">
-                            <span>Descuento por Ciclo (<span id="cycle-pct">0</span>%)</span>
-                            <span id="cycle-discount-amount">-$0.00</span>
-                        </div>
-                        <div id="promo-discount-row"
-                            class="flex justify-between text-indigo-400 hidden border-t border-[#222] pt-2 mt-2">
-                            <span>Código Promocional (<span id="promo-pct">0</span>%)</span>
-                            <span id="promo-discount-amount">-$0.00</span>
-                        </div>
-                    </div>
-
-                    <!-- CAJA DE CUPONES -->
-                    <div id="promo-box" class="mb-6 bg-[#0a0a0a] p-3 rounded-lg border border-[#222]">
-                        <label class="text-[10px] text-gray-500 uppercase font-bold block mb-2 tracking-widest">¿Tenés
-                            un código?</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="promo-input"
-                                class="input-dark flex-1 rounded px-3 py-2 text-xs uppercase"
-                                placeholder="Ej: NAVIDAD50">
-                            <button onclick="applyPromoCode()"
-                                class="bg-[#222] hover:bg-[#333] text-white text-xs px-3 rounded transition-colors font-bold border border-[#444]">Aplicar</button>
-                        </div>
-                        <p id="promo-msg" class="text-[10px] mt-2 hidden"></p>
-                    </div>
-
-                    <!-- TOTAL -->
-                    <div class="border-t border-[#444] pt-4 mb-4">
-                        <div class="flex justify-between items-end">
-                            <span class="text-gray-400 uppercase tracking-widest text-xs font-bold">Total a Pagar</span>
-                            <div class="text-right">
-                                <span id="original-total"
-                                    class="text-gray-500 line-through text-sm hidden block mb-1">$0.00</span>
-                                <span id="final-total" class="text-3xl font-bold text-white">$0.00</span>
-                                <span class="text-[10px] text-gray-500 block">USD (Conversión local en pago)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- MÉTODOS DE PAGO ACEPTADOS -->
-                    <div class="mb-5 flex flex-wrap gap-2 justify-center">
-                        <span class="payment-pill"><span class="text-blue-500 font-black italic">VISA</span></span>
-                        <span class="payment-pill"><span class="text-red-500 font-black">mastercard</span></span>
-                        <span class="payment-pill"><span class="text-blue-400 font-black">AMEX</span></span>
-                        <span class="payment-pill text-green-400 font-black">Lemon</span>
-                        <span class="payment-pill text-blue-300 font-black">Ualá</span>
-                        <span class="payment-pill text-red-400"><i data-feather="credit-card" class="w-3 h-3"></i>
-                            AstroPay</span>
-                    </div>
-
-                    <!-- BOTONES DE PAGO (PRODUCCIÓN) -->
-                    <div class="space-y-3 mt-4" id="payment-buttons-container">
-                        <!-- Ualá Bis (Link / QR) -->
-                        <button onclick="procesarPagoDirecto('ualabis', 'btn-pay-uala')" id="btn-pay-uala"
-                            class="w-full bg-[#0066FF] hover:bg-[#0052cc] text-white py-3.5 rounded-xl flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wider transition-all shadow-[0_4px_15px_rgba(0,102,255,0.3)]">
-                            <i data-feather="link" class="w-4 h-4"></i> Generar QR / Link con Ualá Bis
-                        </button>
-
-                        <!-- AstroPay (Link Seguro) -->
-                        <button onclick="procesarPagoDirecto('astropay', 'btn-pay-astropay')" id="btn-pay-astropay"
-                            class="w-full bg-[#E63946] hover:bg-[#D32F2F] text-white py-3.5 rounded-xl flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wider transition-all shadow-[0_4px_15px_rgba(229,57,70,0.3)]">
-                            <i data-feather="target" class="w-4 h-4"></i> Pagar con AstroPay
-                        </button>
-
-                        <!-- Mercado Pago (Checkout) -->
-                        <button onclick="procesarPagoDirecto('mercadopago', 'btn-pay-mercadopago')" id="btn-pay-mercadopago"
-                            class="w-full bg-[#000000] border border-[#333] hover:border-[#4CAF50] text-white py-3.5 rounded-xl flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wider transition-all">
-                            <i data-feather="credit-card" class="w-4 h-4 text-[#4CAF50]"></i> Generar Pago Mercado Pago
-                        </button>
-
-                        <!-- Transferencia Manual -->
-                        <button onclick="mostrarAlias()" id="btn-pay-transfer"
-                            class="transfer-button w-full py-3 rounded-xl flex items-center justify-center gap-2 text-[10px] uppercase tracking-wider text-center mt-2">
-                            Alias / CVU Manual
-                        </button>
-                    </div>
-
-                    <p class="text-center text-[10px] text-gray-500 mt-4 flex items-center justify-center gap-1">
-                        <i data-feather="shield" class="w-3 h-3 text-green-500"></i> Pagos encriptados con AES-256
-                    </p>
-                </div>
-            </div>
-        </div>
+          </div>
+        </section>
+      </div>
     </div>
 
-    <!-- MODAL DE TRANSFERENCIA -->
-    <div id="transfer-modal"
-        class="hidden fixed top-0 left-0 w-full h-full bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div
-            class="bg-[#111] border border-[#333] p-8 rounded-2xl max-w-md w-full relative shadow-[0_0_30px_rgba(76,175,80,0.1)]">
-            <button onclick="cerrarAlias()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i
-                    data-feather="x"></i></button>
-            <div class="text-center mb-6">
-                <i data-feather="smartphone" class="w-12 h-12 text-green-500 mx-auto mb-3"></i>
-                <h3 class="text-xl font-bold text-white font-['Cinzel'] tracking-wider">Transferencia / Billeteras</h3>
-                <p class="text-xs text-gray-400 mt-2">Transfiere el monto exacto al siguiente Alias CVU desde tu banco,
-                    Lemon, Ualá o MercadoPago. Envíanos el comprobante.</p>
-            </div>
+    <aside class="card sum" id="sum">
+      <h2><i data-feather="file-text"></i>Resumen</h2>
+      <dl class="rows">
+        <div><dt>Plan</dt><dd id="s-plan">—</dd></div>
+        <div><dt>Precio mensual</dt><dd id="s-base">—</dd></div>
+        <div><dt>Ciclo</dt><dd id="s-ciclo">—</dd></div>
+        <div class="save"><dt>Descuento</dt><dd id="s-desc">—</dd></div>
+      </dl>
+      <div class="total"><span>Total</span><b id="s-total">—</b></div>
+      <div class="ars" id="s-ars"></div>
+      <button type="button" class="btn btn-pri btn-block" id="btn-pay" disabled><i data-feather="lock"></i><span id="pay-label">Elegí un medio de pago</span></button>
+      <p class="err" id="pay-err" role="alert"></p>
+      <p class="fine">Te redirigimos a la pasarela para pagar. ProServers no ve ni guarda los datos de tu tarjeta. La suscripción se activa cuando la pasarela confirma el pago.</p>
+    </aside>
+  </div>
+</main>
 
-            <div class="bg-[#0a0a0a] border border-[#222] p-4 rounded-xl text-center mb-6 relative">
-                <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Tu Alias de Pago</p>
-                <p class="text-2xl font-bold text-green-400 font-mono tracking-widest select-all">MAXPRO.SERVERS</p>
-                <button onclick="navigator.clipboard.writeText('MAXPRO.SERVERS'); alert('Alias copiado')"
-                    class="absolute top-4 right-4 text-gray-500 hover:text-white"><i data-feather="copy"
-                        class="w-4 h-4"></i></button>
-            </div>
+<footer class="foot"><div class="wrap"><span class="signature">PROFESSIONAL SERVERS V1.0 | BY @MAXPRO</span><span>Precios en USD. Mercado Pago cobra en pesos al tipo de cambio indicado.</span></div></footer>
 
-            <div class="flex justify-between items-center border-t border-[#333] pt-4 mb-6">
-                <span class="text-xs text-gray-400">Total a transferir:</span>
-                <span class="text-xl font-bold text-white" id="transfer-total-amount">$0.00</span>
-            </div>
+<script type="module">
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
-            <button onclick="procesarPagoManual()" id="btn-submit-manual"
-                class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition-colors uppercase text-xs tracking-wider flex items-center justify-center gap-2">
-                <i data-feather="check-circle" class="w-4 h-4"></i> Ya transferí (Avisar a soporte)
-            </button>
-        </div>
-    </div>
+const auth = getAuth(getApps().length ? getApp() : initializeApp({
+  apiKey: "AIzaSyAg-wvhB7iaHOF5UOSsOOOz6le1ZutVmMM",
+  authDomain: "proffesional-server.firebaseapp.com",
+  projectId: "proffesional-server",
+  storageBucket: "proffesional-server.firebasestorage.app",
+  messagingSenderId: "833822850667",
+  appId: "1:833822850667:web:3c03219c6822116edbfb2e",
+  measurementId: "G-8SZ528Y5NZ"
+}));
 
-    <script type="module">
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const money = (n) => 'US$ ' + Number(n).toFixed(2);
+const ars = (n) => '$ ' + Number(n).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: { Accept: 'application/json', 'Content-Type': 'application/json', Authorization: 'Bearer ' + await auth.currentUser.getIdToken(), ...(opts.headers || {}) } });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw Object.assign(new Error(data?.message || data?.error || `Error ${res.status}`), { status: res.status });
+  return data;
+}
 
-        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, updateProfile, signOut, GoogleAuthProvider, GithubAuthProvider, OAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, linkWithPopup, unlink } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+const COLOR = { redstone: '#EF4444', hierro: '#CBD5E1', cobre: '#D97706', oro: '#EAB308', diamante: '#22D3EE', netherite: '#A855F7', 'ghost-warrior': '#3B82F6' };
+const NOMBRE = (n) => n.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+const METODOS = [
+  { id: 'mercadopago', nombre: 'Mercado Pago', det: 'Tarjetas, dinero en cuenta y efectivo. Cobra en pesos.', ico: 'MP' },
+  { id: 'astropay', nombre: 'AstroPay', det: 'Tarjetas y medios locales. Cobra en dólares.', ico: 'AP' },
+  { id: 'uala', nombre: 'Ualá Bis', det: 'Integración en camino.', ico: 'UB' },
+];
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAg-wvhB7iaHOF5UOSsOOOz6le1ZutVmMM",
-            authDomain: "proffesional-server.firebaseapp.com",
-            projectId: "proffesional-server",
-            storageBucket: "proffesional-server.firebasestorage.app",
-            messagingSenderId: "833822850667",
-            appId: "1:833822850667:web:3c03219c6822116edbfb2e",
-            measurementId: "G-8SZ528Y5NZ"
-        };
+const q = new URLSearchParams(location.search);
+const S = { plan: null, ciclo: [1, 3, 6, 12].includes(Number(q.get('ciclo'))) ? Number(q.get('ciclo')) : 1, metodo: null, pasarelas: {}, tasa: null, desc: { 1: 0, 3: 10, 6: 15, 12: 20 }, cap: null };
+const quote = (m) => Math.round(S.plan.base * m * (1 - S.desc[m] / 100) * 100) / 100;
 
-        const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-        const auth = getAuth(app);
+function pintarPlan() {
+  const p = S.plan, capRam = S.cap && p.ram > S.cap.ram, capCpu = S.cap && p.cpu > S.cap.cpu;
+  $('plan-card').style.setProperty('--c', COLOR[p.nombre] || '#10B981');
+  $('plan-card').innerHTML = `<div class="plan-head"><span class="led"></span><b>${esc(NOMBRE(p.nombre))}</b>${p.prueba ? '<span class="chip ok">15 días gratis disponible</span>' : ''}</div>
+    <dl class="specs">
+      <div class="spec"><dt>RAM</dt><dd>${p.ram / 1024} GB</dd>${capRam ? `<span class="node">nodo actual: hasta ${(S.cap.ram / 1024).toFixed(1)} GB</span>` : ''}</div>
+      <div class="spec"><dt>vCPU</dt><dd>${p.cpu}</dd>${capCpu ? `<span class="node">nodo actual: hasta ${S.cap.cpu}</span>` : ''}</div>
+      <div class="spec"><dt>Jugadores</dt><dd>${p.players === null ? '∞' : 'hasta ' + p.players}</dd></div>
+      <div class="spec"><dt>Disco</dt><dd>${p.disk} GB</dd></div>
+    </dl>`;
+}
 
-        // CAPTURAMOS EL TOKEN CSRF DE LARAVEL PARA LAS COMPRAS
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+function pintarCiclos() {
+  $('cycles').innerHTML = [1, 3, 6, 12].map(m => `<button type="button" class="cyc" role="radio" data-m="${m}" aria-checked="${m === S.ciclo}">
+      <b>${m === 1 ? 'Mensual' : m === 3 ? 'Trimestral' : m === 6 ? 'Semestral' : 'Anual'}</b><span>${money(quote(m) / m)}<small style="color:var(--mu)"> /mes</small></span><small>${S.desc[m] ? `Ahorrás ${S.desc[m]}%` : ''}</small></button>`).join('');
+}
 
-        // Identidad visual por plan; precio, RAM y jugadores vienen de SQL Server (/api/plans).
-        const ESTILO = {
-            'redstone': { name: 'Plan Redstone', color: 'text-red-500' },
-            'hierro': { name: 'Plan Hierro', color: 'text-gray-300' },
-            'cobre': { name: 'Plan Cobre', color: 'text-amber-600' },
-            'oro': { name: 'Plan Oro', color: 'text-yellow-500' },
-            'diamante': { name: 'Plan Diamante', color: 'text-cyan-400' },
-            'netherite': { name: 'Plan Netherite', color: 'text-purple-500' },
-            'ghost-warrior': { name: 'Ghost Warrior', color: 'text-blue-500' }
-        };
+function pintarMetodos() {
+  $('methods').innerHTML = METODOS.map(m => {
+    const on = S.pasarelas[m.id] === true;
+    return `<button type="button" class="method" role="radio" data-id="${m.id}" aria-checked="${S.metodo === m.id}" ${on ? '' : 'disabled'}>
+      <span class="ico">${m.ico}</span><span><b>${m.nombre}</b><small>${m.det}</small></span>${on ? '' : '<span class="chip">Próximamente</span>'}</button>`;
+  }).join('');
+  $('no-methods').classList.toggle('hidden', Object.values(S.pasarelas).some(Boolean));
+}
 
-        let currentPlan = null;
-        let selectedMonths = 1;
-        let cycleDiscount = 0;
-        let promoDiscount = 0;
-        let finalNetTotal = 0;
-        let planSlugFinal = 'hierro';
-        let estaBloqueado = false;
-        let intentosFallidos = 0;
+function pintarResumen() {
+  const total = quote(S.ciclo), bruto = S.plan.base * S.ciclo;
+  $('s-plan').textContent = NOMBRE(S.plan.nombre);
+  $('s-base').textContent = money(S.plan.base);
+  $('s-ciclo').textContent = `${S.ciclo} ${S.ciclo === 1 ? 'mes' : 'meses'}`;
+  $('s-desc').textContent = S.desc[S.ciclo] ? `-${money(bruto - total)} (${S.desc[S.ciclo]}%)` : '—';
+  $('s-total').textContent = money(total);
+  $('s-ars').textContent = S.metodo === 'mercadopago' && S.tasa ? `≈ ${ars(total * S.tasa)} en Mercado Pago (US$ 1 = ${ars(S.tasa)})` : '';
+  const m = METODOS.find(x => x.id === S.metodo);
+  $('btn-pay').disabled = !m;
+  $('pay-label').textContent = m ? `Pagar con ${m.nombre}` : 'Elegí un medio de pago';
+}
 
-        // Variables de URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const isTrial = urlParams.get('trial') === 'true';
+async function pagar() {
+  $('btn-pay').disabled = true; $('pay-err').textContent = ''; $('pay-label').textContent = 'Conectando con la pasarela…';
+  try {
+    const d = await api(`/api/checkout/${S.metodo}`, { method: 'POST', body: JSON.stringify({ plan_nombre: S.plan.nombre, ciclo_meses: S.ciclo }) });
+    location.href = d.redirect_url;
+  } catch (e) { $('pay-err').textContent = e.message; pintarResumen(); }
+}
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            feather.replace();
+async function activarPrueba() {
+  $('btn-trial').disabled = true; $('trial-err').textContent = '';
+  try {
+    const d = await api('/api/trial/start', { method: 'POST', body: JSON.stringify({ plan_nombre: S.plan.nombre }) });
+    mostrarEstado('ok', `Prueba activada hasta el ${new Date(d.suscripcion.trial_ends_at).toLocaleDateString('es-AR')}. Te llevamos a desplegar tu servidor…`);
+    setTimeout(() => location.href = '/crear.html', 1600);
+  } catch (e) { $('trial-err').textContent = e.message; $('btn-trial').disabled = false; }
+}
 
-            const planSlug = urlParams.get('plan') || 'hierro';
-            const cicloParam = parseInt(urlParams.get('ciclo')) || 1;
+function mostrarEstado(tipo, texto, accion = '') {
+  const el = $('estado-pago');
+  el.className = `notice ${tipo}`;
+  el.innerHTML = `<i data-feather="${tipo === 'ok' ? 'check-circle' : tipo === 'rd' ? 'x-circle' : 'clock'}"></i><div>${esc(texto)}${accion}</div>`;
+  feather.replace();
+}
 
-            planSlugFinal = planSlug;
-            try {
-                const r = await fetch('/api/plans', { headers: { Accept: 'application/json' }, cache: 'no-store' });
-                const p = r.ok ? (await r.json()).planes.find(x => x.nombre === planSlug) : null;
-                if (p) currentPlan = {
-                    ...(ESTILO[planSlug] || { name: planSlug, color: 'text-emerald-400' }),
-                    ram: Number((Number(p.memoria_mb) / 1024).toFixed(1)),
-                    slots: p.max_jugadores === null ? 'Ilimitados' : Number(p.max_jugadores),
-                    price: Number(p.precio_mensual),
-                };
-            } catch (e) { currentPlan = null; }
+/* Vuelta desde la pasarela: esperamos la confirmación del webhook leyendo el plan real. */
+async function esperarActivacion() {
+  const estado = q.get('estado');
+  if (!estado) return;
+  if (estado === 'error') return mostrarEstado('rd', 'La pasarela rechazó o canceló el pago. No se cobró nada; podés intentar de nuevo.');
+  mostrarEstado('am', estado === 'pendiente' ? 'El pago quedó pendiente en la pasarela. Lo activamos apenas se acredite.' : 'Pago recibido. Esperando la confirmación de la pasarela…');
+  for (let i = 0; i < 30; i++) {
+    const me = await api('/api/me').catch(() => null);
+    if (me?.plan?.nombre === S.plan.nombre && !me.en_prueba) {
+      return mostrarEstado('ok', `Listo: el plan ${NOMBRE(S.plan.nombre)} está activo.`, '<div style="margin-top:10px"><a class="btn btn-pri" href="/crear.html">Desplegar servidor</a></div>');
+    }
+    await new Promise(r => setTimeout(r, 4000));
+  }
+  mostrarEstado('am', 'La confirmación está tardando. Te avisamos por soporte si hace falta algo; no hace falta pagar de nuevo.');
+}
 
-            if (!currentPlan) {
-                alert("Plan inválido. Redirigiendo...");
-                window.location.href = '/planes.html';
-                return;
-            }
+/* Eventos */
+$('cycles').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b) return; S.ciclo = Number(b.dataset.m); pintarCiclos(); pintarResumen(); });
+$('methods').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (!b || b.disabled) return; S.metodo = b.dataset.id; pintarMetodos(); pintarResumen(); });
+$('btn-pay').onclick = pagar;
+$('btn-trial').onclick = activarPrueba;
+$('btn-pagar-en-vez').onclick = () => { $('trial-card').classList.add('hidden'); $('pay-section').classList.remove('hidden'); $('sum').classList.remove('hidden'); };
+$('btn-transfer').onclick = async () => {
+  try {
+    await api('/api/support/chat', { method: 'POST', body: JSON.stringify({ message: `[Pago por transferencia] Quiero contratar el plan ${NOMBRE(S.plan.nombre)} por ${S.ciclo} ${S.ciclo === 1 ? 'mes' : 'meses'} (total ${money(quote(S.ciclo))}).` }) });
+    mostrarEstado('ok', 'Listo: abrimos un ticket con tu pedido. Te pasamos los datos de transferencia por soporte.');
+    scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e) { $('pay-err').textContent = e.message; }
+};
 
-            document.getElementById('plan-name').innerText = currentPlan.name;
-            document.getElementById('plan-name').className = `text-xl font-bold font-['Cinzel'] ${currentPlan.color}`;
-            document.getElementById('plan-ram').innerHTML = `<i data-feather="cpu" class="w-3 h-3 inline"></i> ${currentPlan.ram} GB RAM`;
-            document.getElementById('plan-slots').innerHTML = `<i data-feather="users" class="w-3 h-3 inline"></i> ${currentPlan.slots} jugadores`;
-            document.getElementById('plan-base-price').innerText = `$${currentPlan.price.toFixed(2)}`;
+/* Arranque */
+feather.replace();
+await auth.authStateReady();
+if (!auth.currentUser) { location.replace('/index.html'); } else {
+  try {
+    const [cat, pas, ping] = await Promise.all([
+      fetch('/api/plans', { headers: { Accept: 'application/json' } }).then(r => r.json()),
+      api('/api/checkout/pasarelas'),
+      fetch('/ping').then(r => r.ok ? r.json() : null).catch(() => null),
+    ]);
+    const p = cat.planes.find(x => x.nombre === q.get('plan'));
+    if (!p) { location.replace('/planes.html'); throw new Error('plan'); }
+    S.plan = { nombre: p.nombre, base: Number(p.precio_mensual), ram: Number(p.memoria_mb), cpu: Number(p.cpu_cores), disk: Number(p.almacenamiento_gb), players: p.max_jugadores === null ? null : Number(p.max_jugadores), prueba: !!p.prueba };
+    S.pasarelas = pas.pasarelas || {}; S.tasa = pas.tasa_ars; S.desc = pas.descuentos || S.desc;
+    if (ping?.ramTopeMb) S.cap = { ram: Number(ping.ramTopeMb), cpu: Number(ping.cpuTope) || Infinity };
+    $('title').textContent = `Plan ${NOMBRE(p.nombre)}`;
+    pintarPlan(); pintarCiclos(); pintarMetodos(); pintarResumen();
 
-            document.getElementById('ticket-plan-name').innerText = currentPlan.name;
-            document.getElementById('ticket-base-price').innerText = `$${currentPlan.price.toFixed(2)} USD`;
-
-            // SI ES PRUEBA GRATIS MUTA EL CHECKOUT COMPLETAMENTE
-            if (isTrial) {
-                document.getElementById('cycle-selection-panel').classList.add('hidden');
-                document.getElementById('promo-box').classList.add('hidden');
-                document.getElementById('payment-buttons-container').classList.add('hidden');
-
-                document.getElementById('trial-verification-panel').classList.remove('hidden');
-
-                document.getElementById('ticket-multipler').innerText = 'x 15 Días (Prueba Gratis)';
-                document.getElementById('ticket-base-price').innerText = '$0.00 USD';
-
-                document.getElementById('final-total').innerText = '$0.00';
-                document.getElementById('final-total').classList.replace('text-white', 'text-red-400');
-            } else {
-                document.querySelectorAll('.cycle-box').forEach(box => {
-                    let boxValue = 1;
-                    if (box.innerText.includes('Trimestral')) boxValue = 3;
-                    if (box.innerText.includes('Semestral')) boxValue = 6;
-                    if (box.innerText.includes('Anual')) boxValue = 12;
-
-                    if (boxValue === cicloParam) {
-                        let discount = 0;
-                        if (cicloParam === 3) discount = 10;
-                        if (cicloParam === 6) discount = 15;
-                        if (cicloParam === 12) discount = 20;
-                        selectCycle(cicloParam, discount, box);
-                    }
-                });
-                if (cicloParam === 1) calculateTotal();
-            }
-
-            feather.replace();
-
-            onAuthStateChanged(auth, async (user) => {
-                if (!user) {
-                    await auth.authStateReady();
-                    if (!auth.currentUser) window.location.href = '/index.html';
-                }
-            });
-        });
-
-        // LÓGICA DE PRECIOS REGULARES
-        window.selectCycle = (months, discountPct, element) => {
-            if (isTrial) return; // Si es prueba, no hace nada
-            document.querySelectorAll('.cycle-box').forEach(box => {
-                box.classList.remove('active');
-                box.querySelector('.check-icon').setAttribute('data-feather', 'circle');
-                box.querySelector('.check-icon').classList.replace('text-green-500', 'text-gray-600');
-            });
-
-            element.classList.add('active');
-            element.querySelector('.check-icon').setAttribute('data-feather', 'check-circle');
-            element.querySelector('.check-icon').classList.replace('text-gray-600', 'text-green-500');
-            feather.replace();
-
-            selectedMonths = months;
-            cycleDiscount = discountPct;
-
-            document.getElementById('ticket-multipler').innerText = `x ${months} Mes${months > 1 ? 'es' : ''}`;
-            calculateTotal();
-        };
-
-        window.applyPromoCode = () => {
-            if (isTrial) return;
-            const input = document.getElementById('promo-input').value.toUpperCase().trim();
-            const msg = document.getElementById('promo-msg');
-
-            // Los cupones aún no existen en el backend: no se muestra un descuento que no se cobraría.
-            promoDiscount = 0;
-            if (input === '') {
-                msg.classList.add('hidden');
-                calculateTotal();
-                return;
-            }
-            msg.innerText = "Los códigos promocionales todavía no están disponibles.";
-            msg.className = "text-[10px] mt-2 text-amber-400 font-bold";
-            msg.classList.remove('hidden');
-            calculateTotal();
-        };
-
-        function calculateTotal() {
-            if (!currentPlan || isTrial) return;
-
-            const grossTotal = currentPlan.price * selectedMonths;
-            const discountAmountCycle = grossTotal * (cycleDiscount / 100);
-            const subTotal = grossTotal - discountAmountCycle;
-            const discountAmountPromo = subTotal * (promoDiscount / 100);
-
-            finalNetTotal = subTotal - discountAmountPromo;
-
-            if (cycleDiscount > 0) {
-                document.getElementById('cycle-discount-row').classList.remove('hidden');
-                document.getElementById('cycle-pct').innerText = cycleDiscount;
-                document.getElementById('cycle-discount-amount').innerText = `-$${discountAmountCycle.toFixed(2)}`;
-            } else {
-                document.getElementById('cycle-discount-row').classList.add('hidden');
-            }
-
-            if (promoDiscount > 0) {
-                document.getElementById('promo-discount-row').classList.remove('hidden');
-                document.getElementById('promo-pct').innerText = promoDiscount;
-                document.getElementById('promo-discount-amount').innerText = `-$${discountAmountPromo.toFixed(2)}`;
-            } else {
-                document.getElementById('promo-discount-row').classList.add('hidden');
-            }
-
-            const finalEl = document.getElementById('final-total');
-            const originalEl = document.getElementById('original-total');
-
-            finalEl.style.opacity = 0;
-            setTimeout(() => {
-                finalEl.innerText = `$${finalNetTotal.toFixed(2)}`;
-                document.getElementById('transfer-total-amount').innerText = `$${finalNetTotal.toFixed(2)} USD`;
-                finalEl.style.opacity = 1;
-            }, 200);
-
-            if (cycleDiscount > 0 || promoDiscount > 0) {
-                originalEl.innerText = `$${grossTotal.toFixed(2)}`;
-                originalEl.classList.remove('hidden');
-            } else {
-                originalEl.classList.add('hidden');
-            }
-        }
-
-        // ==========================================
-        // PROCESADOR EXCLUSIVO DE LA PRUEBA GRATIS
-        // ==========================================
-        window.procesarPruebaGratis = async () => {
-            const btn = document.getElementById('btn-pay-trial');
-            const msg = document.getElementById('trial-msg');
-            const show = (text, ok) => {
-                msg.textContent = text;
-                msg.className = 'text-xs p-3 rounded-lg mb-4 font-bold ' + (ok ? 'bg-emerald-950/50 border border-emerald-500/50 text-emerald-300' : 'bg-red-950/50 border border-red-500/50 text-red-400');
-            };
-            btn.disabled = true;
-            btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i> Activando...';
-            feather.replace();
-            try {
-                await auth.authStateReady();
-                if (!auth.currentUser) return window.location.href = '/index.html';
-                const res = await fetch('/api/trial/start', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer ' + await auth.currentUser.getIdToken() },
-                    body: JSON.stringify({ plan_nombre: planSlugFinal })
-                });
-                const data = await res.json().catch(() => null);
-                if (!res.ok || !data?.success) throw new Error(data?.message || `Error ${res.status}`);
-                const hasta = new Date(data.suscripcion.trial_ends_at).toLocaleDateString('es-AR');
-                show(`Prueba activada hasta el ${hasta}. Te llevamos a desplegar tu servidor…`, true);
-                btn.innerHTML = '<i data-feather="check" class="w-4 h-4"></i> Prueba activada';
-                feather.replace();
-                setTimeout(() => window.location.href = '/crear.html', 1600);
-            } catch (e) {
-                show(e.message, false);
-                btn.disabled = false;
-                btn.innerHTML = '<i data-feather="zap" class="w-4 h-4"></i> Activar prueba gratis';
-                feather.replace();
-            }
-        };
-
-        // ==========================================
-        // FUNCION MAESTRA DE CONEXIÓN A LARAVEL (PAGOS REALES)
-        // ==========================================
-        window.procesarPagoDirecto = async (pasarela, btnId) => {
-            if (estaBloqueado) return;
-
-            const btn = document.getElementById(btnId);
-            const originalText = btn.innerHTML;
-            const allButtons = document.querySelectorAll('#payment-buttons-container button');
-
-            allButtons.forEach(b => b.disabled = true);
-            btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i> Generando Link...';
-            feather.replace();
-
-            try {
-                const user = auth.currentUser;
-                if (!user) throw new Error("Debes iniciar sesión para procesar un pago.");
-                const token = await user.getIdToken();
-
-                const res = await fetch(`/api/checkout/${pasarela}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token,
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({
-                        email: user.email,
-                        plan_nombre: planSlugFinal,
-                        ciclo_meses: selectedMonths
-                    })
-                });
-
-                const data = await res.json();
-
-                if (data.success && data.redirect_url) {
-                    window.location.href = data.redirect_url;
-                } else {
-                    throw new Error(data.error || `No se pudo generar el enlace de ${pasarela.toUpperCase()}.`);
-                }
-            } catch (err) {
-                alert("Error de Pasarela: " + err.message);
-                allButtons.forEach(b => b.disabled = false);
-                btn.innerHTML = originalText;
-                feather.replace();
-            }
-        };
-
-        window.procesarPagoManual = async () => {
-            const btn = document.getElementById('btn-submit-manual');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i data-feather="loader" class="animate-spin w-4 h-4"></i> Generando orden...';
-            feather.replace();
-
-            try {
-                const user = auth.currentUser;
-                const transaccionManualId = 'MANUAL-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-
-                alert(`✅ Intención de pago registrada.\n\nCódigo de Transacción: ${transaccionManualId}\nPor favor envíalo por el chat de soporte junto con el comprobante de pago de $${finalNetTotal.toFixed(2)} USD.`);
-                cerrarAlias();
-            } catch (err) {
-                alert("Error: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-                feather.replace();
-            }
-        };
-
-        window.mostrarAlias = () => {
-            document.getElementById('transfer-modal').classList.remove('hidden');
-        };
-        window.cerrarAlias = () => {
-            document.getElementById('transfer-modal').classList.add('hidden');
-        };
-    </script>
+    if (q.get('trial') === 'true' && S.plan.prueba) {
+      const st = await api('/api/trial/status').catch(() => null);
+      if (st?.elegible) {
+        $('trial-card').classList.remove('hidden'); $('pay-section').classList.add('hidden'); $('sum').classList.add('hidden');
+        $('lead').textContent = 'Activá tu prueba sin tarjeta. Cuando termine, elegís si seguís con el plan.';
+      } else {
+        mostrarEstado('am', 'Tu cuenta ya usó la prueba gratis. Podés contratar el plan con descuento por ciclo.');
+      }
+    }
+    esperarActivacion();
+    feather.replace();
+  } catch (e) {
+    if (e.message !== 'plan') { $('plan-card').innerHTML = '<p style="color:var(--mu)">No pudimos cargar el plan. Recargá la página.</p>'; }
+  }
+}
+</script>
 </body>
-
 </html>

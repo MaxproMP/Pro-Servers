@@ -42,6 +42,18 @@ return [
     // Funciones premium (Mine AI, gestor de archivos): plan Oro o superior.
     'planes_premium' => ['oro', 'diamante', 'netherite', 'ghost-warrior'],
 
+    'mercadopago' => [
+        'token' => env('MERCADOPAGO_ACCESS_TOKEN'),
+        'webhook_secret' => env('MP_WEBHOOK_SECRET'),
+        'tasa_ars' => env('MP_TASA_ARS'), // pesos por dólar que se cobran en Mercado Pago
+    ],
+
+    'astropay' => [
+        'api_url' => env('ASTROPAY_API_URL'),
+        'client_id' => env('ASTROPAY_CLIENT_ID'),
+        'secret' => env('ASTROPAY_SECRET'),
+    ],
+
     // Firma HMAC de webhooks de pago. Sin secret configurado, todo webhook se rechaza.
     'webhooks' => [
         'secret' => env('WEBHOOK_SECRET'),

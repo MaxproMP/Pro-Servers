@@ -80,3 +80,14 @@ it('una prueba vencida deja de contar como suscripción activa', function () {
 
     expect(Cliente::firstOrFail()->suscripcionActiva)->toBeNull();
 });
+
+it('editar un plan desde Overwatch invalida el catálogo cacheado', function () {
+    $this->getJson('/api/plans')->assertOk(); // calienta la caché
+    $hs = tokenFirebase('uid-ceo', config('services.ceo_email'));
+    $this->postJson('/api/login', [], $hs)->assertOk();
+    $id = App\Models\Plan::where('nombre', 'hierro')->value('id');
+    $this->patchJson("/api/admin/plans/{$id}", ['precio_mensual' => 10], $hs)->assertOk();
+
+    $p = collect($this->getJson('/api/plans')->json('planes'))->firstWhere('nombre', 'hierro');
+    expect((float) $p['precio_mensual'])->toBe(10.0);
+});

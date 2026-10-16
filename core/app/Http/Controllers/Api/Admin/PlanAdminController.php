@@ -7,9 +7,12 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Models\Plan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 final class PlanAdminController extends AdminController
 {
+    public const CACHE_CATALOGO = 'catalogo:publico:v2';
+
     public function index(): JsonResponse
     {
         return response()->json(['success' => true, 'planes' => Plan::orderBy('precio_mensual')->get()]);
@@ -28,6 +31,7 @@ final class PlanAdminController extends AdminController
 
         $plan = Plan::findOrFail($id);
         $plan->forceFill($data)->save();
+        Cache::forget(self::CACHE_CATALOGO); // planes.html y checkout ven el cambio al instante
         $this->auditar('admin.plan_update', null, ['plan' => $plan->nombre] + $data);
 
         return response()->json(['success' => true, 'plan' => $plan->fresh()]);
@@ -37,12 +41,11 @@ final class PlanAdminController extends AdminController
     public function publico(): JsonResponse
     {
         $prueba = config('services.trial.planes');
+        // Catálogo cacheado 10 min; se invalida al editar un plan desde Overwatch.
+        $planes = Cache::remember(self::CACHE_CATALOGO, 600, fn () => Plan::where('visible', true)->orderBy('precio_mensual')
+            ->get(['id', 'nombre', 'precio_mensual', 'memoria_mb', 'cpu_cores', 'almacenamiento_gb', 'max_jugadores'])
+            ->map(fn (Plan $p) => $p->toArray() + ['prueba' => in_array($p->nombre, $prueba, true)])->all());
 
-        return response()->json([
-            'trial_dias' => (int) config('services.trial.dias'),
-            'planes' => Plan::where('visible', true)->orderBy('precio_mensual')
-                ->get(['id', 'nombre', 'precio_mensual', 'memoria_mb', 'cpu_cores', 'almacenamiento_gb', 'max_jugadores'])
-                ->map(fn (Plan $p) => $p->toArray() + ['prueba' => in_array($p->nombre, $prueba, true)]),
-        ]);
+        return response()->json(['trial_dias' => (int) config('services.trial.dias'), 'planes' => $planes]);
     }
 }
