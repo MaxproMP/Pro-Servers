@@ -1,5 +1,10 @@
 <?php
 
+use App\Models\Cliente;
+use App\Models\Plan;
+use App\Models\Suscripcion;
+use Kreait\Laravel\Firebase\Facades\Firebase;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +52,26 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/** Token de Firebase simulado; cada test elige uid, email y si el email está verificado. */
+function tokenFirebase(string $uid, string $email, bool $verificado = true): array
+{
+    $claims = ['sub' => $uid, 'email' => $email, 'name' => 'Test User', 'email_verified' => $verificado, 'auth_time' => 1];
+    $token = new class($claims) {
+        public function __construct(private array $c) {}
+        public function claims(): object { $c = $this->c; return new class($c) { public function __construct(private array $c) {} public function get(string $k) { return $this->c[$k] ?? null; } }; }
+    };
+    $auth = new class($token) { public function __construct(private object $t) {} public function verifyIdToken(string $jwt): object { return $this->t; } };
+    Firebase::swap(new class($auth) { public function __construct(private object $a) {} public function auth(): object { return $this->a; } });
+
+    return ['Authorization' => 'Bearer tok-'.$uid];
+}
+
+function conPlan(string $uid, string $plan): Cliente
+{
+    $c = Cliente::where('firebase_uid', $uid)->firstOrFail();
+    Suscripcion::create(['cliente_id' => $c->id, 'plan_id' => Plan::where('nombre', $plan)->value('id'), 'estado' => 'activa', 'ciclo_meses' => 1]);
+
+    return $c;
 }

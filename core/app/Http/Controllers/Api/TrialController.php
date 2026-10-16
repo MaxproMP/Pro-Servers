@@ -33,6 +33,11 @@ final class TrialController extends Controller
             'plan_nombre' => ['required', 'string', Rule::in(config('services.trial.planes'))],
         ]);
 
+        // Anti-abuso: la prueba exige email verificado por Firebase.
+        if ($request->attributes->get('email_verified') !== true) {
+            return response()->json(['success' => false, 'message' => 'Verificá tu email para activar la prueba gratis.'], 403);
+        }
+
         $plan = Plan::where('nombre', $data['plan_nombre'])->where('visible', true)->first();
         if (! $plan) {
             return response()->json(['success' => false, 'message' => 'Ese plan no está disponible.'], 422);

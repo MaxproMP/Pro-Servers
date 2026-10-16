@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Laravel solo es alcanzable desde nginx (red interna de Docker), que reescribe X-Forwarded-For con la IP real.
+        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO);
         $middleware->alias([
             'firebase.auth' => \App\Http\Middleware\FirebaseTokenMiddleware::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,

@@ -8,6 +8,7 @@ const os = require('os');
 const path = require('path');
 const dns = require('dns').promises;
 const net = require('net');
+const { secretoValido, puedeOperar, accesoPremium, crearLimitador } = require('./lib/acceso');
 
 // === INTEGRACIÓN FIREBASE ADMIN SDK (Seguridad) ===
 const admin = require('firebase-admin');
@@ -82,8 +83,7 @@ function saveDB(db) {
 
 // === MIDDLEWARE DE SEGURIDAD (Para rutas internas Laravel→Node) ===
 const verificarCerebro = (req, res, next) => {
-    const token = req.headers['x-daemon-secret'];
-    if (!process.env.NODE_SECRET_KEY || token !== process.env.NODE_SECRET_KEY) {
+    if (!secretoValido(req.headers['x-daemon-secret'], process.env.NODE_SECRET_KEY)) {
         console.warn('⚠️ Intento de acceso no autorizado al Demonio.');
         return res.status(403).json({ error: 'Acceso denegado. Solo Laravel puede dar órdenes.' });
     }
@@ -113,10 +113,54 @@ async function registrarAuditoria(event, actorId, serverId, payload = {}) {
     }
 }
 
-app.use('/api/project', verificarTokenFirebase);
-app.use('/api/server', verificarTokenFirebase);
-app.use('/api/curseforge', verificarTokenFirebase);
-app.use('/api/modrinth', verificarTokenFirebase);
+// === RUTAS DEL FRONTEND: solo vía Laravel ===
+// Exigen la firma de Laravel (x-daemon-secret) Y el token de Firebase del usuario.
+// El uid sale SIEMPRE del token verificado; nada de lo que mande el navegador lo define.
+const soloDesdeLaravel = (req, res, next) => {
+    if (!secretoValido(req.headers['x-daemon-secret'], process.env.NODE_SECRET_KEY)) {
+        return res.status(403).json({ error: 'Acceso denegado.' });
+    }
+    req.uid = req.user.uid;
+    req.rol = String(req.headers['x-staff-role'] || 'usuario');
+    req.planCliente = String(req.headers['x-plan'] || '');
+    if (req.body && typeof req.body === 'object') delete req.body.uid;
+    next();
+};
+
+// Anti-saturación por usuario (Laravel ya limita antes; esto es la segunda barrera).
+const limiteGeneral = crearLimitador(240, 60 * 1000);
+const limiteDeploy = crearLimitador(5, 10 * 60 * 1000);
+const limitarTasa = (req, res, next) => {
+    if (!limiteGeneral(req.uid)) return res.status(429).json({ error: 'Demasiadas solicitudes. Esperá un minuto.' });
+    if (req.method === 'POST' && ['/api/project/create', '/api/project/clone'].includes(req.originalUrl.split('?')[0]) && !limiteDeploy(req.uid)) {
+        return res.status(429).json({ success: false, message: 'Límite de despliegues alcanzado. Probá en unos minutos.' });
+    }
+    next();
+};
+
+for (const prefijo of ['/api/project', '/api/server', '/api/curseforge', '/api/modrinth']) {
+    app.use(prefijo, verificarTokenFirebase, soloDesdeLaravel, limitarTasa);
+}
+
+// Propiedad: el servidor tiene que ser del usuario (o el actor es ceo/admin).
+const exigirPropiedad = (req, res, next) => {
+    const serverId = String(req.body?.serverId ?? req.query?.serverId ?? '');
+    if (!serverId) return res.status(400).json({ success: false, error: 'Falta serverId' });
+    const hit = ubicarServidor(serverId);
+    if (!hit) return res.status(404).json({ success: false, error: 'Servidor no encontrado.' });
+    if (!puedeOperar(hit.uid, req.uid, req.rol)) {
+        return res.status(403).json({ success: false, error: 'No tenés permisos sobre este servidor.' });
+    }
+    req.serverId = serverId;
+    req.servidor = hit; // { uid del dueño, srv }
+    next();
+};
+app.use('/api/server', exigirPropiedad);
+
+// Gestor de archivos y Mine AI: plan Oro o superior (o staff), validado acá y en Laravel.
+const exigirPremium = (req, res, next) => accesoPremium(req.planCliente, req.rol)
+    ? next()
+    : res.status(403).json({ success: false, error: 'Disponible desde el Plan Oro.' });
 
 // === HELPER: Generar ID único para servidor ===
 function generateId() {
@@ -563,15 +607,7 @@ app.post('/api/admin/diagnose', verificarCerebro, async (req, res) => {
 
 // --- Verificar servidores del usuario ---
 app.get('/api/project/check', (req, res) => {
-    const uid = req.query.uid;
-    const db = loadDB();
-
-    if (!uid) {
-        // Sin UID: responder genérico
-        return res.json({ exists: false, servers: [] });
-    }
-
-    const userData = db[uid];
+    const userData = loadDB()[req.uid];
     if (!userData || !userData.servers || userData.servers.length === 0) {
         return res.json({ exists: false, servers: [] });
     }
@@ -583,11 +619,13 @@ app.get('/api/project/check', (req, res) => {
 });
 
 // --- Crear servidor (Deploy de contenedor Docker) ---
-app.post('/api/project/create', async (req, res) => {
-    const { uid, email, projectName, motd, edition, software, version, curseforgeFileId, modpackUrl } = req.body;
+async function crearServidor(req, res) {
+    const uid = req.uid;
+    const email = req.user.email || null;
+    const { projectName, motd, edition, software, version, curseforgeFileId, modpackUrl } = req.body;
 
     if (!uid || !edition) {
-        return res.status(400).json({ success: false, message: 'Faltan datos obligatorios (uid, edition).' });
+        return res.status(400).json({ success: false, message: 'Faltan datos obligatorios (edition).' });
     }
 
     const errorPedido = validarPedidoDeploy(req.body);
@@ -748,14 +786,12 @@ app.post('/api/project/create', async (req, res) => {
         }
         void registrarAuditoria('server.deploy.failed', uid, serverId, { error: deployErr.message });
     }
-});
+}
+app.post('/api/project/create', crearServidor);
 
 // --- Estado del deploy en progreso ---
-app.get('/api/project/deploy-status', (req, res) => {
-    const { serverId } = req.query;
-    if (!serverId) {
-        return res.status(400).json({ step: 'Falta serverId', pct: 0, done: true, error: 'Falta serverId' });
-    }
+app.get('/api/project/deploy-status', exigirPropiedad, (req, res) => {
+    const serverId = req.serverId;
 
     if (deployStatus[serverId]) return res.json(deployStatus[serverId]);
 
@@ -780,12 +816,9 @@ app.get('/api/project/deploy-status', (req, res) => {
 });
 
 // --- Eliminar servidor ---
-app.post('/api/project/delete', async (req, res) => {
-    const { uid, serverId } = req.body;
-
-    if (!uid || !serverId) {
-        return res.status(400).json({ success: false, message: 'Faltan uid o serverId.' });
-    }
+app.post('/api/project/delete', exigirPropiedad, async (req, res) => {
+    const { serverId } = req;
+    const uid = req.servidor.uid; // dueño real (un ceo/admin puede borrar por él)
 
     const db = loadDB();
     if (!db[uid]) return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
@@ -824,31 +857,17 @@ app.post('/api/project/delete', async (req, res) => {
 });
 
 // --- Clonar servidor ---
-app.post('/api/project/clone', async (req, res) => {
-    const { uid, serverId } = req.body;
-    const db = loadDB();
-    if (!db[uid]) return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
-
-    const original = db[uid].servers.find(s => s.id === serverId);
-    if (!original) return res.status(404).json({ success: false, message: 'Servidor original no encontrado.' });
-
-    // Re-usar la lógica de create con los datos del original
-    const fakeReq = {
-        body: {
-            uid,
-            email: original.email,
-            projectName: original.name + ' (Clon)',
-            motd: original.motd,
-            edition: original.edition,
-            software: original.software,
-            version: original.version,
-        }
+app.post('/api/project/clone', exigirPropiedad, async (req, res) => {
+    const original = req.servidor.srv;
+    req.body = {
+        projectName: `${original.name || 'Servidor'} (Clon)`.slice(0, 32).replace(/[^\p{L}\p{N} _.-]/gu, ''),
+        motd: original.motd,
+        edition: original.edition,
+        software: ['Server Pack', 'modrinth'].includes(original.software) ? 'vanilla' : original.software,
+        version: original.version || 'LATEST',
+        plan: req.body?.plan, // límites del plan, inyectados por Laravel
     };
-
-    // Simplificado: delegar al handler de create
-    req.body = fakeReq.body;
-    // Reutilizamos la misma lógica llamando internamente
-    return app._router.handle(Object.assign(req, { url: '/api/project/create', method: 'POST', body: fakeReq.body }), res, () => {});
+    return crearServidor(req, res);
 });
 
 // --- Compartir / Dejar de compartir (stub) ---
@@ -861,13 +880,8 @@ app.post('/api/project/unshare', (req, res) => {
 });
 
 // --- Obtener IP del servidor ---
-app.post('/api/project/ip', (req, res) => {
-    const { uid, serverId } = req.body;
-    const db = loadDB();
-    if (!db[uid]) return res.status(404).json({ success: false });
-
-    const srv = db[uid].servers.find(s => s.id === serverId);
-    if (!srv) return res.status(404).json({ success: false });
+app.post('/api/project/ip', exigirPropiedad, (req, res) => {
+    const { srv } = req.servidor;
 
     // La IP pública del host + el puerto asignado
     res.json({
@@ -977,14 +991,8 @@ app.post('/api/server/command', async (req, res) => {
 });
 
 // --- Mine AI: diagnóstico técnico del log del servidor ---
-app.post('/api/server/mine-ai', async (req, res) => {
-    const { serverId } = req.body;
-    if (!serverId) return res.status(400).json({ success: false, error: 'Falta serverId' });
-
-    const userServers = loadDB()[req.user.uid]?.servers || [];
-    if (!userServers.some(serverRecord => serverRecord.id === serverId)) {
-        return res.status(403).json({ success: false, error: 'No tenés permisos para analizar este servidor.' });
-    }
+app.post('/api/server/mine-ai', exigirPremium, async (req, res) => {
+    const { serverId } = req;
 
     const groqKey = (process.env.GROQ_API_KEY || '').replace(/^"|"$/g, '').trim();
     if (!groqKey) {
@@ -1194,7 +1202,18 @@ app.get('/api/server/playitlogs', async (req, res) => {
 
 // --- Ver Stats (Para la gráfica de RAM/CPU) ---
 app.get('/api/server/stats', async (req, res) => {
-    res.json({ cpu: '1%', ram: '1024' });
+    try {
+        const st = await docker.getContainer(`mc-${req.serverId}`).stats({ stream: false });
+        const cpuDelta = (st.cpu_stats?.cpu_usage?.total_usage || 0) - (st.precpu_stats?.cpu_usage?.total_usage || 0);
+        const sysDelta = (st.cpu_stats?.system_cpu_usage || 0) - (st.precpu_stats?.system_cpu_usage || 0);
+        const cores = st.cpu_stats?.online_cpus || 1;
+        const cpuPct = sysDelta > 0 && cpuDelta > 0 ? (cpuDelta / sysDelta) * cores * 100 : 0;
+        const cache = st.memory_stats?.stats?.inactive_file ?? st.memory_stats?.stats?.cache ?? 0;
+        const usadoMb = Math.max(0, ((st.memory_stats?.usage || 0) - cache) / 1048576);
+        res.json({ cpu: `${cpuPct.toFixed(1)}%`, ram: String(Math.round(usadoMb)), ramLimit: Math.round((st.memory_stats?.limit || 0) / 1048576), online: true });
+    } catch (e) {
+        res.json({ cpu: '0%', ram: '0', ramLimit: 0, online: false });
+    }
 });
 
 // === WEBSOCKETS (Consola en Vivo) ===

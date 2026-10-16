@@ -46,7 +46,12 @@ class UserController extends Controller
 
     public function perfil(string $firebase_uid)
     {
-        // Buscamos al usuario por su ID de Firebase
+        // Anti-IDOR: cada cuenta lee solo su perfil; el staff puede leer cualquiera.
+        $actor = \Illuminate\Support\Facades\Auth::user();
+        if (! $actor || ($actor->firebase_uid !== $firebase_uid && ! in_array($actor->role, ['ceo', 'admin', 'soporte'], true))) {
+            return response()->json(['error' => 'No autorizado.'], 403);
+        }
+
         $cliente = Cliente::where('firebase_uid', $firebase_uid)->first();
 
         if (! $cliente) {

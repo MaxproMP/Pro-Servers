@@ -18,6 +18,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RefundController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Middleware\VerifyWebhookSignature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,23 +27,25 @@ Route::get('/ping', function () {
 });
 
 // === MIDDLEWARE DE PROTECCIÓN (firebase.auth) ===
-Route::middleware('firebase.auth')->group(function () {
+Route::middleware(['throttle:ip', 'firebase.auth'])->group(function () {
     
     // Auth endpoints (ahora protegidos por firebase para procesar login/registro)
-    Route::post('/auth/register', [AuthController::class, 'register']);
-    Route::post('/auth/login', [AuthController::class, 'login']);
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::middleware('throttle:20,1')->group(function () {
+        Route::post('/auth/register', [AuthController::class, 'register']);
+        Route::post('/auth/login', [AuthController::class, 'login']);
+        Route::post('/register', [AuthController::class, 'register']);
+        Route::post('/login', [AuthController::class, 'login']);
+    });
 
     // 2FA (TOTP)
     Route::get('/2fa/status', [TwoFactorController::class, 'status']);
-    Route::post('/2fa/setup', [TwoFactorController::class, 'setup']);
+    Route::post('/2fa/setup', [TwoFactorController::class, 'setup'])->middleware('throttle:10,1');
     Route::post('/2fa/enable', [TwoFactorController::class, 'enable'])->middleware('throttle:10,1');
     Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->middleware('throttle:10,1');
     Route::post('/2fa/disable', [TwoFactorController::class, 'disable'])->middleware('throttle:10,1');
 
     // Soporte (lado cliente)
-    Route::post('/support/chat', [SupportController::class, 'chat']);
+    Route::post('/support/chat', [SupportController::class, 'chat'])->middleware('throttle:sensible');
     Route::get('/support/messages', [SupportController::class, 'messages']);
 
     // Perfil y status
@@ -57,17 +60,29 @@ Route::middleware('firebase.auth')->group(function () {
     Route::get('/perfil/{id}', [UserController::class, 'perfil']);
     
     // Pagos
-    Route::post('/checkout/{pasarela}', [CheckoutController::class, 'crearPago']);
+    Route::post('/checkout/{pasarela}', [CheckoutController::class, 'crearPago'])->middleware('throttle:sensible');
     Route::get('/trial/status', [TrialController::class, 'status']);
     Route::post('/trial/start', [TrialController::class, 'start'])->middleware('throttle:5,1');
-    Route::post('/payments/{pagoId}/refund', [RefundController::class, 'solicitarReembolso']);
+    Route::post('/payments/{pagoId}/refund', [RefundController::class, 'solicitarReembolso'])->middleware('throttle:sensible');
     Route::get('/admin/refunds', [RefundController::class, 'historial']);
 
     // === DELEGACIÓN A NODE.JS (Validado por Laravel) ===
+    Route::post('/project/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', 'create|clone')->middleware('throttle:deploy');
     Route::any('/project/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', '.*');
     Route::any('/server/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', '.*');
     Route::any('/curseforge/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', '.*');
     Route::get('/modrinth/{path}', [NodeProxyController::class, 'proxyToNode'])->where('path', 'search|versions');
+
+    // Gestor de archivos: se construye con el rediseño del panel. Hasta entonces, cerrado en servidor.
+    Route::any('/files/{path}', function (Request $request) {
+        $u = $request->user();
+        $premium = in_array($u->role, ['ceo', 'admin', 'soporte'], true)
+            || in_array($u->suscripcionActiva()->with('plan')->first()?->plan?->nombre, config('services.planes_premium'), true);
+
+        return $premium
+            ? response()->json(['success' => false, 'error' => 'El gestor de archivos todavía no está disponible.'], 501)
+            : response()->json(['success' => false, 'error' => 'Disponible desde el Plan Oro.'], 403);
+    })->where('path', '.*');
 });
 
 // === PANEL OVERWATCH ===
@@ -126,9 +141,12 @@ Route::middleware(['firebase.auth', 'admin:ceo'])->prefix('admin')->group(functi
 });
 
 // Catálogo público (solo planes visibles)
-Route::get('/plans', [PlanAdminController::class, 'publico']);
+Route::get('/plans', [PlanAdminController::class, 'publico'])->middleware('throttle:ip');
 
 // === WEBHOOKS (Abiertos a Internet) ===
-Route::post('/pagos/webhook/astropay', [PaymentController::class, 'webhookAstroPay']);
-Route::post('/webhooks/astropay', [WebhookController::class, 'webhookAstropay']);
+// Firma HMAC obligatoria (WEBHOOK_SECRET). Sin secret: 403 y los pagos se confirman desde Overwatch.
+Route::middleware([VerifyWebhookSignature::class, 'throttle:60,1'])->group(function () {
+    Route::post('/pagos/webhook/astropay', [PaymentController::class, 'webhookAstroPay']);
+    Route::post('/webhooks/astropay', [WebhookController::class, 'webhookAstropay']);
+});
 Route::post('/internal/audit', [AuditController::class, 'store']);

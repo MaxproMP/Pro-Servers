@@ -82,6 +82,8 @@ class FirebaseTokenMiddleware
         $tiene2fa = !empty($cliente->google2fa_secret);
         $verificado = !$tiene2fa || Cache::has("2fa:{$cliente->id}:{$authTime}");
         $request->attributes->set('auth_time', $authTime);
+        $request->attributes->set('firebase_uid', $uid);
+        $request->attributes->set('email_verified', $emailVerificado);
         $request->attributes->set('requires_2fa', !$verificado);
 
         if (!$verificado && !$request->is(...self::RUTAS_2FA)) {

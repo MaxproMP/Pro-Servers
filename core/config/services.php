@@ -39,6 +39,14 @@ return [
 
     'ceo_email' => env('CEO_EMAIL', 'rodasmaximo51@gmail.com'),
 
+    // Funciones premium (Mine AI, gestor de archivos): plan Oro o superior.
+    'planes_premium' => ['oro', 'diamante', 'netherite', 'ghost-warrior'],
+
+    // Firma HMAC de webhooks de pago. Sin secret configurado, todo webhook se rechaza.
+    'webhooks' => [
+        'secret' => env('WEBHOOK_SECRET'),
+    ],
+
     // Prueba gratis: una sola por cuenta, sin cobro, solo en planes de entrada.
     'trial' => [
         'dias' => 15,

@@ -6,28 +6,27 @@ use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    $this->mock(App\Services\AuditLogService::class)->shouldIgnoreMissing();
+    config(['services.daemon.secret' => 'secreto-daemon']);
+});
+
 it('reenvía el token de Firebase al demonio Node', function () {
     Http::fake(['*' => Http::response(['success' => true], 200)]);
+    $h = tokenFirebase('uid-test', 'test@gmail.com');
 
-    $cliente = new Cliente(['firebase_uid' => 'uid-test']);
+    $this->postJson('/api/project/create', ['edition' => 'java'], $h)->assertOk();
 
-    $this->withoutMiddleware(\App\Http\Middleware\FirebaseTokenMiddleware::class)
-        ->actingAs($cliente)
-        ->postJson('/api/project/create', ['edition' => 'java'], ['Authorization' => 'Bearer token-abc'])
-        ->assertOk();
-
-    Http::assertSent(fn ($r) => $r->hasHeader('Authorization', 'Bearer token-abc')
-        && $r['uid'] === 'uid-test');
+    Http::assertSent(fn ($r) => $r->hasHeader('Authorization', 'Bearer tok-uid-test'));
 });
 
 it('al crear un servidor envía los límites del plan en SQL y descarta los del navegador', function () {
     Http::fake(['*' => Http::response(['success' => true], 200)]);
-    $plan = App\Models\Plan::where('nombre', 'oro')->firstOrFail(); // sembrado por la migración
-    $c = Cliente::create(['firebase_uid' => 'uid-plan', 'email' => 'plan@test.com', 'username' => 'plan', 'nombre' => 'P', 'password' => 'x', 'role' => 'usuario', 'plan_activo' => 'oro']);
-    App\Models\Suscripcion::create(['cliente_id' => $c->id, 'plan_id' => $plan->id, 'estado' => 'activa', 'ciclo_meses' => 1]);
+    $h = tokenFirebase('uid-plan', 'plan@test.com');
+    $this->postJson('/api/login', [], $h)->assertOk();
+    conPlan('uid-plan', 'oro');
 
-    $this->withoutMiddleware(App\Http\Middleware\FirebaseTokenMiddleware::class)->actingAs($c)
-        ->postJson('/api/project/create', ['edition' => 'java', 'plan' => ['memoria_mb' => 999999, 'cpu_cores' => 64]])
+    $this->postJson('/api/project/create', ['edition' => 'java', 'plan' => ['memoria_mb' => 999999, 'cpu_cores' => 64]], $h)
         ->assertOk();
 
     Http::assertSent(fn ($r) => str_contains($r->url(), '/api/project/create')
@@ -37,10 +36,9 @@ it('al crear un servidor envía los límites del plan en SQL y descarta los del 
 
 it('sin plan activo no envía límites y Node usa los valores por defecto', function () {
     Http::fake(['*' => Http::response(['success' => true], 200)]);
-    $c = Cliente::create(['firebase_uid' => 'uid-sp', 'email' => 'sp@test.com', 'username' => 'sp', 'nombre' => 'S', 'password' => 'x', 'role' => 'usuario', 'plan_activo' => 'ninguno']);
+    $h = tokenFirebase('uid-sp', 'sp@test.com');
 
-    $this->withoutMiddleware(App\Http\Middleware\FirebaseTokenMiddleware::class)->actingAs($c)
-        ->postJson('/api/project/create', ['edition' => 'java', 'plan' => ['memoria_mb' => 999999]])->assertOk();
+    $this->postJson('/api/project/create', ['edition' => 'java', 'plan' => ['memoria_mb' => 999999]], $h)->assertOk();
 
     Http::assertSent(fn ($r) => str_contains($r->url(), '/api/project/create') && !isset($r['plan']));
 });
